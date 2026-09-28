@@ -27,12 +27,9 @@ const errors = [];
 page.on('pageerror', e => errors.push(e.message));
 page.on('console', m => m.type() === 'error' && errors.push(m.text()));
 
+const PROVIDER = process.env.PROVIDER || 'anthropic';
 const calls = {};
-await page.route('https://api.anthropic.com/**', async route => {
-  const url = route.request().url();
-  if (url.includes('/models')) return route.fulfill({ json: { data: [{ id: 'claude-sonnet-test', display_name: 'Sonnet (test)' }] } });
-  const body = JSON.parse(route.request().postData());
-  const sys = body.system, user = body.messages[0].content;
+function makeReply(sys, user) {
   let reply;
   if (/assess a job/.test(sys)) {
     calls.analyse = user;
@@ -77,8 +74,34 @@ await page.route('https://api.anthropic.com/**', async route => {
   } else if (/LinkedIn profiles/.test(sys)) {
     reply = { headlines: ['SAP Ariba Solution Architect | S2P | Guided Buying | S/4HANA'], about: 'About text', skills: ['SAP Ariba'], open_to_work: ['SAP Ariba Architect'], tips: ['Add a banner'] };
   } else throw new Error('Unknown call: ' + sys.slice(0, 80));
+  return reply;
+}
+await page.route('https://api.anthropic.com/**', async route => {
+  const url = route.request().url();
+  if (url.includes('/models')) return route.fulfill({ json: { data: [{ id: 'claude-sonnet-test', display_name: 'Sonnet (test)' }] } });
+  const body = JSON.parse(route.request().postData());
+  const reply = makeReply(body.system, body.messages[0].content);
   return route.fulfill({ json: { content: [{ type: 'text', text: '```json\n' + JSON.stringify(reply) + '\n```' }], stop_reason: 'end_turn' } });
 });
+await page.route('https://generativelanguage.googleapis.com/**', async route => {
+  const url = route.request().url();
+  if (url.includes('/models?')) return route.fulfill({ json: { models: [{ name: 'models/gemini-test-flash', displayName: 'Gemini Flash (test)', supportedGenerationMethods: ['generateContent'] }] } });
+  calls.gemini = (calls.gemini || 0) + 1;
+  const body = JSON.parse(route.request().postData());
+  const reply = makeReply(body.systemInstruction.parts[0].text, body.contents[0].parts[0].text);
+  return route.fulfill({ json: { candidates: [{ content: { parts: [{ text: JSON.stringify(reply) }] }, finishReason: 'STOP' }] } });
+});
+if (PROVIDER === 'claude') {
+  // Simulate claude.ai's artifact runtime: sample() answers from the same mock; downloads fall back to a link.
+  await page.exposeFunction('__mockSample', input => { calls.sample = (calls.sample || 0) + 1; return makeReply(input, input); });
+  await page.addInitScript(() => {
+    window.claude = { use: async name => {
+      if (name === 'sample') { const f = async () => { throw new Error('text mode unused'); }; f.json = input => window.__mockSample(input); return f; }
+      if (name === 'downloads') return { save: async ({ filename, data }) => { const u = URL.createObjectURL(data); const a = document.createElement('a'); a.href = u; a.download = filename; document.body.append(a); a.click(); a.remove(); return 'saved'; } };
+      return null;
+    } };
+  });
+}
 
 const log = (...a) => console.log(...a);
 const shot = n => page.screenshot({ path: `${out}/${n}.png`, fullPage: true });
@@ -91,8 +114,16 @@ log('coach notes (empty):', await page.locator('.note').count());
 
 // 2. Settings
 await page.click('a[data-nav="settings"]');
-await page.fill('#api-key', 'sk-ant-test'); await page.click('#save-key');
-await page.waitForFunction(() => document.querySelector('#key-status').textContent.startsWith('Connected'));
+if (PROVIDER === 'claude') {
+  log('claude-plan radio checked:', await page.isChecked('input[value="claude-plan"]'));
+} else {
+  await page.check(`input[value="${PROVIDER}"]`);
+  await page.waitForSelector('#api-key');
+  await page.fill('#api-key', PROVIDER === 'gemini' ? 'AIza-test' : 'sk-ant-test'); await page.click('#save-key');
+  await page.waitForFunction(() => document.querySelector('#key-status').textContent.startsWith('Connected'));
+}
+log('engine pill:', await page.textContent('#key-pill'));
+await shot('01b-settings');
 const bm = await page.getAttribute('#bm', 'href');
 log('bookmarklet length:', bm.length, bm.startsWith('javascript:'));
 
@@ -201,5 +232,6 @@ await page.screenshot({ path: `${out}/12-mobile-fit.png`, fullPage: false });
 await page.goto('http://localhost:8765/#/dashboard'); await page.waitForTimeout(600);
 await page.screenshot({ path: `${out}/13-mobile-dashboard.png`, fullPage: false });
 
+log('calls:', JSON.stringify({ gemini: calls.gemini || 0, sample: calls.sample || 0 }));
 log('errors:', JSON.stringify(errors));
 await browser.close(); srv.close();

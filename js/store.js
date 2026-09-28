@@ -57,13 +57,16 @@
     currentTitle: '', currentCompany: '',
     targetRoles: [], targetLocations: ['United Kingdom'], workPreference: 'Both',
     salary: '', dayRate: '', notice: '', eligibility: '', weeklyGoal: 5,
-    achievements: [], neverClaim: ''
+    achievements: [], extraSkills: '', neverClaim: ''
   };
   async function getProfile() {
     const r = await get('kv', 'profile');
     return Object.assign({}, DEFAULT_PROFILE, r ? r.v : {});
   }
   const saveProfile = p => put('kv', { k: 'profile', v: p });
+  // Generic small records (job feed, company intel cache).
+  async function getKV(k, d = null) { const r = await get('kv', k); return r ? r.v : d; }
+  const setKV = (k, v) => put('kv', { k, v });
 
   // ---------- masters ----------
   async function listMasters() { return (await all('masters')).sort((a, b) => (b.isDefault - a.isDefault) || a.created.localeCompare(b.created)); }
@@ -176,7 +179,7 @@
   window.CVT = window.CVT || {};
   window.CVT.store = {
     local, uid, now, addDays, b64,
-    getProfile, saveProfile, DEFAULT_PROFILE,
+    getProfile, saveProfile, DEFAULT_PROFILE, getKV, setKV,
     listMasters, addMaster, setDefaultMaster, getMaster, saveMaster, removeMaster,
     STATUSES, COLUMNS, newApp, listApps, getApp, saveApp, removeApp, setStatus,
     exportAll, importAll, clearAll, migrateV1

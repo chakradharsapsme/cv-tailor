@@ -4,16 +4,14 @@
   const S = window.CVT.store, A = window.CVT.agent, V = window.CVT.views;
 
   const inClaude = () => !!(window.claude && window.claude.use);
-  const LABEL = { 'claude-plan': 'Claude plan', gemini: 'Gemini', anthropic: 'Anthropic API' };
+  const LABEL = { 'claude-plan': 'Claude plan', gemini: 'Gemini (free)' };
 
   /** state.key is "ready" when the chosen engine can run; the real keys live in their own fields. */
   function refreshKey() {
     const s = state;
-    const ready = s.provider === 'claude-plan' ? inClaude()
-      : s.provider === 'gemini' ? !!(s.geminiKey && s.geminiModel)
-      : !!(s.anthropicKey && s.anthropicModel);
+    const ready = s.provider === 'claude-plan' ? inClaude() : !!(s.geminiKey && s.geminiModel);
     s.key = ready ? 'ready' : '';
-    s.model = s.provider === 'gemini' ? s.geminiModel : s.provider === 'anthropic' ? s.anthropicModel : 'claude-plan';
+    s.model = s.provider === 'gemini' ? s.geminiModel : 'claude-plan';
     const pill = $('#key-pill');
     pill.dataset.state = ready ? 'ready' : 'missing';
     pill.textContent = ready ? LABEL[s.provider] + (s.provider === 'claude-plan' ? '' : ' · ' + String(s.model || '').replace(/^claude-|^gemini-/, '')) : 'Set up the AI engine';
@@ -30,18 +28,40 @@
           s.geminiModel = pick ? pick.id : '';
           S.local.set('cvt.geminiModel', s.geminiModel);
         }
-      } else if (s.provider === 'anthropic') {
-        s.models = await A.listModels(s.anthropicKey);
-        if (!s.anthropicModel || !s.models.some(m => m.id === s.anthropicModel)) {
-          const pick = s.models.find(m => /sonnet/i.test(m.id)) || s.models.find(m => /opus/i.test(m.id)) || s.models[0];
-          s.anthropicModel = pick ? pick.id : '';
-          S.local.set('cvt.model', s.anthropicModel);
-        }
       } else { s.models = []; }
       refreshKey();
       return true;
     } catch (e) { s.lastError = e.message; refreshKey(); return false; }
   }
+
+  // In-page routing. Inside claude.ai the page runs in a frame where hash links can't be relied on,
+  // so links are intercepted and the current view is kept here.
+  let current = location.hash || '#/dashboard';
+  // Never touch history or location.hash inside claude.ai: changing the frame's URL makes the host page hang.
+  const canUseHistory = () => !inClaude();
+  function go(h) {
+    current = h;
+    if (canUseHistory()) { try { history.pushState(null, '', h); } catch (_) {} }
+    return route();
+  }
+  // Internal links carry data-go instead of a live href, so the host frame can't swallow the click.
+  const wire = node => {
+    const list = node.matches && node.matches('a[href^="#/"]') ? [node] : node.querySelectorAll ? node.querySelectorAll('a[href^="#/"]') : [];
+    list.forEach(a => { a.dataset.go = a.getAttribute('href'); a.removeAttribute('href'); a.setAttribute('role', 'link'); a.tabIndex = 0; });
+  };
+  new MutationObserver(ms => ms.forEach(m => m.addedNodes.forEach(n => n.nodeType === 1 && wire(n)))).observe(document.body, { childList: true, subtree: true });
+  wire(document.body);
+  document.addEventListener('click', e => {
+    const a = e.target.closest && e.target.closest('[data-go]');
+    if (!a || e.button !== 0) return;
+    e.preventDefault();
+    go(a.dataset.go);
+  });
+  document.addEventListener('keydown', e => {
+    const a = e.target.closest && e.target.closest('[data-go]');
+    if (a && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); go(a.dataset.go); }
+  });
+  window.addEventListener('popstate', () => { current = location.hash || '#/dashboard'; route(); });
 
   let routing = Promise.resolve();
   function route() {
@@ -49,28 +69,36 @@
     return routing;
   }
   async function render() {
-    const hash = location.hash || '#/dashboard';
+    const hash = current || '#/dashboard';
+    const slow = setTimeout(() => toast('Still loading ' + hash + '…', 'warn'), 5000);
+    try { await renderInner(hash); } finally { clearTimeout(slow); }
+    refreshBadges();
+  }
+  async function renderInner(hash) {
     const [, view, id, tab] = hash.split('/');
     const main = $('#main');
     const root = document.createElement('div');
     root.className = 'view';
     main.replaceChildren(root);
-    const current = view === 'app' ? 'pipeline' : (view || 'dashboard');
-    $$('.nav a').forEach(a => { if (a.dataset.nav === current) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+    const navKey = view === 'app' ? 'pipeline' : (view || 'dashboard');
+    $$('.nav a').forEach(a => { if (a.dataset.nav === navKey) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
     try {
       if (view === 'new') {
         const masters = await S.listMasters();
         const a = S.newApp((masters.find(m => m.isDefault) || masters[0] || {}).id);
         await S.saveApp(a);
-        location.replace(`#/app/${a.id}/job`);
-        return;
+        current = `#/app/${a.id}/job`;
+        if (canUseHistory()) { try { history.replaceState(null, '', current); } catch (_) {} }
+        return render();
       }
       if (view === 'app') await V.workspace(root, id, tab);
       else if (view === 'pipeline') await V.pipeline(root);
+      else if (view === 'jobs') await window.CVT.jobs.view(root);
+      else if (view === 'help') await V.help(root);
       else if (view === 'profile') await V.profile(root);
       else if (view === 'settings') await V.settings(root);
       else await V.dashboard(root);
-      document.title = ({ app: 'Application', pipeline: 'Pipeline', profile: 'Career profile', settings: 'Settings' }[view] || 'Dashboard') + ' · CV Tailor';
+      document.title = ({ app: 'Application', pipeline: 'Pipeline', jobs: 'Jobs', help: 'Help and privacy', profile: 'Career profile', settings: 'Settings' }[view] || 'Dashboard') + ' · CV Tailor';
     } catch (e) {
       console.error(e);
       root.innerHTML = `<section class="panel"><h1>Something went wrong</h1><p class="error">${window.CVT.ui.esc(e.message)}</p><p><a class="link" href="#/dashboard">Back to dashboard</a></p></section>`;
@@ -81,23 +109,33 @@
   function rerender() { window.CVT._keepScroll = true; return route(); }
 
   async function boot() {
-    state.anthropicKey = S.local.get('cvt.key', '');
-    state.anthropicModel = S.local.get('cvt.model', '');
+    // The paid Anthropic API option was removed: forget any key saved by older versions.
+    S.local.del('cvt.key'); S.local.del('cvt.model');
     state.geminiKey = S.local.get('cvt.geminiKey', '');
     state.geminiModel = S.local.get('cvt.geminiModel', '');
-    state.provider = S.local.get('cvt.provider', '') || (inClaude() ? 'claude-plan' : state.geminiKey ? 'gemini' : state.anthropicKey ? 'anthropic' : 'gemini');
-    if (state.provider === 'claude-plan' && !inClaude()) state.provider = state.geminiKey ? 'gemini' : 'anthropic';
+    state.provider = S.local.get('cvt.provider', '') || (inClaude() ? 'claude-plan' : 'gemini');
+    if (!['claude-plan', 'gemini'].includes(state.provider)) state.provider = inClaude() ? 'claude-plan' : 'gemini';
+    if (state.provider === 'claude-plan' && !inClaude()) state.provider = 'gemini';
     refreshKey();
     try { await S.migrateV1(); } catch (e) { console.warn('Migration skipped', e); }
-    if (state.provider !== 'claude-plan' && (state.geminiKey || state.anthropicKey)) loadModels();
-    window.addEventListener('hashchange', route);
+    if (state.provider === 'gemini' && state.geminiKey) loadModels();
+    window.addEventListener('hashchange', () => { if (location.hash && location.hash !== current) { current = location.hash; route(); } });
     await route();
-    // Keep the pipeline badge fresh.
-    const n = (await S.listApps()).filter(a => a.next && a.next.due && a.next.due <= new Date().toISOString().slice(0, 10)).length;
-    const badge = $('#due-badge'); if (badge) { badge.textContent = n; badge.hidden = !n; }
+    refreshBadges();
+  }
+  /** Sidebar counts: follow-ups due, and strong new job matches. */
+  async function refreshBadges() {
+    try {
+      const n = (await S.listApps()).filter(a => a.next && a.next.due && a.next.due <= new Date().toISOString().slice(0, 10)).length;
+      const badge = $('#due-badge'); if (badge) { badge.textContent = n; badge.hidden = !n; }
+      const t = await window.CVT.jobs.top(0);
+      const jb = $('#jobs-badge'); if (jb) { jb.textContent = t.newCount; jb.hidden = !t.newCount; }
+    } catch (_) {}
   }
 
-  window.CVT.app = { route, rerender, refreshKey, loadModels, inClaude };
+  window.addEventListener('error', e => toast('Error: ' + (e.message || e.error), 'bad'));
+  window.addEventListener('unhandledrejection', e => toast('Error: ' + ((e.reason && e.reason.message) || e.reason), 'bad'));
+  window.CVT.app = { route, rerender, refreshKey, loadModels, inClaude, go, refreshBadges };
   if (!window.indexedDB) { $('#main').innerHTML = '<section class="panel"><h1>Storage unavailable</h1><p>This browser blocks local storage (private window?). Open CV Tailor in a normal window.</p></section>'; return; }
   boot().catch(e => { console.error(e); toast(e.message, 'bad'); });
 })();

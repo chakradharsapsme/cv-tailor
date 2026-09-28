@@ -12,15 +12,30 @@
   const paraById = (mm, id) => mm.model.paras.find(p => p.id === id);
   const editText = (e, p) => Array.isArray(e.segments) ? e.segments.join('') : typeof e.text === 'string' ? e.text : p.text;
 
+  const words = t => String(t).toLowerCase().replace(/[^\p{L}\p{N}&/+.-]+/gu, ' ').split(' ').map(w => w.replace(/^[.\-]+|[.\-]+$/g, '')).filter(Boolean);
+  /** True when every original word survives, in order: the edit only inserts. */
+  function insertOnly(orig, next) {
+    const a = words(orig), b = words(next);
+    let i = 0;
+    for (const w of b) { if (i < a.length && w === a[i]) i++; }
+    return i === a.length;
+  }
+
   function prepareDecisions(a, mm) {
     const r = a.analysis;
-    r.edits = r.edits.filter(e => { const p = paraById(mm, e.id); return p && !p.locked && editText(e, p) !== p.text; });
+    const seen = new Set();
+    r.edits = r.edits.filter(e => { const p = paraById(mm, e.id); if (!p || p.locked || seen.has(e.id) || editText(e, p) === p.text) return false; seen.add(e.id); return true; });
     r.remove = r.remove.filter(x => { const p = paraById(mm, x.id); return p && D.canRemove(p); });
     r.reorder = r.reorder.filter(o => Array.isArray(o.ids) && o.ids.length > 1 && o.ids.every(id => paraById(mm, id)));
     a.decisions = {};
-    r.edits.forEach(e => { a.decisions['e' + e.id] = { on: true, text: editText(e, paraById(mm, e.id)) }; });
-    r.reorder.forEach((o, i) => { a.decisions['o' + i] = { on: true }; });
-    r.remove.forEach(x => { a.decisions['r' + x.id] = { on: true }; });
+    r.edits.forEach(e => {
+      const p = paraById(mm, e.id), t = editText(e, p);
+      e.insertOnly = insertOnly(p.text, t);
+      // Safe insertions backed by the CV or profile start ticked; rewrites and unproven skills wait for you.
+      a.decisions['e' + e.id] = { on: e.insertOnly && e.basis !== 'unconfirmed', text: t };
+    });
+    r.reorder.forEach((o, i) => { a.decisions['o' + i] = { on: false }; });
+    r.remove.forEach(x => { a.decisions['r' + x.id] = { on: false }; });
   }
 
   function planOf(a, mm) {
@@ -60,12 +75,12 @@
       else if (ctx.jd.has(t)) flags.push({ cls: 'warn', text: `“${t}” comes from the job ad. Keep it only if true` });
       else flags.push({ cls: 'warn', text: `“${t}” isn't in your CV or profile` });
     }
-    if (newText.length > oldText.length * 1.1 + 15) flags.push({ cls: 'warn', text: `Longer than the original (${oldText.length} → ${newText.length} chars)` });
+    if (newText.length > Math.min(oldText.length * 1.35, oldText.length + 120) + 5) flags.push({ cls: 'warn', text: `Longer than the original (${oldText.length} → ${newText.length} chars)` });
     return flags;
   }
 
   function wordDiff(a, b) {
-    const A1 = a.split(/(\s+)/), B1 = b.split(/(\s+)/);
+    const A1 = a.split(/(\s+|[,.;:()])/).filter(Boolean), B1 = b.split(/(\s+|[,.;:()])/).filter(Boolean);
     const n = A1.length, m = B1.length;
     if (n * m > 250000) return [{ t: 'del', s: a }, { t: 'ins', s: b }];
     const dp = Array.from({ length: n + 1 }, () => new Uint16Array(m + 1));
@@ -105,13 +120,14 @@
     let a = id === 'new' ? null : await S.getApp(id);
     if (!a) { root.innerHTML = String(html`<div class="panel"><h1>Application not found</h1><p><a class="link" href="#/pipeline">Back to pipeline</a></p></div>`); return; }
     tab = TABS.some(t => t[0] === tab) ? tab : 'job';
-    const [profile, masters] = await Promise.all([S.getProfile(), S.listMasters()]);
+    const [profile, masters, allApps] = await Promise.all([S.getProfile(), S.listMasters(), S.listApps()]);
+    const dups = a.role ? window.CVT.jobs.duplicates({ title: a.role, company: a.agency || a.company }, allApps, a.id).concat(a.agency ? window.CVT.jobs.duplicates({ title: a.role, company: a.company }, allApps, a.id) : []) : [];
     const an = a.analysis && !a.analysis.legacy ? a.analysis : null;
     const v = an && VERDICT[an.decision && an.decision.verdict];
     let saveTimer;
     const saveSoon = () => { clearTimeout(saveTimer); saveTimer = setTimeout(() => S.saveApp(a), 400); };
     const saveNow = async () => { clearTimeout(saveTimer); await S.saveApp(a); };
-    const go = t => { location.hash = `#/app/${a.id}/${t}`; };
+    const go = t => window.CVT.app.go(`#/app/${a.id}/${t}`);
 
     root.innerHTML = String(html`
       <header class="ws-head">
@@ -131,6 +147,7 @@
         <input id="nx-due" type="date" value="${a.next ? a.next.due : ''}" aria-label="Due date">
         ${a.next ? html`<button class="icon-btn" id="nx-clear" type="button" title="Mark done" aria-label="Mark done">✓</button>` : ''}
       </div>
+      ${dups.length ? html`<div class="dup-bar" role="note"><strong>Possible duplicate.</strong> This looks like ${[...new Map(dups.map(d => [d.app.id, d])).values()].map((d, i) => html`${i ? ', ' : ''}<a class="link" href="#/app/${d.app.id}/job">${d.app.role} at ${d.app.company || 'unknown'}</a> (${d.app.status.toLowerCase()})`)}. Being put forward twice, for example by two agencies, can rule you out. Check before applying.</div>` : ''}
       <nav class="ws-tabs" aria-label="Application sections">${TABS.map(([k, label]) => html`<a href="#/app/${a.id}/${k}" ${k === tab ? raw('aria-current="page"') : ''}>${label}</a>`)}</nav>
       <div class="ws-body" id="ws-body"></div>`);
 
@@ -143,7 +160,7 @@
     $('#ws-delete', root).addEventListener('click', async e => {
       const b = e.currentTarget;
       if (b.dataset.armed !== '1') { b.dataset.armed = '1'; b.textContent = 'Click to delete'; return; }
-      await S.removeApp(a.id); toast('Application deleted'); location.hash = '#/pipeline';
+      await S.removeApp(a.id); toast('Application deleted'); window.CVT.app.go('#/pipeline');
     });
     const nxSave = () => {
       const text = $('#nx-text', root).value.trim(), due = $('#nx-due', root).value;
@@ -208,11 +225,24 @@
             ${f('recruiterEmail', 'Recruiter email', 'email')}
           </div>
           <label class="field"><span>Notes</span><textarea data-f="notes" rows="4" placeholder="Anything from calls, referrals, interview dates…">${a.notes}</textarea></label>
+          <div class="intel-box" id="intel" hidden><div class="panel-head"><h3>Company intel</h3><button class="btn small ghost" id="intel-run" type="button">Look up on Indeed</button></div><div id="intel-out"><p class="hint">Reviews, size, interview experience and average pay for this role.</p></div></div>
         </section>
       </div>`);
 
     body.addEventListener('input', e => { const k = e.target.dataset.f; if (k) { a[k] = e.target.value; ctx.saveSoon(); } });
     body.addEventListener('change', e => { const k = e.target.dataset.f; if (k && e.target.tagName === 'SELECT') { a[k] = e.target.value; ctx.saveSoon(); } });
+    window.CVT.jobs.available().then(ok => {
+      const box = $('#intel', body); if (!ok || !box) return;
+      box.hidden = false;
+      $('#intel-run', body).addEventListener('click', async ev => {
+        const btn = ev.currentTarget;
+        const name = (a.company || '').replace(/\s*\(.*\)\s*$/, '').trim();
+        if (!name) { toast('Add the company name first', 'warn'); return; }
+        btn.disabled = true; $('#intel-out', body).innerHTML = '<p class="muted small">Asking Indeed…</p>';
+        try { $('#intel-out', body).innerHTML = String(window.CVT.jobs.intelCard(await window.CVT.jobs.companyIntel(name, a.role))); }
+        catch (e) { $('#intel-out', body).innerHTML = String(html`<p class="error small">${window.CVT.jobs.errText(e)}</p>`); btn.disabled = false; }
+      });
+    });
     const ex = $('#example', body);
     if (ex) ex.addEventListener('click', () => { a.jd = EXAMPLE_JD; a.company = a.company || 'Northgate Energy (fictional example)'; a.role = a.role || 'SAP Ariba Solution Architect'; ctx.saveNow().then(() => window.CVT.app.rerender()); });
 
@@ -343,15 +373,17 @@
         <div class="cv-main">
           ${an ? html`
           <section class="panel">
-            <div class="panel-head"><h2>Proposed changes <span class="muted">· ${total}</span></h2>
+            <div class="panel-head"><h2>Requirements added to your CV <span class="muted">· ${total}</span></h2>
               <div class="row gap"><button class="btn ghost small" id="all-on" type="button">Accept all</button><button class="btn ghost small" id="all-off" type="button">Reject all</button></div></div>
-            <p class="hint">Only wording inside your existing paragraphs changes, so the Word layout stays the same. Flags mark anything to double-check.</p>
+            <p class="hint">Your own wording stays exactly as it is. Each item inserts a job requirement into the paragraph where it fits best (highlighted in green). Items marked “tick only if you really have this” start unticked. They let you show skills that aren't on your CV yet.</p>
             <div class="edits">${total ? '' : html`<p class="empty-note">No changes proposed. Your CV already fits this role well.</p>`}
               ${r.edits.map(e => { const p = paraById(mm, e.id), d = a.decisions['e' + e.id] || { on: false, text: p.text }; const fl = flagsFor(p.text, d.text, flagCtx);
-                return html`<div class="edit ${d.on ? '' : 'off'}" data-key="e${e.id}">
+                const ins = d.manual ? insertOnly(p.text, d.text) : e.insertOnly !== false;
+                const basis = { cv: ['ok', 'Already shown in your CV'], profile: ['ok', 'From your career profile'], unconfirmed: ['warn', 'Not in your CV: tick only if you really have this'] }[e.basis];
+                return html`<div class="edit ${d.on ? '' : 'off'} ${e.basis === 'unconfirmed' ? 'confirm' : ''}" data-key="e${e.id}">
                   <input type="checkbox" data-toggle="e${e.id}" ${d.on ? raw('checked') : ''} aria-label="Include this change">
                   <div class="edit-main">
-                    <div class="edit-meta"><span class="kind">Rewrite</span><span>¶${p.id}${p.style ? ' · ' + p.style : ''}${p.isList ? ' · bullet' : ''}</span></div>
+                    <div class="edit-meta"><span class="kind">${ins ? 'Insert' : 'Rewrite'}</span>${e.requirement ? html`<span class="chip accent">${e.requirement}</span>` : ''}${basis ? html`<span class="chip ${basis[0]}">${basis[1]}</span>` : ''}${ins ? '' : html`<span class="chip bad">Changes your own wording</span>`}<span>¶${p.id}${p.style ? ' · ' + p.style : ''}${p.isList ? ' · bullet' : ''}</span></div>
                     ${diffHtml(p.text, d.text)}
                     <div class="edit-tools"><button class="linkish" data-edit="e${e.id}" type="button">Edit wording</button></div>
                     ${e.reason ? html`<p class="reason">${e.reason}</p>` : ''}

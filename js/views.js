@@ -2,7 +2,7 @@
 (function () {
   const { html, raw, esc, $, $$, toast, download, copy, today, ukDate, longDate, daysBetween, VERDICT, scoreCls, state, masterModel } = window.CVT.ui;
   const S = window.CVT.store, A = window.CVT.agent, D = window.CVT.docx;
-  const enc = encodeURIComponent;
+  const VERSION = 'v3.0';
   const ACTIVE = ['Applied', 'Screening', 'Interview', 'Offer'];
   const REACHED = s => ['Screening', 'Interview', 'Offer', 'Accepted'].includes(s);
 
@@ -23,20 +23,55 @@
   const appTitle = a => (a.role || 'Untitled role') + (a.company ? ' · ' + a.company : '');
   const openHref = a => `#/app/${a.id}/${a.analysis && !a.analysis.legacy ? 'fit' : 'job'}`;
 
-  function searchLinks(role, loc, pref) {
-    const jt = pref === 'Contract' ? '&f_JT=C' : pref === 'Permanent' ? '&f_JT=F' : '';
-    const s = x => x.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-    const uk = /united kingdom|^uk$/i.test(loc);
-    return [
-      { name: 'LinkedIn · 24h', href: `https://www.linkedin.com/jobs/search/?keywords=${enc(role)}&location=${enc(loc)}&f_TPR=r86400${jt}` },
-      { name: 'Indeed · 24h', href: `https://uk.indeed.com/jobs?q=${enc(role)}&l=${enc(uk ? '' : loc)}&fromage=1` },
-      { name: 'Reed', href: `https://www.reed.co.uk/jobs/${s(role)}-jobs${uk ? '' : '-in-' + s(loc)}` }
-    ];
-  }
-
   // =====================================================================
   // DASHBOARD
   // =====================================================================
+  async function drawJobs(root, profile) {
+    const J = window.CVT.jobs, box = $('#dash-jobs', root);
+    if (!box) return;
+    const avail = await J.available();
+    let t = await J.top(6);
+    // Keep the feed fresh without asking: only after the viewer has run it once, and at most every 6 hours.
+    const stale = t.feed.lastRun && (Date.now() - new Date(t.feed.lastRun)) > 6 * 3600e3;
+    const head = (extra = '') => html`<div class="panel-head"><h2>New jobs for you</h2><div class="row gap">${raw(extra)}<a class="link" href="#/jobs">All jobs</a></div></div>`;
+    const paint = (note = '') => {
+      box.removeAttribute('aria-busy');
+      const roles = (profile.targetRoles || []).length ? profile.targetRoles : ['SAP Ariba', 'SAP S2P'];
+      if (!avail && !t.items.length) {
+        box.innerHTML = String(html`${head()}
+          <p class="hint">Search every major UK board for your target roles in one click. Inside claude.ai, CV Tailor also pulls live Indeed jobs here and scores each one against your CV.</p>
+          <div class="search-rows">${roles.slice(0, 4).map(r => html`<div class="search-row"><span class="search-role">${r}</span><span class="search-links">${J.boards(r, (profile.targetLocations || [])[0]).slice(0, 6).map(l => html`<a class="pill-link" href="${l.href}" target="_blank" rel="noopener">${l.name}</a>`)}</span></div>`)}</div>`);
+        return;
+      }
+      if (!t.items.length) {
+        box.innerHTML = String(html`${head()}
+          <div class="empty-state slim"><p class="hint">Pull live SAP and procurement jobs from Indeed, scored against your CV. The first time, claude.ai asks you to allow the Indeed connector.</p>
+          <button class="btn primary" id="dj-run" type="button">Find jobs now</button></div>`);
+      } else {
+        box.innerHTML = String(html`${head(`<span class="muted small">${note || 'Updated ' + J.relTime(t.feed.lastRun)}</span>`)}
+          <div class="job-list compact">${t.items.map(r => J.jobCard(r.j, r.sc, r.dups, true))}</div>
+          ${t.total > t.items.length ? html`<p class="small mt"><a class="link" href="#/jobs">See all ${t.total} jobs, market pulse and rate calculator</a></p>` : ''}`);
+      }
+      const run = $('#dj-run', box);
+      if (run) run.addEventListener('click', async () => { run.disabled = true; run.textContent = 'Searching Indeed…'; await go(); });
+    };
+    const go = async () => {
+      try { const r = await J.refresh(); if (r.errors.length && !r.found) toast(r.errors[0].text, 'bad'); await J.checkTop(3); }
+      catch (e) { toast(J.errText(e), 'bad'); }
+      t = await J.top(6); paint();
+      window.CVT.app.refreshBadges && window.CVT.app.refreshBadges();
+    };
+    paint(avail && stale ? 'Refreshing…' : '');
+    box.addEventListener('click', async e => {
+      const b = e.target.closest('[data-j="import"]'); if (!b) return;
+      const key = b.closest('[data-key]').dataset.key;
+      b.disabled = true; b.textContent = 'Adding…';
+      try { await J.details(key).catch(() => null); const id = await J.importJob(key); window.CVT.app.go(`#/app/${id}/job`); }
+      catch (err) { toast(err.message, 'bad'); b.disabled = false; b.textContent = 'Tailor'; }
+    });
+    if (avail && stale) go();
+  }
+
   async function dashboard(root) {
     const [apps, profile, masters] = await Promise.all([S.listApps(), S.getProfile(), S.listMasters()]);
     const t = today();
@@ -64,16 +99,30 @@
     if (stale.length) notes.push({ cls: 'muted', text: `${stale.length} prepared application${stale.length > 1 ? 's have' : ' has'} sat for over 5 days. Roles often close within two weeks.`, href: '#/pipeline', cta: 'Review' });
     const needPrep = apps.filter(a => ['Screening', 'Interview'].includes(a.status) && !a.interview);
     needPrep.slice(0, 2).forEach(a => notes.push({ cls: 'accent', text: `Prepare for ${a.company || 'your'} ${a.status.toLowerCase()}: questions, STAR answers and a 90-day plan.`, href: `#/app/${a.id}/interview`, cta: 'Interview prep' }));
-    if (!(profile.targetRoles || []).length) notes.push({ cls: 'muted', text: 'Add your target job titles to get one-click job searches here.', href: '#/profile', cta: 'Targets' });
+    if (!(profile.targetRoles || []).length) notes.push({ cls: 'muted', text: 'Add your target job titles so the job feed searches for them.', href: '#/profile', cta: 'Targets' });
 
-    const roles = (profile.targetRoles || []).length ? profile.targetRoles : ['SAP Ariba Consultant', 'SAP S2P Solution Architect', 'SAP Procurement Lead'];
-    const locs = (profile.targetLocations || []).length ? profile.targetLocations : ['United Kingdom'];
+    const feedRun = !!((await S.getKV('feed', null)) || {}).lastRun;
+    const setup = [
+      { done: masters.length > 0, title: 'Add your master CV', text: 'Upload the Word CV you use today. Its layout is never changed.', href: '#/profile', cta: 'Upload CV' },
+      { done: !!state.key, title: 'Switch on the AI agent', text: 'Use your Claude plan inside claude.ai, or a free Gemini key anywhere.', href: '#/settings', cta: 'Choose engine' },
+      { done: (profile.targetRoles || []).length > 0 || feedRun, title: 'Tell it what you want', text: 'Target roles, locations and skills not on your CV. Jobs are matched against these.', href: '#/profile', cta: 'Set targets' },
+      { done: apps.length > 0, title: 'Tailor your first application', text: 'Pick a job from the feed or paste any advert.', href: '#/jobs', cta: 'Find a job' }
+    ];
 
     root.innerHTML = html`
       <header class="page-head">
         <div><p class="eyebrow">${longDate()}</p><h1>${hello}</h1></div>
         <a class="btn primary" href="#/new">New application</a>
       </header>
+
+      ${setup.every(x => x.done) ? '' : html`<section class="panel onboard" aria-label="Get started">
+        <div class="panel-head"><h2>Get set up in four steps</h2><span class="muted small">${setup.filter(x => x.done).length} of ${setup.length} done</span></div>
+        <ol class="onboard-steps">${setup.map((x, i) => html`<li class="${x.done ? 'done' : ''}">
+          <span class="step-num" aria-hidden="true">${x.done ? '✓' : i + 1}</span>
+          <div><strong>${x.title}</strong><p class="muted small">${x.text}</p></div>
+          ${x.done ? html`<span class="chip ok">Done</span>` : html`<a class="btn small" href="${x.href}">${x.cta}</a>`}
+        </li>`)}</ol>
+      </section>`}
 
       <section class="kpis" aria-label="Your numbers">
         <div class="kpi">
@@ -122,15 +171,9 @@
             : html`<p class="empty-note">You're on track. Keep going.</p>`}
         </section>
 
-        <section class="panel wide">
-          <div class="panel-head">
-            <h2>Find new roles</h2>
-            <label class="inline-field">Location
-              <select id="search-loc">${locs.map(l => html`<option>${l}</option>`)}</select>
-            </label>
-          </div>
-          <p class="hint">Opens each board filtered to your target titles${profile.workPreference && profile.workPreference !== 'Both' ? ' and ' + profile.workPreference.toLowerCase() + ' roles' : ''}. Paste a good one into “New application”.</p>
-          <div class="search-rows" id="search-rows"></div>
+        <section class="panel wide" id="dash-jobs" aria-busy="true">
+          <div class="panel-head"><h2>New jobs for you</h2><a class="link" href="#/jobs">All jobs</a></div>
+          <p class="muted small">Loading…</p>
         </section>
 
         <section class="panel wide">
@@ -147,15 +190,7 @@
         </section>
       </div>`;
 
-    const drawSearch = () => {
-      const loc = $('#search-loc', root).value;
-      $('#search-rows', root).innerHTML = roles.map(r => html`<div class="search-row">
-        <span class="search-role">${r}</span>
-        <span class="search-links">${searchLinks(r, loc, profile.workPreference).map(l => html`<a class="pill-link" href="${l.href}" target="_blank" rel="noopener">${l.name}</a>`)}</span>
-      </div>`).join('');
-    };
-    drawSearch();
-    $('#search-loc', root).addEventListener('change', drawSearch);
+    drawJobs(root, profile);
 
     root.addEventListener('click', async e => {
       const b = e.target.closest('[data-act]'); if (!b) return;
@@ -254,6 +289,7 @@
           <span class="drop-title">${masters.length ? 'Add another master CV (.docx)' : 'Drop your master CV (.docx) here or choose a file'}</span>
           <span class="drop-sub">Word .docx only. PDFs can't be edited without changing the layout.</span>
         </label>
+        <p class="row gap wrap small"><button class="btn ghost small" id="m-demo" type="button">Try with a demo CV</button><span class="muted">A fictional SAP consultant CV, handy for a first test run.</span></p>
         <div class="preview-box" id="m-preview" hidden></div>
       </section>
 
@@ -292,6 +328,7 @@
         <div class="panel-head"><h2>Achievements bank</h2><button class="btn ghost small" id="ach-add" type="button">Add achievement</button></div>
         <p class="hint">True, specific results the agent may quote. Format: what you did, scale, result. Example: “Led Guided Buying rollout to 12,000 users across 9 countries; cut PO cycle time by 40%.”</p>
         <ol class="ach" id="ach">${(p.achievements || []).map((x, i) => html`<li><textarea data-ach="${i}" rows="2" aria-label="Achievement ${i + 1}">${x}</textarea><button class="icon-btn" data-achdel="${i}" type="button" aria-label="Remove achievement">×</button></li>`)}</ol>
+        <label class="field"><span>Skills and experience not on my CV (true; the agent may add these where a job needs them)</span><textarea data-p="extraSkills" rows="3" placeholder="e.g. SAP Ariba SLP configuration (2 projects); catalogue strategy incl. punch-out; CFO-level steering committees at Nokia; mentored 4 junior consultants">${p.extraSkills || ''}</textarea></label>
         <label class="field"><span>Never claim (the agent will not write or imply these)</span><textarea data-p="neverClaim" rows="2" placeholder="e.g. Hands-on ABAP development; SAP IBP">${p.neverClaim || ''}</textarea></label>
       </section>
 
@@ -349,6 +386,10 @@
       } catch (err) { toast(err.message, 'bad'); }
     };
     $('#m-file', root).addEventListener('change', e => addFile(e.target.files[0]));
+    $('#m-demo', root).addEventListener('click', async () => {
+      try { const buf = await window.CVT.demoCv(); await S.addMaster('Demo CV (fictional)', 'demo-cv.docx', buf); toast('Demo CV added. Now press New application.'); window.CVT.app.rerender(); }
+      catch (err) { toast(err.message, 'bad'); }
+    });
     const drop = $('#m-drop', root);
     ['dragenter', 'dragover'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add('over'); }));
     ['dragleave', 'drop'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove('over'); }));
@@ -391,7 +432,7 @@
       <div class="two-col">
         <section class="panel span-2 engine">
           <div class="panel-head"><h2>AI engine</h2><span class="muted small" id="key-status" aria-live="polite"></span></div>
-          <p class="hint">Pick what writes your tailoring, letters and answers. Two options cost nothing extra.</p>
+          <p class="hint">Both engines are free: CV Tailor never uses paid APIs.</p>
           <div class="engines">
             <label class="engine-opt ${state.provider === 'claude-plan' ? 'on' : ''} ${inClaude ? '' : 'disabled'}">
               <input type="radio" name="provider" value="claude-plan" ${state.provider === 'claude-plan' ? raw('checked') : ''} ${inClaude ? '' : raw('disabled')}>
@@ -403,11 +444,6 @@
               <input type="radio" name="provider" value="gemini" ${state.provider === 'gemini' ? raw('checked') : ''}>
               <span class="engine-name">Google Gemini <span class="chip ok">Free tier</span></span>
               <span class="engine-sub">Free key from <a class="link" href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">aistudio.google.com</a>, no card needed. Daily limits apply; free-tier prompts may be used by Google to improve its models.</span>
-            </label>
-            <label class="engine-opt ${state.provider === 'anthropic' ? 'on' : ''}">
-              <input type="radio" name="provider" value="anthropic" ${state.provider === 'anthropic' ? raw('checked') : ''}>
-              <span class="engine-name">Anthropic API <span class="chip muted">Pay as you go</span></span>
-              <span class="engine-sub">Key from console.anthropic.com. A few pence per application.</span>
             </label>
           </div>
           <div class="engine-form" id="engine-form"></div>
@@ -448,29 +484,27 @@
     const drawEngine = () => {
       const f = $('#engine-form', root), p = state.provider;
       if (p === 'claude-plan') { f.innerHTML = String(html`<p class="small">Ready. The first time you run the agent, claude.ai asks you to allow this page to use your Claude plan. Choose <strong>Allow</strong>.</p>`); return; }
-      const key = p === 'gemini' ? state.geminiKey : state.anthropicKey;
-      const cur = p === 'gemini' ? state.geminiModel : state.anthropicModel;
+      const key = state.geminiKey, cur = state.geminiModel;
       f.innerHTML = String(html`<div class="grid-2">
-          <label class="field"><span>${p === 'gemini' ? 'Gemini API key' : 'Anthropic API key'}</span><input id="api-key" type="password" autocomplete="off" placeholder="${p === 'gemini' ? 'AIza…' : 'sk-ant-…'}" value="${key}"></label>
+          <label class="field"><span>Gemini API key (free)</span><input id="api-key" type="password" autocomplete="off" placeholder="AIza…" value="${key}"></label>
           <label class="field"><span>Model</span><select id="model">${state.models.length ? state.models.map(m => html`<option value="${m.id}" ${m.id === cur ? raw('selected') : ''}>${m.name} · ${m.id}</option>`) : html`<option value="${cur}">${cur || 'Save a key to load models'}</option>`}</select></label>
         </div>
         <div class="row gap wrap"><button class="btn primary" id="save-key" type="button">Save and test</button>
           <label class="check"><input type="checkbox" id="remember-key" checked> Remember on this device</label></div>
-        <p class="hint">${p === 'gemini' ? 'A Flash model is fast and free; a Pro model writes better but has tighter free limits.' : 'Use a Sonnet or Opus model for tailoring and letters.'}</p>`);
+        <p class="hint">A Flash model is fast and free; a Pro model writes better but has tighter free limits.</p>`);
       $('#save-key', root).addEventListener('click', async () => {
         const v = $('#api-key', root).value.trim();
-        const k = p === 'gemini' ? 'cvt.geminiKey' : 'cvt.key';
+        const k = 'cvt.geminiKey';
         S.local.del(k);
         if (v) S.local.set(k, v, !$('#remember-key', root).checked);
-        if (p === 'gemini') state.geminiKey = v; else state.anthropicKey = v;
+        state.geminiKey = v;
         $('#key-status', root).textContent = v ? 'Checking…' : 'Key removed.';
         const ok = v ? await window.CVT.app.loadModels() : (window.CVT.app.refreshKey(), false);
         $('#key-status', root).textContent = ok ? `Connected. ${state.models.length} models available.` : v ? state.lastError : '';
         drawEngine();
       });
       $('#model', root).addEventListener('change', e => {
-        if (p === 'gemini') { state.geminiModel = e.target.value; S.local.set('cvt.geminiModel', state.geminiModel); }
-        else { state.anthropicModel = e.target.value; S.local.set('cvt.model', state.anthropicModel); }
+        state.geminiModel = e.target.value; S.local.set('cvt.geminiModel', state.geminiModel);
         window.CVT.app.refreshKey();
       });
     };
@@ -480,11 +514,11 @@
       $$('.engine-opt', root).forEach(o => o.classList.toggle('on', o.querySelector('input').checked));
       window.CVT.app.refreshKey();
       $('#key-status', root).textContent = '';
-      if ((r.value === 'gemini' && state.geminiKey) || (r.value === 'anthropic' && state.anthropicKey)) { $('#key-status', root).textContent = 'Checking…'; const ok = await window.CVT.app.loadModels(); $('#key-status', root).textContent = ok ? 'Connected.' : state.lastError; }
+      if (r.value === 'gemini' && state.geminiKey) { $('#key-status', root).textContent = 'Checking…'; const ok = await window.CVT.app.loadModels(); $('#key-status', root).textContent = ok ? 'Connected.' : state.lastError; }
       drawEngine();
     }));
     drawEngine();
-    if (state.provider !== 'claude-plan' && !state.models.length && (state.provider === 'gemini' ? state.geminiKey : state.anthropicKey)) window.CVT.app.loadModels().then(drawEngine);
+    if (state.provider === 'gemini' && !state.models.length && state.geminiKey) window.CVT.app.loadModels().then(drawEngine);
 
     $('#export', root).addEventListener('click', async () => {
       const data = await S.exportAll();
@@ -500,9 +534,62 @@
       const b = e.currentTarget;
       if (b.dataset.armed !== '1') { b.dataset.armed = '1'; b.textContent = 'Click again to delete everything'; return; }
       await S.clearAll(); state.key = ''; state.model = ''; state.masterCache.clear();
-      toast('All data cleared'); location.hash = '#/dashboard'; location.reload();
+      toast('All data cleared'); window.CVT.app.go('#/dashboard');
     });
   }
 
-  window.CVT.views = Object.assign(window.CVT.views || {}, { dashboard, pipeline, profile, settings, helpers: { fitChip, verdictChip, dueChip, appTitle } });
+
+  // =====================================================================
+  // HELP AND PRIVACY
+  // =====================================================================
+  async function help(root) {
+    const inClaude = window.CVT.app.inClaude();
+    root.innerHTML = String(html`
+      <header class="page-head"><div><p class="eyebrow">CV Tailor ${VERSION}</p><h1>Help and privacy</h1></div></header>
+      <div class="help-grid">
+        <section class="panel">
+          <h2>How it works</h2>
+          <ol class="how">
+            <li><strong>Add your CV.</strong> Upload the Word (.docx) CV you already use. CV Tailor edits text inside it and never moves your layout, fonts, tables or images.</li>
+            <li><strong>Find a job.</strong> The Jobs page pulls live roles and scores each against your CV. You can also paste any advert.</li>
+            <li><strong>Analyse and tailor.</strong> The agent reads the advert, gives a fit score and an apply/skip view, and proposes additions to your CV. It keeps every word you wrote and only inserts the job's requirements where they belong. You tick what goes in.</li>
+            <li><strong>Apply.</strong> Download the tailored CV and cover letter, copy recruiter messages, and use the autofill bookmark to fill application forms. You always press Submit yourself.</li>
+            <li><strong>Track.</strong> The pipeline schedules follow-ups and interview prep so nothing goes quiet.</li>
+          </ol>
+        </section>
+        <section class="panel">
+          <h2>Where jobs come from</h2>
+          <p class="hint">${inClaude ? 'Inside claude.ai, live jobs come from Indeed through your own Indeed connector. Your Claude account runs the search; there is no extra cost.' : 'Live jobs come from Indeed when CV Tailor is opened inside claude.ai with the Indeed connector.'} A free daily robot on GitHub also collects Reed and Adzuna jobs through their official free APIs (switch it on from the Jobs page). LinkedIn, Totaljobs, CWJobs, Jobserve, CV-Library and Glassdoor open as one-click searches because they don't allow automated collection.</p>
+          <p class="hint mt">The match score is worked out in your browser: it compares the skills named in each advert with your CV and career profile. A “~” means only the job title was checked so far.</p>
+        </section>
+        <section class="panel">
+          <h2>Your data</h2>
+          <ul class="tight">
+            <li>Your CVs, profile and applications are stored only in this browser (IndexedDB). There is no CV Tailor server and no account.</li>
+            <li>When you run the agent, the advert and your CV text go to the AI engine you chose: your Claude plan or Google Gemini. CV Tailor only uses free engines and never a paid API.</li>
+            <li>A Gemini key stays in this browser's storage and is sent only to Google.</li>
+            <li>Back up or move your data from Settings → Backup. Clearing browser data deletes it.</li>
+          </ul>
+        </section>
+        <section class="panel">
+          <h2>Honesty rules the agent follows</h2>
+          <ul class="tight">
+            <li>It never invents employers, dates, certifications or numbers.</li>
+            <li>Skills that your CV and profile don't show are marked “Not in your CV” and left unticked.</li>
+            <li>Rewrites of your own wording are flagged and off by default.</li>
+            <li>Form autofill never presses Submit and never overwrites what you typed.</li>
+          </ul>
+        </section>
+        <section class="panel">
+          <h2>Good to know</h2>
+          <ul class="tight">
+            <li>The day-rate calculator and pay benchmarks are rough guides, not tax or financial advice.</li>
+            <li>“Possible duplicate” warns when a job looks like one already in your pipeline, often the same role through two agencies. Being submitted twice can rule you out, so check before applying.</li>
+            <li>Job adverts and company data belong to their publishers. Always read the original advert before applying.</li>
+          </ul>
+        </section>
+      </div>`);
+  }
+
+  window.CVT.views = Object.assign(window.CVT.views || {}, { dashboard, pipeline, profile, settings, help, helpers: { fitChip, verdictChip, dueChip, appTitle } });
 })();

@@ -85,7 +85,7 @@
 
   /** Shared app state (loaded once, refreshed by views). */
   const state = {
-    key: '', model: '', provider: '', anthropicKey: '', anthropicModel: '', geminiKey: '', geminiModel: '', profile: null, masters: [], models: [],
+    key: '', model: '', provider: '', geminiKey: '', geminiModel: '', profile: null, masters: [], models: [],
     masterCache: new Map() // masterId -> loaded docx model
   };
   async function masterModel(id) {

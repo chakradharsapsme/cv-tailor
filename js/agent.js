@@ -1,6 +1,6 @@
 /*
- * agent.js — the job-search agent. Every call goes straight from your browser
- * to the Anthropic API with your own key and returns JSON.
+ * agent.js — the job-search agent. Free engines only: your Claude plan (inside claude.ai)
+ * or a free Google Gemini key. Every call returns JSON.
  *   analyse        fit decision + requirement evidence + in-place CV edits
  *   coverLetter    UK cover letter from the tailored CV
  *   outreach       LinkedIn note, hiring-manager message, recruiter email, follow-up, thank-you
@@ -9,37 +9,9 @@
  *   linkedin       headline and About section suggestions
  */
 (function () {
-  const API = 'https://api.anthropic.com/v1';
-
-  function headers(key) {
-    return {
-      'content-type': 'application/json',
-      'x-api-key': key,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true'
-    };
-  }
-
-  async function listModels(key) {
-    const res = await fetch(API + '/models?limit=100', { headers: headers(key) });
-    if (!res.ok) throw await apiError(res);
-    const data = await res.json();
-    return (data.data || []).map(m => ({ id: m.id, name: m.display_name || m.id }));
-  }
-
-  async function apiError(res) {
-    let msg = res.status + ' ' + res.statusText;
-    try { const j = await res.json(); if (j.error && j.error.message) msg = j.error.message; } catch (_) {}
-    if (res.status === 401) msg = 'The API key was rejected. Check it in Settings.';
-    if (res.status === 429) msg = 'Rate limited by the API. Wait a minute and try again.';
-    if (res.status === 529) msg = 'The API is overloaded right now. Try again in a minute.';
-    const e = new Error(msg); e.status = res.status; return e;
-  }
-
   // ---------- providers ----------
   // claude-plan : runs inside claude.ai (Claude artifact) on your own Claude plan, no API key, no extra cost
   // gemini      : Google AI Studio key (has a free tier)
-  // anthropic   : Anthropic API key (pay as you go)
   const P = () => (window.CVT.ui && window.CVT.ui.state) || {};
   let sampleFn = null;
   async function claudeSample() {
@@ -53,12 +25,12 @@
     rate_limited: 'Your Claude plan is busy or at its limit. Wait a minute and try again.',
     prompt_too_large: 'The job description and CV are too long for one request. Shorten the job description.',
     invalid_json: 'Claude replied in an unexpected format. Try again.',
-    sampling_disabled: 'Asking Claude from pages is turned off for your account. Use a Gemini or Anthropic key in Settings instead.'
+    sampling_disabled: 'Asking Claude from pages is turned off for your account. Use a free Gemini key in Settings instead.'
   };
 
   async function askClaudePlan({ system, user, signal, tier }) {
     const sample = await claudeSample();
-    if (!sample) throw new Error('Claude plan mode only works when CV Tailor is opened inside claude.ai. Use a Gemini or Anthropic key here instead.');
+    if (!sample) throw new Error('Claude plan mode only works when CV Tailor is opened inside claude.ai. Use a free Gemini key here instead.');
     // Stay under the 64 KiB input cap.
     let input = `${system}\n\n${user}`;
     if (input.length > 60000) input = input.slice(0, 60000);
@@ -106,26 +78,9 @@
 
   async function ask(opts) {
     const s = P();
-    const provider = s.provider || 'anthropic';
-    if (provider === 'claude-plan') return askClaudePlan({ ...opts, tier: opts.maxTokens >= 9000 ? 'complex' : 'default' });
-    if (provider === 'gemini') {
-      if (!s.geminiKey || !s.geminiModel) throw new Error('Add your Gemini key and pick a model in Settings first.');
-      return askGemini({ ...opts, key: s.geminiKey, model: s.geminiModel, maxTokens: opts.maxTokens || 8000 });
-    }
-    return askAnthropic({ ...opts, key: s.anthropicKey || opts.key, model: s.anthropicModel || opts.model });
-  }
-
-  async function askAnthropic({ key, model, system, user, maxTokens = 8000, signal }) {
-    if (!key || !model) throw new Error('Add your API key and pick a model in Settings first.');
-    const res = await fetch(API + '/messages', {
-      method: 'POST', headers: headers(key), signal,
-      body: JSON.stringify({ model, max_tokens: maxTokens, system, messages: [{ role: 'user', content: user }] })
-    });
-    if (!res.ok) throw await apiError(res);
-    const data = await res.json();
-    const text = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
-    if (data.stop_reason === 'max_tokens') throw new Error('The answer was cut short. Try a shorter job description.');
-    return parseJSON(text);
+    if (s.provider === 'claude-plan') return askClaudePlan({ ...opts, tier: opts.maxTokens >= 9000 ? 'complex' : 'default' });
+    if (!s.geminiKey || !s.geminiModel) throw new Error('Add your free Gemini key and pick a model in Settings first.');
+    return askGemini({ ...opts, key: s.geminiKey, model: s.geminiModel, maxTokens: opts.maxTokens || 8000 });
   }
 
   function parseJSON(text) {
@@ -151,6 +106,7 @@
     add('Notice / availability', p.notice); add('Work eligibility', p.eligibility);
     const ach = (p.achievements || []).filter(x => x && x.trim());
     if (ach.length) lines.push('Achievements bank (true, may be quoted):\n- ' + ach.join('\n- '));
+    if (p.extraSkills && p.extraSkills.trim()) lines.push('Skills and experience not on the CV (true, may be added): ' + p.extraSkills.trim());
     if (p.neverClaim && p.neverClaim.trim()) lines.push('NEVER claim or imply: ' + p.neverClaim.trim());
     return lines.join('\n') || '(none)';
   }
@@ -167,17 +123,29 @@
 - UK English. Plain, specific, confident. No clichés ("passionate", "results-driven", "dynamic", "I am writing to express").`;
 
   // ---------- 1. analyse + tailor ----------
-  const ANALYSE_SYSTEM = `You are a senior UK job-search coach and an experienced SAP procurement practitioner (SAP Ariba, Source-to-Pay, Procure-to-Pay, SAP MM, Guided Buying, S/4HANA Sourcing & Procurement, SAP Business Network, CIG/Integration Suite). You assess a job for the candidate and tailor their EXISTING Word CV to it.
+  const ANALYSE_SYSTEM = `You are a senior UK job-search coach and an experienced SAP procurement practitioner (SAP Ariba, Source-to-Pay, Procure-to-Pay, SAP MM, Guided Buying, S/4HANA Sourcing & Procurement, SAP Business Network, CIG/Integration Suite). You assess a job for the candidate and tailor their EXISTING Word CV to it by inserting the job's requirements into the right places, never by rewriting.
 
 ${TRUTH}
 
-CV EDITING RULES (the Word template must not move)
-1. You may only change the TEXT of existing paragraphs. Never edit paragraphs marked "locked", names, contact details, dates, job titles, employer or client names, education or certification lines.
-2. Keep each edited paragraph within its original length: new text <= "chars" x 1.05. Shorter is fine.
-3. If a paragraph has "segments" (runs with different formatting, e.g. a bold label then normal text), return "segments" with the SAME number of items, keeping labels unchanged. Otherwise return "text".
-4. Mirror the job's exact terminology only where it is TRUE for the candidate. No keyword stuffing.
-5. Allowed: rewrite the profile/summary, reword bullets, reorder adjacent bullets inside one role, reorder a skills list, remove a few low-relevance bullets. No new paragraphs.
-6. Only include edits that genuinely improve fit.
+CV EDITING RULES: INSERT, DON'T REWRITE (the Word template must not move)
+You are a meticulous CV editor. The candidate's own wording is sacred. You never rewrite, paraphrase or reorder their sentences. You only INSERT short, natural additions so each important job requirement is visible in the most relevant place.
+1. Every edited paragraph must still contain ALL of its original words, in the same order. You may only add words (and the commas, "and", "including", brackets or semicolons needed to join them).
+2. Place each addition where it belongs:
+   - a skills/competency line or table cell: add the missing term to the matching list (e.g. "..., Supplier Management" -> "..., Supplier Management, SLP");
+   - the bullet describing the related work: extend it with a clause (e.g. "... via Cloud Integration Gateway (CIG), covering catalogue punch-outs.");
+   - the profile/summary: add one short clause that names the requirement.
+   Prefer the most specific location. Never put an addition somewhere it doesn't fit.
+3. Keep each addition short: 2-15 words. A paragraph may grow by at most 35% or 120 characters, whichever is smaller.
+4. Never edit paragraphs marked "locked", names, contact details, dates, job titles, employer or client names, or education/certification lines.
+5. If a paragraph has "segments" (runs with different formatting, e.g. a bold label then normal text), return "segments" with the SAME number of items; keep labels unchanged and add text only to the body segment. Otherwise return "text".
+6. Use the job's exact terminology (ATS keywords) in the addition.
+7. Evidence for each addition must be declared in "basis":
+   - "cv": the CV already shows this experience elsewhere, you are surfacing it where the job will look;
+   - "profile": the candidate profile, achievements bank or "skills not on my CV" list states it;
+   - "unconfirmed": the job needs it and it is plausible for this candidate, but nothing provided proves it. Still propose it (the candidate will tick it only if true), but never for anything on the NEVER-claim list.
+8. Cover every must-have requirement that is not already visible in the CV text, then the nice-to-haves. One requirement per edit where possible; group only when they belong in the same list.
+9. At most ONE edit per paragraph: combine several additions for the same paragraph into one edit.
+10. Do not use "reorder" or "remove". Return them as empty arrays.
 
 DECISION GUIDANCE
 - "apply": strong match on most must-haves.
@@ -212,7 +180,7 @@ Return this JSON shape:
   "fit": {"score": 0-100, "core": 0-100, "adjacent": 0-100},
   "keywords": ["8-20 exact terms from the job an ATS would scan for"],
   "keywords_missing": ["job terms the candidate cannot truthfully claim"],
-  "edits": [{"id": 12, "text": "new text", "reason": "why"} or {"id": 14, "segments": ["Label: ", "new body"], "reason": "why"}],
+  "edits": [{"id": 12, "text": "original text with the insertion added", "adds": "only the words you inserted", "requirement": "job requirement this covers", "basis": "cv|profile|unconfirmed", "reason": "why here"} or {"id": 14, "segments": ["Label: ", "original body with insertion"], "adds": "...", "requirement": "...", "basis": "...", "reason": "..."}],
   "reorder": [{"ids": [21, 23, 22], "reason": "new order of adjacent bullets"}],
   "remove": [{"id": 30, "reason": "why this bullet can go"}],
   "letterhead_ids": [ids of the candidate's name and contact-detail paragraphs at the top of the CV],
@@ -384,5 +352,5 @@ Return:
   const linkedin = opts => ask({ ...opts, system: LINKEDIN_SYSTEM, user: linkedinPrompt(opts), maxTokens: 4000 });
 
   window.CVT = window.CVT || {};
-  window.CVT.agent = { listModels, listGemini, claudeSample, analyse, coverLetter, outreach, interviewPrep, answers, linkedin, parseJSON, profileBlock };
+  window.CVT.agent = { listGemini, claudeSample, analyse, coverLetter, outreach, interviewPrep, answers, linkedin, parseJSON, profileBlock };
 })();

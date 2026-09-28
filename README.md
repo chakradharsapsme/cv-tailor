@@ -47,7 +47,6 @@ Every prompt forbids inventing employers, clients, dates, titles, certifications
 |---|---|---|
 | **Your Claude plan** | No extra cost | Open the claude.ai version of CV Tailor. It runs on the Claude subscription you already have, with no key. |
 | **Google Gemini** | Free tier | Get a free key at [aistudio.google.com](https://aistudio.google.com/app/apikey) and choose Gemini in **Settings**. Daily limits apply, and free-tier prompts may be used by Google to improve its models. |
-| **Anthropic API** | Pay as you go | Key from [console.anthropic.com](https://console.anthropic.com). |
 
 ## Setup
 
@@ -55,7 +54,7 @@ Every prompt forbids inventing employers, clients, dates, titles, certifications
 2. In **Career profile**, upload your master CV (.docx), fill in contact details and targets, and add 5+ achievements with numbers.
 3. Press **New application** and paste a job.
 
-All data stays in your browser (IndexedDB). API calls go straight from your browser to Anthropic, and there is no server. Use **Settings → Export backup** regularly.
+All data stays in your browser (IndexedDB). AI calls go straight from your browser to your Claude plan or Google Gemini, and there is no server. CV Tailor only uses free engines; it never calls a paid API. Use **Settings → Export backup** regularly.
 
 ## Project layout
 
@@ -63,7 +62,7 @@ All data stays in your browser (IndexedDB). API calls go straight from your brow
 |---|---|
 | `index.html`, `assets/styles.css` | App shell and styles (light and dark) |
 | `js/docx-engine.js` | Word parsing, in-place edits, cover letter builder, ATS checks, keyword coverage |
-| `js/agent.js` | Prompts and Anthropic API calls |
+| `js/agent.js` | Prompts and AI calls (Claude plan or free Gemini) |
 | `js/store.js` | IndexedDB storage, statuses, follow-up rules, backup, v1 migration |
 | `js/ui.js` | Shared helpers |
 | `js/views.js` | Dashboard, Pipeline, Career profile, Settings |
@@ -86,3 +85,16 @@ node tests/e2e.mjs /tmp/cvt-out
 - **LinkedIn pages can't be read by other sites.** Paste the job text instead of the link.
 - **The page count in the preview is approximate.** Confirm it in Word.
 - **Salary and rate guidance comes from your own figures and the advert.** The app has no market-rate data.
+
+## v3: jobs feed and market tools
+
+- **Jobs page and dashboard feed**: live UK jobs from Indeed through the viewer's Indeed connector, when the app is opened inside claude.ai. Each job gets a local match score (skills in the advert vs. your CV and profile), plus flags for agency adverts, stale adverts (30+ days) and roles below your level.
+- **Other UK boards**: one-click searches on LinkedIn, Reed, Totaljobs, CWJobs, Jobserve, CV-Library, Adzuna, Glassdoor and Google Jobs. These have no free public feed.
+- **Duplicate-submission guard**: warns when a job looks like one already in your pipeline, for example the same role through two agencies.
+- **Market pulse**: the skills employers ask for most across every advert you've seen, marked against your CV. "I have this" adds a skill to your profile so the tailoring agent can place it. Also shows median day rates and salaries.
+- **Company intel**: Indeed reviews, size, interview experience and average pay, on the Jobs page and on each application.
+- **Day rate or salary calculator**: a rough comparison of contract and permanent pay, including an inside-IR35 view. Not tax advice.
+- **Onboarding checklist, Help and privacy page, favicon and meta tags**, ready for public hosting.
+
+### Publishing externally
+The site is static: host the folder on GitHub Pages, Netlify or Cloudflare Pages. Outside claude.ai, users bring a free Gemini key for the AI features. The live Indeed feed needs claude.ai; board links and paste-an-advert work everywhere.

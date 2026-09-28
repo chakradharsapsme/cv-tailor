@@ -4,7 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>CV Tailor</title>
-<meta name="description" content="A personal job-search workspace: tailor a Word CV without moving the template, decide what to apply for, write letters and outreach, prepare for interviews and track every application.">
+<meta name="description" content="CV Tailor is a private job-search workspace. Find matching jobs, tailor your own Word CV without breaking its layout, write cover letters, prepare for interviews and track every application. Your data stays in your browser.">
+<meta name="theme-color" content="#0F1729">
+<meta property="og:title" content="CV Tailor · your job-search workspace">
+<meta property="og:description" content="Find matching jobs, tailor your Word CV without breaking its layout, and track every application. Private by design.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232447D6'/%3E%3Ctext x='16' y='21.5' font-family='Arial' font-weight='700' font-size='13' fill='white' text-anchor='middle'%3ECV%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500;600&display=swap">
@@ -15,13 +20,14 @@
   <aside class="side">
     <a class="brand" href="#/dashboard" aria-label="CV Tailor home">
       <span class="brand-mark" aria-hidden="true">CV</span>
-      <span><span class="brand-name">CV Tailor</span><span class="brand-sub">S2P · P2P · Ariba · S/4HANA</span></span>
+      <span><span class="brand-name">CV Tailor</span><span class="brand-sub">Job search workspace</span></span>
     </a>
     <a class="btn primary new-btn" href="#/new">
       <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4v12M4 10h12"/></svg>New application
     </a>
     <nav class="nav" aria-label="Main">
       <a href="#/dashboard" data-nav="dashboard"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="3" width="6" height="6" rx="1.5"/><rect x="11" y="3" width="6" height="6" rx="1.5"/><rect x="3" y="11" width="6" height="6" rx="1.5"/><rect x="11" y="11" width="6" height="6" rx="1.5"/></svg>Dashboard</a>
+      <a href="#/jobs" data-nav="jobs"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5"/><path d="M12.3 12.3 17 17"/></svg>Jobs <span class="badge new" id="jobs-badge" hidden title="New strong matches">0</span></a>
       <a href="#/pipeline" data-nav="pipeline"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="3" width="4" height="14" rx="1.2"/><rect x="8.5" y="3" width="4" height="10" rx="1.2"/><rect x="14" y="3" width="3" height="6" rx="1.2"/></svg>Pipeline <span class="badge" id="due-badge" hidden title="Actions due">0</span></a>
       <a href="#/profile" data-nav="profile"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="7" r="3.2"/><path d="M4 17c.8-3.2 3.2-5 6-5s5.2 1.8 6 5"/></svg>Career profile</a>
       <a href="#/settings" data-nav="settings"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="2.6"/><path d="M10 2.5v2.2M10 15.3v2.2M2.5 10h2.2M15.3 10h2.2M4.7 4.7l1.6 1.6M13.7 13.7l1.6 1.6M4.7 15.3l1.6-1.6M13.7 6.3l1.6-1.6"/></svg>Settings</a>
@@ -29,6 +35,7 @@
     <div class="side-foot">
       <span class="pill" id="key-pill" data-state="missing">No API key</span>
       <p>Your data stays in this browser. Nothing is submitted without you.</p>
+      <p><a class="side-link" href="#/help">Help and privacy</a></p>
     </div>
   </aside>
   <main id="main" class="main" tabindex="-1"></main>
@@ -41,6 +48,8 @@
 <script src="js/store.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/autofill.js"></script>
+<script src="js/demo.js"></script>
+<script src="js/jobs.js"></script>
 <script src="js/views.js"></script>
 <script src="js/workspace.js"></script>
 <script src="js/app.js"></script>

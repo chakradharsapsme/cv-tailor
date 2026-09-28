@@ -1,0 +1,7 @@
+{
+  "searches": ["SAP Ariba", "SAP S2P", "SAP P2P", "S/4HANA Procurement", "SAP MM Consultant", "Procurement Solution Architect"],
+  "location": "United Kingdom",
+  "max_days_old": 21,
+  "keep_days": 45,
+  "exclude": ["graduate", "apprentice", "trainee", "internship"]
+}

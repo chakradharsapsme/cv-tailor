@@ -41,9 +41,17 @@ Every prompt forbids inventing employers, clients, dates, titles, certifications
 - **Some paragraphs are locked.** Anything with tabs, breaks, fields, images or tracked changes is never touched.
 - **Length is capped.** Rewrites are limited to about the original length, which protects the page count.
 
+## AI engine: pick a free option
+
+| Engine | Cost | How |
+|---|---|---|
+| **Your Claude plan** | No extra cost | Open the claude.ai version of CV Tailor. It runs on the Claude subscription you already have, with no key. |
+| **Google Gemini** | Free tier | Get a free key at [aistudio.google.com](https://aistudio.google.com/app/apikey) and choose Gemini in **Settings**. Daily limits apply, and free-tier prompts may be used by Google to improve its models. |
+| **Anthropic API** | Pay as you go | Key from [console.anthropic.com](https://console.anthropic.com). |
+
 ## Setup
 
-1. Get an API key at [console.anthropic.com](https://console.anthropic.com) and add it in **Settings**. Pick a Sonnet or Opus model.
+1. In **Settings**, choose an AI engine (see above).
 2. In **Career profile**, upload your master CV (.docx), fill in contact details and targets, and add 5+ achievements with numbers.
 3. Press **New application** and paste a job.
 

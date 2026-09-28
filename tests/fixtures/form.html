@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Test application form</title></head>
+<body>
+<h1>Apply: SAP Ariba Solution Architect</h1>
+<form id="f" onsubmit="event.preventDefault(); window.submitted = true;">
+  <label for="fn">First name *</label><input id="fn" name="firstName" required>
+  <label for="ln">Last name *</label><input id="ln" name="lastName" required>
+  <label for="em">Email address *</label><input id="em" type="email" required>
+  <label for="ph">Mobile phone</label><input id="ph" type="tel">
+  <label for="li">LinkedIn profile</label><input id="li" type="url">
+  <label for="city">Current location</label><input id="city">
+  <label for="np">Notice period</label><input id="np">
+  <label for="sal">Salary expectations</label><input id="sal">
+  <label for="rtw">Do you have the right to work in the UK?</label><select id="rtw"><option value="">Select</option><option value="y">Yes</option><option value="n">No</option></select>
+  <label for="why">Why do you want to join us?</label><textarea id="why"></textarea>
+  <label for="q1">How many full-cycle SAP Ariba implementations have you led?</label><textarea id="q1" required></textarea>
+  <label for="cv">Upload CV</label><input id="cv" type="file">
+  <label for="pre">Middle name</label><input id="pre" value="Keep">
+  <button type="submit">Submit application</button>
+</form>
+</body></html>

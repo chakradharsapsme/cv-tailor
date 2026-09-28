@@ -1,4 +1,4 @@
-// End-to-end test for CV Tailor v2: serves the site, mocks the Anthropic API,
+// End-to-end test for CV Tailor v2: serves the site, mocks the AI engines (Claude plan, Gemini),
 // walks every view, checks the Word output and the autofill bookmarklet.
 // Run: npm i playwright jszip@3.10.1 docx-preview@0.3.5 && mkdir -p samples && python3 tests/make_demo_cv.py && node tests/e2e.mjs
 import { chromium } from 'playwright';
@@ -23,11 +23,17 @@ const page = await ctx.newPage();
 await page.route('https://cdnjs.cloudflare.com/**', r => r.fulfill({ path: NM + '/jszip/dist/jszip.min.js', contentType: 'text/javascript' }));
 await page.route('https://cdn.jsdelivr.net/**', r => r.fulfill({ path: NM + '/docx-preview/dist/docx-preview.min.js', contentType: 'text/javascript' }));
 await page.route('https://fonts.googleapis.com/**', r => r.fulfill({ body: '', contentType: 'text/css' }));
+// Daily collector output (fictional).
+const recentIso = n => new Date(Date.now() - n * 864e5).toISOString().slice(0, 10);
+await page.route('**/data/jobs.json*', r => r.fulfill({ json: { updated: new Date().toISOString(), sources: ['Reed', 'Adzuna'], errors: [], jobs: [
+  { key: 'x1', title: 'SAP Ariba Buying Lead', company: 'Example Recruitment Ltd', location: 'Manchester', pay: '£550-£650 per day', url: 'https://example.com/reed/1', posted: recentIso(2), source: 'Reed', sources: ['Reed', 'Adzuna'], snippet: 'Lead SAP Ariba Guided Buying rollout with S/4HANA Central Procurement, CIG integration, SIT and UAT, supplier onboarding with SLP.', type: 'Contract', lastSeen: new Date().toISOString() },
+  { key: 'x2', title: 'S/4HANA Procurement Lead', company: 'Demo Energy plc', location: 'Preston', pay: '£85,000-£95,000 per year', url: 'https://example.com/az/2', posted: recentIso(5), source: 'Adzuna', sources: ['Adzuna'], snippet: 'Central Procurement, MDG, SAP MM, cutover and data migration.', type: 'Permanent, Full-time', lastSeen: new Date().toISOString() }
+] } }));
 const errors = [];
 page.on('pageerror', e => errors.push(e.message));
 page.on('console', m => m.type() === 'error' && errors.push(m.text()));
 
-const PROVIDER = process.env.PROVIDER || 'anthropic';
+const PROVIDER = process.env.PROVIDER || 'claude';
 const calls = {};
 function makeReply(sys, user) {
   let reply;
@@ -48,13 +54,14 @@ function makeReply(sys, user) {
       keywords: ['Guided Buying', 'CIG', 'SAP Business Network', 'Source-to-Pay', 'S/4HANA', 'SLP'],
       keywords_missing: ['SLP'],
       edits: [
-        { id: prof.id, text: 'SAP procurement consultant with 14 years delivering Source-to-Pay (S2P) and Procure-to-Pay (P2P) solutions. Designs SAP Ariba Buying & Invoicing and Guided Buying integrated with S/4HANA, and leads fit-to-standard workshops with procurement and finance.', reason: 'Lead with S2P design' },
-        { id: client.id, segments: ['Client: ', 'UK water utility, SAP Ariba Buying & Invoicing and Guided Buying for 4,000 users'], reason: 'utilities + Guided Buying' },
-        { id: b2.id, text: 'Designed SAP Ariba approval flows and S/4HANA integration through Cloud Integration Gateway (CIG) with SLP scoring.', reason: 'CIG keyword (SLP deliberately fabricated to test flags)' },
+        { id: prof.id, text: 'SAP procurement consultant with 14 years of experience delivering Source-to-Pay (S2P) purchasing and invoicing solutions for manufacturing and public-sector clients. Strong in SAP MM configuration and SAP Ariba Buying & Invoicing and Guided Buying, with a record of leading workshops and working closely with finance teams.', adds: 'Source-to-Pay (S2P); and Guided Buying', requirement: 'S2P solution design', basis: 'cv', reason: 'Names S2P in the summary' },
+        { id: client.id, segments: ['Client: ', 'UK water utility, Ariba Buying & Invoicing and Guided Buying rollout to 4,000 users'], adds: 'and Guided Buying', requirement: 'Utilities sector', basis: 'cv', reason: 'utilities + Guided Buying' },
+        { id: b2.id, text: 'Designed approval flows in SAP Ariba integrated with S/4HANA via Cloud Integration Gateway (CIG), including SLP supplier onboarding.', adds: '(CIG), including SLP supplier onboarding', requirement: 'SLP', basis: 'unconfirmed', reason: 'SLP is a must-have' },
+        { id: b3.id, text: 'Led fit-to-standard workshops with procurement and AP teams.', requirement: 'Workshops', basis: 'cv', reason: 'deliberate rewrite to test detection' },
         { id: 99999, text: 'bogus' }
       ],
-      reorder: [{ ids: [b2.id, b1.id, b3.id], reason: 'integration first' }],
-      remove: [{ id: train.id, reason: 'low relevance' }, { id: name.id, reason: 'should be refused' }],
+      reorder: [],
+      remove: [],
       letterhead_ids: [name.id, contact.id], candidate_name: 'Alex Morgan',
       talking_points: ['Explain design authority on the utility rollout.']
     };
@@ -76,13 +83,8 @@ function makeReply(sys, user) {
   } else throw new Error('Unknown call: ' + sys.slice(0, 80));
   return reply;
 }
-await page.route('https://api.anthropic.com/**', async route => {
-  const url = route.request().url();
-  if (url.includes('/models')) return route.fulfill({ json: { data: [{ id: 'claude-sonnet-test', display_name: 'Sonnet (test)' }] } });
-  const body = JSON.parse(route.request().postData());
-  const reply = makeReply(body.system, body.messages[0].content);
-  return route.fulfill({ json: { content: [{ type: 'text', text: '```json\n' + JSON.stringify(reply) + '\n```' }], stop_reason: 'end_turn' } });
-});
+// Paid APIs must never be called: record and block any attempt.
+await page.route('https://api.anthropic.com/**', route => { calls.paid = (calls.paid || 0) + 1; return route.abort(); });
 await page.route('https://generativelanguage.googleapis.com/**', async route => {
   const url = route.request().url();
   if (url.includes('/models?')) return route.fulfill({ json: { models: [{ name: 'models/gemini-test-flash', displayName: 'Gemini Flash (test)', supportedGenerationMethods: ['generateContent'] }] } });
@@ -94,9 +96,29 @@ await page.route('https://generativelanguage.googleapis.com/**', async route => 
 if (PROVIDER === 'claude') {
   // Simulate claude.ai's artifact runtime: sample() answers from the same mock; downloads fall back to a link.
   await page.exposeFunction('__mockSample', input => { calls.sample = (calls.sample || 0) + 1; return makeReply(input, input); });
+  // Fictional Indeed answers in the connector's real markdown shape.
+  const blk = (i, t, c, l, d, ty, pay) => `**Job Title:** ${t}\n            **Job Id:** JOBSEARCH_${i}\n            **Company:** ${c}\n            **Location:** ${l}\n            **Posted on:** ${d}\n            **Job Type:** ${ty}\n            **Compensation:** ${pay}\n            **View Job URL:** https://example.com/job/${i}\n            \n\n`;
+  const recent = n => new Date(Date.now() - n * 864e5).toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' });
+  const JOBS = [
+    [1, 'SAP Ariba Solution Architect', 'Fictional Energy plc', 'Leeds', recent(1), 'Permanent', 'N/A'],
+    [2, 'SAP P2P Lead Consultant', 'Example Resourcing Ltd', 'Manchester', recent(3), 'Contract', '£600 per day'],
+    [3, 'Junior Procurement Assistant', 'Sample Foods', 'Preston', recent(2), 'Full-time', '£24,000 a year'],
+    [4, 'S/4HANA Procurement Consultant', 'Demo Consulting', 'London', recent(40), 'Permanent', '£80,000-£90,000 a year']
+  ];
+  await page.exposeFunction('__mockMcp', (server, tool, input) => {
+    calls.mcp = (calls.mcp || 0) + 1;
+    if (tool === 'search_jobs') return { result: JOBS.filter((j, i) => input.location === 'remote' ? i === 0 : true).map(j => blk(...j)).join('') };
+    if (tool === 'get_job_details') {
+      const j = JOBS.find(x => 'JOBSEARCH_' + x[0] === input.job_id);
+      return { result: `### ${j[1]}\n        **View Job URL:** https://example.com/d/${j[0]}\n        **Job Id:** JOBSEARCH_${j[0]}\n        **Company:** ${j[2]}\n        **Location:** ${j[3]}\n        **Posted on:** ${j[4]}\n        **Job Type:** ${j[5]}\n        **Compensation:** None\n\n        *Key Responsibilities:*\n\n* Own the SAP Ariba Buying and Guided Buying design.\n* Lead S/4HANA Central Procurement integration via CIG and SAP Integration Suite.\n* Run fit-to-standard workshops, SIT, UAT and cutover.\n* Supplier onboarding with SLP.\n\n*Required:* 10+ years SAP MM / P2P, Coupa or Jaggaer a plus, SC clearance.\n\nPay: £85,000.00-£95,000.00 per year\n` };
+    }
+    if (tool === 'get_company_data') return { employerData: { dossier: { employerDetails: { briefDescription: 'A fictional employer.', employeesLocalizedLabel: '1,001 to 5,000', sectors: { results: [{ localizedLabel: 'Energy' }] } } }, ugcStats: { interview: { difficulty: 'MEDIUM', experience: 'POSITIVE', processLength: 'TWO_WEEKS' }, recommendFriend: { yesCount: 70, noCount: 30 } }, companyPageUrl: 'https://example.com/cmp', salaries: { forJobTitle: input.jobTitle, averageSalary: 72000, count: 12, salaryType: 'YEARLY' } } };
+    throw new Error('unknown tool');
+  });
   await page.addInitScript(() => {
     window.claude = { use: async name => {
       if (name === 'sample') { const f = async () => { throw new Error('text mode unused'); }; f.json = input => window.__mockSample(input); return f; }
+      if (name === 'mcp') return { callTool: async (server, tool, input) => ({ content: [], payload: await window.__mockMcp(server, tool, input) }) };
       if (name === 'downloads') return { save: async ({ filename, data }) => { const u = URL.createObjectURL(data); const a = document.createElement('a'); a.href = u; a.download = filename; document.body.append(a); a.click(); a.remove(); return 'saved'; } };
       return null;
     } };
@@ -119,7 +141,7 @@ if (PROVIDER === 'claude') {
 } else {
   await page.check(`input[value="${PROVIDER}"]`);
   await page.waitForSelector('#api-key');
-  await page.fill('#api-key', PROVIDER === 'gemini' ? 'AIza-test' : 'sk-ant-test'); await page.click('#save-key');
+  await page.fill('#api-key', 'AIza-test'); await page.click('#save-key');
   await page.waitForFunction(() => document.querySelector('#key-status').textContent.startsWith('Connected'));
 }
 log('engine pill:', await page.textContent('#key-pill'));
@@ -159,7 +181,7 @@ await shot('03-fit');
 // 5. CV tab
 await page.click('.ws-tabs a:has-text("CV")');
 await page.waitForSelector('.ats');
-log('edit cards:', await page.locator('.edit').count(), '| flags:', (await page.locator('.edit .flags .chip').allTextContents()).join(' / '));
+log('edit cards:', await page.locator('.edit').count(), '| ticked:', await page.locator('.edit input:checked').count(), '| kinds:', (await page.locator('.edit .kind').allTextContents()).join(','), '| chips:', (await page.locator('.edit-meta .chip').allTextContents()).join(' / '));
 log('ATS checks:', (await page.locator('.ats li strong').allTextContents()).join(' | '));
 let dl = page.waitForEvent('download'); await page.click('#dl-cv'); let d = await dl; await d.saveAs(`${out}/tailored.docx`); log('cv file:', d.suggestedFilename());
 await page.click('#compare-btn'); await page.waitForTimeout(1200);
@@ -208,6 +230,45 @@ await page.waitForSelector('.kpis');
 log('KPI applied this week:', (await page.locator('.kpi-num').first().textContent()).trim(), '| next actions:', await page.locator('.actions li').count());
 await shot('10-dashboard');
 
+// 10b. Jobs feed (claude only: mocked Indeed connector)
+if (PROVIDER === 'claude') {
+  await page.click('a[data-nav="jobs"]');
+  await page.waitForSelector('#jb-refresh');
+  await page.click('#jb-refresh');
+  await page.waitForSelector('.job .score-pill');
+  await page.waitForTimeout(800);
+  const jobRows = await page.$$eval('.job', els => els.map(e => e.querySelector('.src').textContent.trim() + ': ' + e.querySelector('.job-title').textContent.trim() + ' = ' + e.querySelector('.score-pill').textContent.trim() + ' [' + [...e.querySelectorAll('.job-chips .chip')].map(c => c.textContent.trim()).join(', ') + ']'));
+  log('robot panel:', (await page.locator('.jobs-side .panel').first().textContent()).replace(/\s+/g, ' ').slice(0, 160));
+  log('jobs (default 30d filter):', JSON.stringify(jobRows));
+  await page.click('.job [data-j="details"]');
+  await page.waitForSelector('.job-detail');
+  log('detail kw:', (await page.textContent('.kw-cols')).replace(/\s+/g, ' ').slice(0, 200));
+  await page.click('[data-j="intel"]');
+  await page.waitForSelector('.intel-list');
+  log('intel:', (await page.textContent('.intel')).replace(/\s+/g, ' ').slice(0, 200));
+  log('market:', (await page.textContent('#mk')).replace(/\s+/g, ' ').slice(0, 260));
+  log('calc:', (await page.textContent('#rc-out')).replace(/\s+/g, ' ').slice(0, 200));
+  log('boards:', await page.locator('#b-links a').count());
+  await shot('10b-jobs');
+  const addBtn = page.locator('#mk [data-add]').first();
+  if (await addBtn.count()) { await addBtn.click(); await page.waitForTimeout(300); log('profile extra skills:', await page.evaluate(async () => (await window.CVT.store.getProfile()).extraSkills)); }
+  await page.locator('.job [data-j="import"]').first().click();
+  await page.waitForSelector('#ws-body #jd');
+  log('imported:', await page.inputValue('[data-f="role"]'), '|', await page.inputValue('[data-f="company"]'), '| jd chars', (await page.inputValue('#jd')).length, '| type', await page.inputValue('[data-f="contractType"]'));
+  await page.click('#intel-run'); await page.waitForSelector('#intel-out .intel-list');
+  log('ws intel ok');
+  // Duplicate guard: add the same role manually.
+  const dupId = await page.evaluate(async () => { const S = window.CVT.store; const a = S.newApp(''); a.role = 'SAP Ariba Solution Architect'; a.company = 'Fictional Energy'; await S.saveApp(a); return a.id; });
+  await page.evaluate(id => window.CVT.app.go('#/app/' + id + '/job'), dupId);
+  await page.waitForSelector('.ws-head');
+  log('dup bar:', await page.locator('.dup-bar').count() ? (await page.textContent('.dup-bar')).replace(/\s+/g, ' ').slice(0, 160) : 'none');
+  await page.click('a[data-nav="dashboard"]');
+  await page.waitForSelector('#dash-jobs .job, #dash-jobs .empty-state');
+  log('dashboard jobs:', await page.locator('#dash-jobs .job').count(), '| badge', await page.textContent('#jobs-badge'), await page.isHidden('#jobs-badge'));
+  await shot('10c-dashboard-jobs');
+  await page.click('.side-link'); await page.waitForSelector('.help-grid'); await shot('10d-help');
+}
+
 // 11. Autofill bookmarklet on a test form (never submits)
 const form = await ctx.newPage();
 await form.goto('http://localhost:8765/tests/fixtures/form.html');
@@ -224,7 +285,7 @@ await form.screenshot({ path: `${out}/11-autofill.png`, fullPage: true });
 // 12. Mobile layout
 await page.setViewportSize({ width: 400, height: 860 });
 const overflow = async () => page.evaluate(() => [...document.querySelectorAll('body *')].filter(e => e.getBoundingClientRect().right > window.innerWidth + 1 && !e.closest('.table-wrap,.preview-box,.board-wrap,.side,.ws-tabs')).slice(0, 6).map(e => e.tagName + '.' + e.className + ' ' + Math.round(e.getBoundingClientRect().right)));
-for (const h of ['#/dashboard', '#/pipeline', '#/profile', '#/settings']) { await page.goto('http://localhost:8765/' + h); await page.waitForTimeout(500); log('overflow', h, JSON.stringify(await overflow())); }
+for (const h of ['#/dashboard', '#/jobs', '#/pipeline', '#/profile', '#/settings', '#/help']) { await page.goto('http://localhost:8765/' + h); await page.waitForTimeout(500); log('overflow', h, JSON.stringify(await overflow())); }
 const appId = await page.evaluate(async () => (await window.CVT.store.listApps())[0].id);
 for (const t of ['job', 'fit', 'cv', 'letter', 'outreach', 'interview', 'apply']) { await page.goto(`http://localhost:8765/#/app/${appId}/${t}`); await page.waitForTimeout(600); log('overflow', t, JSON.stringify(await overflow())); }
 await page.goto(`http://localhost:8765/#/app/${appId}/fit`); await page.waitForTimeout(600);
@@ -232,6 +293,7 @@ await page.screenshot({ path: `${out}/12-mobile-fit.png`, fullPage: false });
 await page.goto('http://localhost:8765/#/dashboard'); await page.waitForTimeout(600);
 await page.screenshot({ path: `${out}/13-mobile-dashboard.png`, fullPage: false });
 
-log('calls:', JSON.stringify({ gemini: calls.gemini || 0, sample: calls.sample || 0 }));
+log('calls:', JSON.stringify({ gemini: calls.gemini || 0, sample: calls.sample || 0, mcp: calls.mcp || 0, paidApiCalls: calls.paid || 0 }));
+await page.goto('http://localhost:8765/#/jobs'); await page.waitForTimeout(700); await page.screenshot({ path: `${out}/14-mobile-jobs.png`, fullPage: false });
 log('errors:', JSON.stringify(errors));
 await browser.close(); srv.close();

@@ -55,7 +55,7 @@
     // Coach notes: rule-based, most important first.
     const notes = [];
     if (!masters.length) notes.push({ cls: 'bad', text: 'Upload your master CV so the agent has something to tailor.', href: '#/profile', cta: 'Career profile' });
-    if (!state.key) notes.push({ cls: 'bad', text: 'Add your Anthropic API key to switch the agent on.', href: '#/settings', cta: 'Settings' });
+    if (!state.key) notes.push({ cls: 'bad', text: 'Switch the agent on: use your Claude plan or a free Gemini key.', href: '#/settings', cta: 'Settings' });
     if (overdue.length) notes.push({ cls: 'warn', text: `${overdue.length} follow-up${overdue.length > 1 ? 's are' : ' is'} overdue. A short chase doubles the chance of a reply.`, href: '#/pipeline', cta: 'Pipeline' });
     if ((profile.achievements || []).filter(Boolean).length < 5) notes.push({ cls: 'accent', text: 'Add at least 5 achievements with numbers. The agent may quote them, which makes tailoring stronger without inventing anything.', href: '#/profile', cta: 'Achievements' });
     if (week.length < goal) notes.push({ cls: 'muted', text: `${goal - week.length} more application${goal - week.length > 1 ? 's' : ''} to reach this week's goal of ${goal}. Quality beats volume: aim for roles that score 70+.` });
@@ -385,26 +385,41 @@
   // SETTINGS
   // =====================================================================
   async function settings(root) {
+    const inClaude = window.CVT.app.inClaude();
     root.innerHTML = html`
       <header class="page-head"><div><p class="eyebrow">Stored only in this browser</p><h1>Settings</h1></div></header>
       <div class="two-col">
-        <section class="panel">
-          <div class="panel-head"><h2>Anthropic API key</h2></div>
-          <p class="hint">The agent calls Claude directly from your browser with your own key from console.anthropic.com. The key is never sent anywhere else. A typical application (analysis, letter, outreach, interview prep) costs a few pence.</p>
-          <label class="field"><span>API key</span><input id="api-key" type="password" autocomplete="off" placeholder="sk-ant-…" value="${state.key}"></label>
-          <label class="check"><input type="checkbox" id="remember-key" checked> Remember on this device</label>
-          <div class="row gap wrap"><button class="btn primary" id="save-key" type="button">Save and test</button><span class="muted small" id="key-status" aria-live="polite"></span></div>
-          <label class="field"><span>Model</span><select id="model">${state.models.length ? state.models.map(m => html`<option value="${m.id}" ${m.id === state.model ? raw('selected') : ''}>${m.name} · ${m.id}</option>`) : html`<option value="${state.model}">${state.model || 'Save a key to load models'}</option>`}</select></label>
-          <p class="hint">Use a Sonnet or Opus model for tailoring and letters. Haiku is faster but writes weaker letters.</p>
+        <section class="panel span-2 engine">
+          <div class="panel-head"><h2>AI engine</h2><span class="muted small" id="key-status" aria-live="polite"></span></div>
+          <p class="hint">Pick what writes your tailoring, letters and answers. Two options cost nothing extra.</p>
+          <div class="engines">
+            <label class="engine-opt ${state.provider === 'claude-plan' ? 'on' : ''} ${inClaude ? '' : 'disabled'}">
+              <input type="radio" name="provider" value="claude-plan" ${state.provider === 'claude-plan' ? raw('checked') : ''} ${inClaude ? '' : raw('disabled')}>
+              <span class="engine-name">Your Claude plan <span class="chip ok">No extra cost</span></span>
+              <span class="engine-sub">Uses the Claude subscription you already pay for. Works when CV Tailor is opened from claude.ai. No key needed.</span>
+              ${inClaude ? '' : html`<span class="engine-sub"><strong>Not available on this web address.</strong> Open your CV Tailor link on claude.ai to use it.</span>`}
+            </label>
+            <label class="engine-opt ${state.provider === 'gemini' ? 'on' : ''}">
+              <input type="radio" name="provider" value="gemini" ${state.provider === 'gemini' ? raw('checked') : ''}>
+              <span class="engine-name">Google Gemini <span class="chip ok">Free tier</span></span>
+              <span class="engine-sub">Free key from <a class="link" href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">aistudio.google.com</a>, no card needed. Daily limits apply; free-tier prompts may be used by Google to improve its models.</span>
+            </label>
+            <label class="engine-opt ${state.provider === 'anthropic' ? 'on' : ''}">
+              <input type="radio" name="provider" value="anthropic" ${state.provider === 'anthropic' ? raw('checked') : ''}>
+              <span class="engine-name">Anthropic API <span class="chip muted">Pay as you go</span></span>
+              <span class="engine-sub">Key from console.anthropic.com. A few pence per application.</span>
+            </label>
+          </div>
+          <div class="engine-form" id="engine-form"></div>
         </section>
 
         <section class="panel">
           <div class="panel-head"><h2>Autofill bookmarklet</h2></div>
           <p class="hint">Drag this button to your bookmarks bar once. On a job application form, click it to fill the fields it recognises. It never submits.</p>
-          <p><a class="bookmarklet" id="bm" href="#">⤓ CV Tailor autofill</a></p>
+          <p class="row gap wrap"><a class="bookmarklet" id="bm" href="#">⤓ CV Tailor autofill</a><button class="btn ghost small" id="bm-copy" type="button">Copy bookmark code</button></p>
           <ol class="tight small">
             <li>Show the bookmarks bar (Ctrl+Shift+B).</li>
-            <li>Drag the button above onto it.</li>
+            <li>Drag the button above onto it. If dragging doesn't work, press <strong>Copy bookmark code</strong>, add a new bookmark named “CV Tailor autofill” and paste the code as its URL.</li>
             <li>In an application, go to <strong>Apply</strong>, press <strong>Copy autofill pack</strong>, open the employer's form and click the bookmark.</li>
           </ol>
         </section>
@@ -428,21 +443,48 @@
 
     $('#bm', root).href = window.CVT.bookmarklet();
     $('#bm', root).addEventListener('click', e => { e.preventDefault(); toast('Drag this button to your bookmarks bar instead of clicking it.', 'warn'); });
+    $('#bm-copy', root).addEventListener('click', e => copy(window.CVT.bookmarklet(), e.currentTarget));
 
-    $('#save-key', root).addEventListener('click', async () => {
-      state.key = $('#api-key', root).value.trim();
-      S.local.del('cvt.key');
-      if (state.key) S.local.set('cvt.key', state.key, !$('#remember-key', root).checked);
-      $('#key-status', root).textContent = state.key ? 'Checking…' : 'Key removed.';
+    const drawEngine = () => {
+      const f = $('#engine-form', root), p = state.provider;
+      if (p === 'claude-plan') { f.innerHTML = String(html`<p class="small">Ready. The first time you run the agent, claude.ai asks you to allow this page to use your Claude plan. Choose <strong>Allow</strong>.</p>`); return; }
+      const key = p === 'gemini' ? state.geminiKey : state.anthropicKey;
+      const cur = p === 'gemini' ? state.geminiModel : state.anthropicModel;
+      f.innerHTML = String(html`<div class="grid-2">
+          <label class="field"><span>${p === 'gemini' ? 'Gemini API key' : 'Anthropic API key'}</span><input id="api-key" type="password" autocomplete="off" placeholder="${p === 'gemini' ? 'AIza…' : 'sk-ant-…'}" value="${key}"></label>
+          <label class="field"><span>Model</span><select id="model">${state.models.length ? state.models.map(m => html`<option value="${m.id}" ${m.id === cur ? raw('selected') : ''}>${m.name} · ${m.id}</option>`) : html`<option value="${cur}">${cur || 'Save a key to load models'}</option>`}</select></label>
+        </div>
+        <div class="row gap wrap"><button class="btn primary" id="save-key" type="button">Save and test</button>
+          <label class="check"><input type="checkbox" id="remember-key" checked> Remember on this device</label></div>
+        <p class="hint">${p === 'gemini' ? 'A Flash model is fast and free; a Pro model writes better but has tighter free limits.' : 'Use a Sonnet or Opus model for tailoring and letters.'}</p>`);
+      $('#save-key', root).addEventListener('click', async () => {
+        const v = $('#api-key', root).value.trim();
+        const k = p === 'gemini' ? 'cvt.geminiKey' : 'cvt.key';
+        S.local.del(k);
+        if (v) S.local.set(k, v, !$('#remember-key', root).checked);
+        if (p === 'gemini') state.geminiKey = v; else state.anthropicKey = v;
+        $('#key-status', root).textContent = v ? 'Checking…' : 'Key removed.';
+        const ok = v ? await window.CVT.app.loadModels() : (window.CVT.app.refreshKey(), false);
+        $('#key-status', root).textContent = ok ? `Connected. ${state.models.length} models available.` : v ? state.lastError : '';
+        drawEngine();
+      });
+      $('#model', root).addEventListener('change', e => {
+        if (p === 'gemini') { state.geminiModel = e.target.value; S.local.set('cvt.geminiModel', state.geminiModel); }
+        else { state.anthropicModel = e.target.value; S.local.set('cvt.model', state.anthropicModel); }
+        window.CVT.app.refreshKey();
+      });
+    };
+    $$('input[name="provider"]', root).forEach(r => r.addEventListener('change', async () => {
+      state.provider = r.value; state.models = [];
+      S.local.set('cvt.provider', state.provider);
+      $$('.engine-opt', root).forEach(o => o.classList.toggle('on', o.querySelector('input').checked));
       window.CVT.app.refreshKey();
-      if (state.key) {
-        const ok = await window.CVT.app.loadModels();
-        $('#key-status', root).textContent = ok ? `Connected. ${state.models.length} models available.` : ok === false ? state.lastError : '';
-        const sel = $('#model', root);
-        sel.innerHTML = state.models.map(m => `<option value="${esc(m.id)}" ${m.id === state.model ? 'selected' : ''}>${esc(m.name)} · ${esc(m.id)}</option>`).join('');
-      }
-    });
-    $('#model', root).addEventListener('change', e => { state.model = e.target.value; S.local.set('cvt.model', state.model); window.CVT.app.refreshKey(); });
+      $('#key-status', root).textContent = '';
+      if ((r.value === 'gemini' && state.geminiKey) || (r.value === 'anthropic' && state.anthropicKey)) { $('#key-status', root).textContent = 'Checking…'; const ok = await window.CVT.app.loadModels(); $('#key-status', root).textContent = ok ? 'Connected.' : state.lastError; }
+      drawEngine();
+    }));
+    drawEngine();
+    if (state.provider !== 'claude-plan' && !state.models.length && (state.provider === 'gemini' ? state.geminiKey : state.anthropicKey)) window.CVT.app.loadModels().then(drawEngine);
 
     $('#export', root).addEventListener('click', async () => {
       const data = await S.exportAll();

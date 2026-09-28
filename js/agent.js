@@ -36,7 +36,86 @@
     const e = new Error(msg); e.status = res.status; return e;
   }
 
-  async function ask({ key, model, system, user, maxTokens = 8000, signal }) {
+  // ---------- providers ----------
+  // claude-plan : runs inside claude.ai (Claude artifact) on your own Claude plan, no API key, no extra cost
+  // gemini      : Google AI Studio key (has a free tier)
+  // anthropic   : Anthropic API key (pay as you go)
+  const P = () => (window.CVT.ui && window.CVT.ui.state) || {};
+  let sampleFn = null;
+  async function claudeSample() {
+    if (sampleFn) return sampleFn;
+    if (!window.claude || !window.claude.use) return null;
+    sampleFn = await window.claude.use('sample');
+    return sampleFn;
+  }
+  const SAMPLE_ERRORS = {
+    not_granted: 'You declined the Claude permission prompt. Reload the page and choose Allow to use your Claude plan.',
+    rate_limited: 'Your Claude plan is busy or at its limit. Wait a minute and try again.',
+    prompt_too_large: 'The job description and CV are too long for one request. Shorten the job description.',
+    invalid_json: 'Claude replied in an unexpected format. Try again.',
+    sampling_disabled: 'Asking Claude from pages is turned off for your account. Use a Gemini or Anthropic key in Settings instead.'
+  };
+
+  async function askClaudePlan({ system, user, signal, tier }) {
+    const sample = await claudeSample();
+    if (!sample) throw new Error('Claude plan mode only works when CV Tailor is opened inside claude.ai. Use a Gemini or Anthropic key here instead.');
+    // Stay under the 64 KiB input cap.
+    let input = `${system}\n\n${user}`;
+    if (input.length > 60000) input = input.slice(0, 60000);
+    try {
+      return await sample.json(input, { modelTier: tier || 'default', signal, cache: false });
+    } catch (e) {
+      if (e && e.code === 'cancelled') { const x = new Error('Stopped.'); x.name = 'AbortError'; throw x; }
+      throw new Error((e && SAMPLE_ERRORS[e.code]) || (e && e.message) || 'Claude could not answer. Try again.');
+    }
+  }
+
+  async function listGemini(key) {
+    const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=200', { headers: { 'x-goog-api-key': key } });
+    if (!res.ok) throw await geminiError(res);
+    const data = await res.json();
+    return (data.models || [])
+      .filter(m => (m.supportedGenerationMethods || []).includes('generateContent') && /gemini/i.test(m.name) && !/embedding|vision|tts|image|audio|live/i.test(m.name))
+      .map(m => ({ id: m.name.replace(/^models\//, ''), name: m.displayName || m.name }));
+  }
+  async function geminiError(res) {
+    let msg = res.status + ' ' + res.statusText;
+    try { const j = await res.json(); if (j.error && j.error.message) msg = j.error.message; } catch (_) {}
+    if (res.status === 400 && /API key/i.test(msg)) msg = 'The Gemini key was rejected. Check it in Settings.';
+    if (res.status === 429) msg = 'Gemini free-tier limit reached. Wait a minute (or until tomorrow for the daily limit) and try again.';
+    const e = new Error(msg); e.status = res.status; return e;
+  }
+  async function askGemini({ key, model, system, user, maxTokens, signal }) {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
+      method: 'POST', signal,
+      headers: { 'content-type': 'application/json', 'x-goog-api-key': key },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: system }] },
+        contents: [{ role: 'user', parts: [{ text: user }] }],
+        generationConfig: { responseMimeType: 'application/json', maxOutputTokens: Math.max(maxTokens, 8192), temperature: 0.4 }
+      })
+    });
+    if (!res.ok) throw await geminiError(res);
+    const data = await res.json();
+    const cand = (data.candidates || [])[0] || {};
+    if (cand.finishReason === 'MAX_TOKENS') throw new Error('The answer was cut short. Try a shorter job description.');
+    const text = ((cand.content || {}).parts || []).map(p => p.text || '').join('');
+    if (!text) throw new Error('Gemini returned an empty answer' + (cand.finishReason ? ` (${cand.finishReason})` : '') + '. Try again.');
+    return parseJSON(text);
+  }
+
+  async function ask(opts) {
+    const s = P();
+    const provider = s.provider || 'anthropic';
+    if (provider === 'claude-plan') return askClaudePlan({ ...opts, tier: opts.maxTokens >= 9000 ? 'complex' : 'default' });
+    if (provider === 'gemini') {
+      if (!s.geminiKey || !s.geminiModel) throw new Error('Add your Gemini key and pick a model in Settings first.');
+      return askGemini({ ...opts, key: s.geminiKey, model: s.geminiModel, maxTokens: opts.maxTokens || 8000 });
+    }
+    return askAnthropic({ ...opts, key: s.anthropicKey || opts.key, model: s.anthropicModel || opts.model });
+  }
+
+  async function askAnthropic({ key, model, system, user, maxTokens = 8000, signal }) {
     if (!key || !model) throw new Error('Add your API key and pick a model in Settings first.');
     const res = await fetch(API + '/messages', {
       method: 'POST', headers: headers(key), signal,
@@ -305,5 +384,5 @@ Return:
   const linkedin = opts => ask({ ...opts, system: LINKEDIN_SYSTEM, user: linkedinPrompt(opts), maxTokens: 4000 });
 
   window.CVT = window.CVT || {};
-  window.CVT.agent = { listModels, analyse, coverLetter, outreach, interviewPrep, answers, linkedin, parseJSON, profileBlock };
+  window.CVT.agent = { listModels, listGemini, claudeSample, analyse, coverLetter, outreach, interviewPrep, answers, linkedin, parseJSON, profileBlock };
 })();

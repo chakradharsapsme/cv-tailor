@@ -22,7 +22,17 @@
     setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 300); }, 2600);
   }
 
-  function download(blob, name) {
+  async function download(blob, name) {
+    // Inside claude.ai the page can't start downloads itself; ask the viewer through the downloads capability.
+    if (window.claude && window.claude.use) {
+      try {
+        const d = await window.claude.use('downloads');
+        if (d) { await d.save({ filename: name, data: blob }); return; }
+      } catch (e) {
+        if (e && e.code === 'declined') return;
+        toast('Download failed: ' + ((e && e.message) || 'unavailable'), 'bad'); return;
+      }
+    }
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a'); a.href = url; a.download = name;
     document.body.append(a); a.click(); a.remove();
@@ -75,7 +85,7 @@
 
   /** Shared app state (loaded once, refreshed by views). */
   const state = {
-    key: '', model: '', profile: null, masters: [], models: [],
+    key: '', model: '', provider: '', anthropicKey: '', anthropicModel: '', geminiKey: '', geminiModel: '', profile: null, masters: [], models: [],
     masterCache: new Map() // masterId -> loaded docx model
   };
   async function masterModel(id) {

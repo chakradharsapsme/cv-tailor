@@ -302,6 +302,62 @@
     return save(model);
   }
 
+  /**
+   * ATS readiness checks on a loaded model. Returns [{status:'ok'|'warn'|'info', title, detail}].
+   * These are the things applicant tracking systems most often trip over.
+   */
+  async function atsReport(model) {
+    const out = [];
+    const bodyText = model.paras.map(p => p.text).join('\n');
+    const words = (bodyText.match(/\S+/g) || []).length;
+    const email = /[\w.+-]+@[\w-]+\.[\w.]+/;
+    const phone = /(\+?\d[\d\s()-]{8,}\d)/;
+
+    // Contact details only in header/footer are often dropped by parsers.
+    let headerText = '';
+    for (const name of Object.keys(model.zip.files).filter(n => /^word\/(header|footer)\d*\.xml$/.test(n))) {
+      const x = await model.zip.file(name).async('string');
+      headerText += ' ' + x.replace(/<[^>]+>/g, ' ');
+    }
+    const inBody = email.test(bodyText), inHead = email.test(headerText);
+    if (inBody) out.push({ status: 'ok', title: 'Contact details in the main body', detail: 'Parsers can read your email and phone.' });
+    else if (inHead) out.push({ status: 'warn', title: 'Contact details only in the header/footer', detail: 'Some ATS (older Taleo, iCIMS) skip headers. Keep a copy of your email and phone in the body.' });
+    else out.push({ status: 'warn', title: 'No email address found', detail: 'Add your email and mobile near the top of the CV.' });
+    if (!phone.test(bodyText + headerText)) out.push({ status: 'warn', title: 'No phone number found', detail: 'Recruiters for contract roles usually call first.' });
+
+    const xml = new XMLSerializer().serializeToString(model.doc);
+    const tables = (xml.match(/<w:tbl>/g) || []).length;
+    if (tables) out.push({ status: 'info', title: `${tables} table${tables > 1 ? 's' : ''} in the layout`, detail: 'Modern ATS read simple tables, but keep job titles, employers and dates outside tables.' });
+    if (/<w:txbxContent/.test(xml)) out.push({ status: 'warn', title: 'Text boxes found', detail: 'Text inside text boxes is often lost by ATS. Move key content into normal paragraphs.' });
+    if (/<w:drawing|<w:pict/.test(xml)) out.push({ status: 'info', title: 'Images or shapes present', detail: 'Fine for people, invisible to ATS. Make sure no information exists only in an image.' });
+
+    const heads = ['experience|employment|career history', 'education|qualifications', 'skills|competenc', 'certif'];
+    const lower = bodyText.toLowerCase();
+    const missing = heads.filter(h => !new RegExp(h).test(lower));
+    if (!missing.length) out.push({ status: 'ok', title: 'Standard section headings', detail: 'Experience, education, skills and certifications are easy to find.' });
+    else out.push({ status: 'info', title: 'Some standard headings not found', detail: 'Consider standard names such as "Experience", "Education", "Skills", "Certifications".' });
+
+    if (words < 450) out.push({ status: 'warn', title: `Short CV (${words} words)`, detail: 'Senior SAP roles usually need 2 pages of evidence.' });
+    else if (words > 1500) out.push({ status: 'warn', title: `Long CV (${words} words)`, detail: 'Aim for 2–3 pages. Trim older roles to one line each.' });
+    else out.push({ status: 'ok', title: `Length looks right (${words} words)`, detail: 'Roughly 2–3 pages for a senior profile.' });
+    return out;
+  }
+
+  /** Share of keywords present in text (case-insensitive, whole-phrase). */
+  function keywordCoverage(text, keywords) {
+    const t = ' ' + text.toLowerCase().replace(/\s+/g, ' ') + ' ';
+    const hit = [], miss = [];
+    for (const k of keywords || []) {
+      const kk = String(k).toLowerCase().trim();
+      if (!kk) continue;
+      (t.includes(kk) ? hit : miss).push(k);
+    }
+    const total = hit.length + miss.length;
+    return { hit, miss, pct: total ? Math.round(100 * hit.length / total) : 0 };
+  }
+
+  const plainText = model => model.paras.map(p => p.text).filter(t => t.trim()).join('\n');
+
   window.CVT = window.CVT || {};
-  window.CVT.docx = { load, forModel, buildTailored, buildLetter, canRemove, DOCX_MIME };
+  window.CVT.docx = { load, forModel, buildTailored, buildLetter, canRemove, atsReport, keywordCoverage, plainText, DOCX_MIME };
 })();

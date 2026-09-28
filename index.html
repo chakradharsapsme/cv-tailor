@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CV Tailor</title>
+<meta name="description" content="Tailor a Word CV to a job description without moving the template, and write the matching cover letter.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500;600&display=swap">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark" aria-hidden="true">CV</span>
+    <div>
+      <div class="brand-name">CV Tailor</div>
+      <div class="brand-sub">S2P · P2P · Ariba · S/4HANA</div>
+    </div>
+  </div>
+  <nav class="tabs" role="tablist">
+    <button class="tab" role="tab" data-view="tailor" aria-selected="true" id="tab-tailor">Tailor</button>
+    <button class="tab" role="tab" data-view="apps" aria-selected="false" id="tab-apps">Applications <span class="count" id="apps-count">0</span></button>
+    <button class="tab" role="tab" data-view="settings" aria-selected="false" id="tab-settings">Settings</button>
+  </nav>
+  <span class="pill" id="key-pill" data-state="missing">No API key</span>
+</header>
+
+<main>
+  <!-- ============ TAILOR ============ -->
+  <section class="view" id="view-tailor">
+
+    <section class="step" id="step-cv">
+      <div class="step-no">1</div>
+      <div class="step-body">
+        <h2>Master CV</h2>
+        <p class="hint">Your Word CV is the template and the only source of facts. It stays in this browser.</p>
+        <label class="drop" id="cv-drop" for="cv-file">
+          <input type="file" id="cv-file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+          <span class="drop-title">Drop your CV (.docx) here or choose a file</span>
+          <span class="drop-sub">Word .docx only. PDFs can't be edited without changing the layout.</span>
+        </label>
+        <div class="cv-summary" id="cv-summary" hidden>
+          <div class="file-chip"><span class="file-ext">DOCX</span><span id="cv-name"></span></div>
+          <dl class="stats">
+            <div><dt>Paragraphs</dt><dd id="cv-paras">0</dd></div>
+            <div><dt>Editable</dt><dd id="cv-editable">0</dd></div>
+            <div><dt>Locked</dt><dd id="cv-locked">0</dd></div>
+          </dl>
+          <button class="btn ghost" id="cv-preview-btn" type="button">Preview</button>
+        </div>
+        <div class="preview-box" id="cv-preview" hidden></div>
+      </div>
+    </section>
+
+    <section class="step" id="step-jd">
+      <div class="step-no">2</div>
+      <div class="step-body">
+        <h2>Job description</h2>
+        <p class="hint">Paste the full advert from LinkedIn. Pasting works better than a link: LinkedIn blocks other sites from reading its pages.</p>
+        <div class="grid-2">
+          <label class="field"><span>Company</span><input id="jd-company" type="text" autocomplete="off" placeholder="e.g. Rolls-Royce"></label>
+          <label class="field"><span>Role title</span><input id="jd-role" type="text" autocomplete="off" placeholder="e.g. SAP Ariba Solution Architect"></label>
+          <label class="field"><span>Job link</span><input id="jd-url" type="url" autocomplete="off" placeholder="https://www.linkedin.com/jobs/view/…"></label>
+          <label class="field"><span>Hiring manager <em>(optional)</em></span><input id="jd-manager" type="text" autocomplete="off" placeholder="e.g. Sarah Collins"></label>
+        </div>
+        <label class="field"><span>Job description</span><textarea id="jd-text" rows="12" placeholder="Paste the full job description here…"></textarea></label>
+        <label class="field"><span>What to emphasise <em>(optional, treated as true facts about you)</em></span><textarea id="jd-notes" rows="3" placeholder="e.g. Led Guided Buying rollout for 12,000 users at Nokia; happy to go inside IR35"></textarea></label>
+        <div class="grid-3">
+          <label class="field"><span>Cover letter tone</span>
+            <select id="jd-tone">
+              <option value="Formal and precise">Formal</option>
+              <option value="Warm and direct" selected>Warm and direct</option>
+              <option value="Concise, for a contract role or recruiter">Contract / recruiter</option>
+            </select>
+          </label>
+          <label class="field"><span>Review mode</span>
+            <select id="jd-mode">
+              <option value="review" selected>Review each change</option>
+              <option value="auto">Accept all changes</option>
+            </select>
+          </label>
+        </div>
+        <div class="row gap-s wrap">
+          <button class="btn primary" id="run" type="button">Analyse and tailor</button>
+          <button class="btn ghost" id="stop" type="button" hidden>Stop</button>
+          <button class="btn ghost small" id="example-jd" type="button">Load an example job</button>
+        </div>
+        <ol class="progress" id="progress" hidden></ol>
+        <p class="error" id="run-error" role="alert" hidden></p>
+      </div>
+    </section>
+
+    <section class="step" id="step-review" hidden>
+      <div class="step-no">3</div>
+      <div class="step-body">
+        <h2>Match and changes</h2>
+        <div class="fit" id="fit"></div>
+        <div class="split">
+          <div>
+            <h3>Requirements</h3>
+            <div class="table-wrap"><table class="reqs" id="reqs"></table></div>
+          </div>
+          <div>
+            <h3>Keywords</h3>
+            <div class="kw" id="keywords"></div>
+            <h3>Interview talking points</h3>
+            <ul class="talk" id="talking"></ul>
+          </div>
+        </div>
+        <div class="edits-head">
+          <h3>Proposed changes <span class="muted" id="edits-count"></span></h3>
+          <div class="row gap-s">
+            <button class="btn ghost small" id="accept-all" type="button">Accept all</button>
+            <button class="btn ghost small" id="reject-all" type="button">Reject all</button>
+          </div>
+        </div>
+        <p class="hint">Flags mark anything to double-check: new numbers or product names that aren't in your master CV, and text longer than the original.</p>
+        <div class="edits" id="edits"></div>
+        <div class="row gap-s wrap">
+          <button class="btn primary" id="build" type="button">Create CV and cover letter</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="step-out" hidden>
+      <div class="step-no">4</div>
+      <div class="step-body">
+        <h2>Documents</h2>
+        <div class="out-grid">
+          <div class="card">
+            <div class="card-head">
+              <h3>Tailored CV</h3>
+              <span class="muted small" id="cv-result-note"></span>
+            </div>
+            <div class="row gap-s wrap">
+              <button class="btn primary" id="dl-cv" type="button">Download CV (.docx)</button>
+              <button class="btn ghost" id="compare-btn" type="button">Compare with master</button>
+            </div>
+            <p class="muted small" id="pages-note"></p>
+          </div>
+          <div class="card">
+            <div class="card-head">
+              <h3>Cover letter</h3>
+              <span class="muted small" id="letter-words"></span>
+            </div>
+            <p class="hint">Edit freely. Wrap a line in **double asterisks** to make it bold.</p>
+            <textarea id="letter" rows="18" spellcheck="true"></textarea>
+            <div class="row gap-s wrap">
+              <button class="btn primary" id="dl-letter" type="button">Download letter (.docx)</button>
+              <button class="btn ghost" id="copy-letter" type="button">Copy text</button>
+              <button class="btn ghost" id="regen-letter" type="button">Write again</button>
+            </div>
+          </div>
+        </div>
+        <div class="compare" id="compare" hidden>
+          <div><h4>Master</h4><div class="preview-box" id="cmp-master"></div></div>
+          <div><h4>Tailored</h4><div class="preview-box" id="cmp-tailored"></div></div>
+        </div>
+        <div class="save-bar">
+          <button class="btn primary" id="save-app" type="button">Save to applications</button>
+          <span class="muted small" id="save-note"></span>
+        </div>
+      </div>
+    </section>
+  </section>
+
+  <!-- ============ APPLICATIONS ============ -->
+  <section class="view" id="view-apps" hidden>
+    <div class="view-head">
+      <h2>Applications</h2>
+      <div class="row gap-s">
+        <button class="btn ghost small" id="export-csv" type="button">Export CSV</button>
+      </div>
+    </div>
+    <p class="hint">Stored in this browser. Export regularly if you want a copy elsewhere.</p>
+    <div class="table-wrap"><table class="apps" id="apps-table"></table></div>
+    <p class="empty" id="apps-empty">No applications yet. Tailor a CV and choose “Save to applications”.</p>
+  </section>
+
+  <!-- ============ SETTINGS ============ -->
+  <section class="view" id="view-settings" hidden>
+    <div class="view-head"><h2>Settings</h2></div>
+    <div class="card narrow">
+      <h3>Anthropic API key</h3>
+      <p class="hint">The agent calls Claude directly from your browser with your own key, from console.anthropic.com. The key never goes anywhere else.</p>
+      <label class="field"><span>API key</span><input id="api-key" type="password" autocomplete="off" placeholder="sk-ant-…"></label>
+      <label class="check"><input type="checkbox" id="remember-key" checked> Remember on this device</label>
+      <div class="row gap-s wrap">
+        <button class="btn primary" id="save-key" type="button">Save and test</button>
+        <span class="muted small" id="key-status"></span>
+      </div>
+      <label class="field"><span>Model</span><select id="model"><option value="">Save a key to load models</option></select></label>
+      <p class="hint">A Sonnet or Opus model gives the best rewrites. Haiku is faster but writes weaker cover letters.</p>
+    </div>
+    <div class="card narrow">
+      <h3>Stored data</h3>
+      <p class="hint">Your master CV, API key and applications are kept only in this browser's storage.</p>
+      <div class="row gap-s wrap">
+        <button class="btn ghost danger" id="clear-data" type="button">Clear all stored data</button>
+        <span class="muted small" id="clear-status"></span>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">Built for a personal job search. Every change is checked against the master CV before it's written.</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/docx-preview@0.3.5/dist/docx-preview.min.js"></script>
+<script src="js/docx-engine.js"></script>
+<script src="js/agent.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

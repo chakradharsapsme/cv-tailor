@@ -17,3 +17,13 @@
 **Workflow.** Parse the JD, map requirements to CV evidence, propose a diff, approve it, then generate the .docx, write the cover letter and log the application.
 
 **Out of scope for v1.** Auto-applying on LinkedIn, and scraping behind a login.
+
+## v2 additions
+
+- **Job-search workspace.** A dashboard (goal, rates, due actions, coach notes, job-board shortcuts), a pipeline board with automatic follow-ups, and a per-application workspace.
+- **Fit decision.** Apply / apply with an angle / stretch / skip, with red flags covering IR35, rate, location, seniority and eligibility.
+- **Outreach.** A LinkedIn note, hiring-manager message, recruiter email, follow-up and thank-you.
+- **Interview prep.** A pitch, STAR outlines from real experience, topics, gap handling, questions to ask and a 90-day plan.
+- **Apply.** Drafted form and screening answers, plus an autofill bookmarklet that fills recognised fields and never submits. The candidate gives final approval.
+- **Career profile.** Multiple master CVs, an achievements bank, a never-claim list and LinkedIn optimisation.
+- **Storage.** Local IndexedDB with JSON backup and restore.

@@ -1,4 +1,4 @@
-# CV Tailor
+# Applywise
 
 A personal job-search workspace for senior SAP procurement roles (SAP Ariba, S2P/P2P, SAP MM, S/4HANA). It works for any CV. It tailors your **Word CV without moving the template**, tells you whether a role is worth applying for, writes the letter and outreach, prepares you for interview, fills application forms (you approve every submit) and tracks the whole pipeline.
 
@@ -22,7 +22,7 @@ Live site: https://chakradharsapsme.github.io/cv-tailor/
 
 ## Autofill: you stay in control
 
-1. In **Settings** (or on an application's **Apply** tab), drag the **CV Tailor autofill** button to your bookmarks bar.
+1. In **Settings** (or on an application's **Apply** tab), drag the **Applywise autofill** button to your bookmarks bar.
 2. On the application's **Apply** tab, press **Copy autofill pack**.
 3. Open the employer's form (Workday, Greenhouse, Lever, SmartRecruiters, SuccessFactors, Taleo…) and click the bookmark.
 4. Recognised fields are filled and highlighted in yellow, and a panel lists what's left.
@@ -45,7 +45,7 @@ Every prompt forbids inventing employers, clients, dates, titles, certifications
 
 | Engine | Cost | How |
 |---|---|---|
-| **Your Claude plan** | No extra cost | Open the claude.ai version of CV Tailor. It runs on the Claude subscription you already have, with no key. |
+| **Your Claude plan** | No extra cost | Open the claude.ai version of Applywise. It runs on the Claude subscription you already have, with no key. |
 | **Google Gemini** | Free tier | Get a free key at [aistudio.google.com](https://aistudio.google.com/app/apikey) and choose Gemini in **Settings**. Daily limits apply, and free-tier prompts may be used by Google to improve its models. |
 
 ## Setup
@@ -54,7 +54,7 @@ Every prompt forbids inventing employers, clients, dates, titles, certifications
 2. In **Career profile**, upload your master CV (.docx), fill in contact details and targets, and add 5+ achievements with numbers.
 3. Press **New application** and paste a job.
 
-All data stays in your browser (IndexedDB). AI calls go straight from your browser to your Claude plan or Google Gemini, and there is no server. CV Tailor only uses free engines; it never calls a paid API. Use **Settings → Export backup** regularly.
+All data stays in your browser (IndexedDB). AI calls go straight from your browser to your Claude plan or Google Gemini, and there is no server. Applywise only uses free engines; it never calls a paid API. Use **Settings → Export backup** regularly.
 
 ## Project layout
 

@@ -2,7 +2,7 @@
 (function () {
   const { html, raw, esc, $, $$, toast, download, copy, today, ukDate, longDate, daysBetween, VERDICT, scoreCls, state, masterModel } = window.CVT.ui;
   const S = window.CVT.store, A = window.CVT.agent, D = window.CVT.docx;
-  const VERSION = 'v3.0';
+  const VERSION = 'v3.1';
   const ACTIVE = ['Applied', 'Screening', 'Interview', 'Offer'];
   const REACHED = s => ['Screening', 'Interview', 'Offer', 'Accepted'].includes(s);
 
@@ -26,6 +26,24 @@
   // =====================================================================
   // DASHBOARD
   // =====================================================================
+  async function drawPrep(root) {
+    const box = $('#dash-prep', root); if (!box) return;
+    const P = window.CVT.prep;
+    const [ups, due, stories] = await Promise.all([P.upcoming(), P.dueCount(), S.getKV('stories', [])]);
+    const when = iso => new Date(iso).toLocaleString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+    box.innerHTML = String(html`
+      <div class="panel-head"><h2>Interview prep</h2><a class="link" href="#/prep">Open Prep</a></div>
+      <div class="prep-strip">
+        <div class="prep-tile">
+          <span class="kpi-label">Upcoming interviews</span>
+          ${ups.length ? html`<ul class="tight small">${ups.slice(0, 3).map(a => html`<li><a class="link" href="#/app/${a.id}/interview">${a.company || a.role}</a> · ${when(a.interviewAt)}</li>`)}</ul>` : html`<p class="muted small">None booked. Add the slot on an application's Interview tab to get calendar reminders.</p>`}
+        </div>
+        <div class="prep-tile"><span class="kpi-label">Mock interview</span><p class="small">Practise with Claude asking the questions, then get scored.</p><a class="btn small primary" href="#/prep/mock${ups[0] ? '/' + ups[0].id : ''}">${ups[0] ? 'Practise for ' + (ups[0].company || 'next interview') : 'Start practising'}</a></div>
+        <div class="prep-tile"><span class="kpi-label">Drill cards</span><p class="kpi-num small-num">${due}<small> due</small></p><a class="btn small ghost" href="#/prep/drills">Review now</a></div>
+        <div class="prep-tile"><span class="kpi-label">Story bank</span><p class="kpi-num small-num">${(stories || []).length}<small> stories</small></p><a class="btn small ghost" href="#/prep/stories">${(stories || []).length ? 'Review stories' : 'Build your stories'}</a></div>
+      </div>`);
+  }
+
   async function drawJobs(root, profile) {
     const J = window.CVT.jobs, box = $('#dash-jobs', root);
     if (!box) return;
@@ -39,7 +57,7 @@
       const roles = (profile.targetRoles || []).length ? profile.targetRoles : ['SAP Ariba', 'SAP S2P'];
       if (!avail && !t.items.length) {
         box.innerHTML = String(html`${head()}
-          <p class="hint">Search every major UK board for your target roles in one click. Inside claude.ai, CV Tailor also pulls live Indeed jobs here and scores each one against your CV.</p>
+          <p class="hint">Search every major UK board for your target roles in one click. Inside claude.ai, Applywise also pulls live Indeed jobs here and scores each one against your CV.</p>
           <div class="search-rows">${roles.slice(0, 4).map(r => html`<div class="search-row"><span class="search-role">${r}</span><span class="search-links">${J.boards(r, (profile.targetLocations || [])[0]).slice(0, 6).map(l => html`<a class="pill-link" href="${l.href}" target="_blank" rel="noopener">${l.name}</a>`)}</span></div>`)}</div>`);
         return;
       }
@@ -112,11 +130,11 @@
     root.innerHTML = html`
       <header class="page-head">
         <div><p class="eyebrow">${longDate()}</p><h1>${hello}</h1></div>
-        <a class="btn primary" href="#/new">New application</a>
+        <div class="row gap wrap"><a class="btn primary" href="#/autopilot">Run autopilot</a><a class="btn ghost" href="#/new">New application</a></div>
       </header>
 
       ${setup.every(x => x.done) ? '' : html`<section class="panel onboard" aria-label="Get started">
-        <div class="panel-head"><h2>Get set up in four steps</h2><span class="muted small">${setup.filter(x => x.done).length} of ${setup.length} done</span></div>
+        <div class="panel-head"><h2>Get set up in four steps</h2><span class="row gap"><a class="link small" href="#/help">▶ Watch the 3-minute guide</a><span class="muted small">${setup.filter(x => x.done).length} of ${setup.length} done</span></span></div>
         <ol class="onboard-steps">${setup.map((x, i) => html`<li class="${x.done ? 'done' : ''}">
           <span class="step-num" aria-hidden="true">${x.done ? '✓' : i + 1}</span>
           <div><strong>${x.title}</strong><p class="muted small">${x.text}</p></div>
@@ -171,6 +189,8 @@
             : html`<p class="empty-note">You're on track. Keep going.</p>`}
         </section>
 
+        <section class="panel wide" id="dash-prep"></section>
+
         <section class="panel wide" id="dash-jobs" aria-busy="true">
           <div class="panel-head"><h2>New jobs for you</h2><a class="link" href="#/jobs">All jobs</a></div>
           <p class="muted small">Loading…</p>
@@ -191,6 +211,7 @@
       </div>`;
 
     drawJobs(root, profile);
+    drawPrep(root);
 
     root.addEventListener('click', async e => {
       const b = e.target.closest('[data-act]'); if (!b) return;
@@ -235,7 +256,7 @@
               <label class="card-status"><span class="sr">Status</span>
                 <select data-status="${a.id}">${S.STATUSES.map(s => html`<option ${s === a.status ? raw('selected') : ''}>${s}</option>`)}</select>
               </label>
-            </article>`) : html`<p class="col-empty">—</p>`}</div>
+            </article>`) : html`<p class="col-empty">None yet</p>`}</div>
         </section>`;
       }).join('');
     };
@@ -428,17 +449,17 @@
   async function settings(root) {
     const inClaude = window.CVT.app.inClaude();
     root.innerHTML = html`
-      <header class="page-head"><div><p class="eyebrow">Stored only in this browser</p><h1>Settings</h1></div></header>
+      <header class="page-head"><div><p class="eyebrow">Engine, sync and backup</p><h1>Settings</h1></div></header>
       <div class="two-col">
         <section class="panel span-2 engine">
           <div class="panel-head"><h2>AI engine</h2><span class="muted small" id="key-status" aria-live="polite"></span></div>
-          <p class="hint">Both engines are free: CV Tailor never uses paid APIs.</p>
+          <p class="hint">Both engines are free: Applywise never uses paid APIs.</p>
           <div class="engines">
             <label class="engine-opt ${state.provider === 'claude-plan' ? 'on' : ''} ${inClaude ? '' : 'disabled'}">
               <input type="radio" name="provider" value="claude-plan" ${state.provider === 'claude-plan' ? raw('checked') : ''} ${inClaude ? '' : raw('disabled')}>
               <span class="engine-name">Your Claude plan <span class="chip ok">No extra cost</span></span>
-              <span class="engine-sub">Uses the Claude subscription you already pay for. Works when CV Tailor is opened from claude.ai. No key needed.</span>
-              ${inClaude ? '' : html`<span class="engine-sub"><strong>Not available on this web address.</strong> Open your CV Tailor link on claude.ai to use it.</span>`}
+              <span class="engine-sub">Uses the Claude subscription you already pay for. Works when Applywise is opened from claude.ai. No key needed.</span>
+              ${inClaude ? '' : html`<span class="engine-sub"><strong>Not available on this web address.</strong> Open your Applywise link on claude.ai to use it.</span>`}
             </label>
             <label class="engine-opt ${state.provider === 'gemini' ? 'on' : ''}">
               <input type="radio" name="provider" value="gemini" ${state.provider === 'gemini' ? raw('checked') : ''}>
@@ -449,13 +470,19 @@
           <div class="engine-form" id="engine-form"></div>
         </section>
 
+        <section class="panel span-2">
+          <div class="panel-head"><h2>Sync across devices</h2><span class="chip" id="sy-chip">…</span></div>
+          <p class="hint" id="sy-text"></p>
+          <div class="row gap wrap"><button class="btn ghost small" id="sy-now" type="button">Sync now</button></div>
+        </section>
+
         <section class="panel">
           <div class="panel-head"><h2>Autofill bookmarklet</h2></div>
           <p class="hint">Drag this button to your bookmarks bar once. On a job application form, click it to fill the fields it recognises. It never submits.</p>
-          <p class="row gap wrap"><a class="bookmarklet" id="bm" href="#">⤓ CV Tailor autofill</a><button class="btn ghost small" id="bm-copy" type="button">Copy bookmark code</button></p>
+          <p class="row gap wrap"><a class="bookmarklet" id="bm" href="#">⤓ Applywise autofill</a><button class="btn ghost small" id="bm-copy" type="button">Copy bookmark code</button></p>
           <ol class="tight small">
             <li>Show the bookmarks bar (Ctrl+Shift+B).</li>
-            <li>Drag the button above onto it. If dragging doesn't work, press <strong>Copy bookmark code</strong>, add a new bookmark named “CV Tailor autofill” and paste the code as its URL.</li>
+            <li>Drag the button above onto it. If dragging doesn't work, press <strong>Copy bookmark code</strong>, add a new bookmark named “Applywise autofill” and paste the code as its URL.</li>
             <li>In an application, go to <strong>Apply</strong>, press <strong>Copy autofill pack</strong>, open the employer's form and click the bookmark.</li>
           </ol>
         </section>
@@ -472,10 +499,25 @@
 
         <section class="panel">
           <div class="panel-head"><h2>Reset</h2></div>
-          <p class="hint">Removes your CVs, profile, applications and API key from this browser.</p>
+          <p class="hint">Removes your CVs, profile, applications and API key from this browser. Copies synced to your Claude account are kept.</p>
           <button class="btn ghost danger" id="clear" type="button">Clear all data</button>
         </section>
       </div>`;
+
+    const drawSync = st => {
+      const chip = $('#sy-chip', root), txt = $('#sy-text', root); if (!chip) return;
+      const on = st.state === 'on' || st.state === 'syncing';
+      chip.className = 'chip ' + (st.state === 'on' ? 'ok' : st.state === 'error' ? 'bad' : 'muted');
+      chip.textContent = { on: 'On', syncing: 'Syncing…', error: 'Problem', unavailable: 'Not available here', off: 'Starting…' }[st.state] || st.state;
+      txt.textContent = st.state === 'unavailable'
+        ? 'Sync works when Applywise is opened inside claude.ai: your profile, CVs, applications, stories, offers and practice progress are kept in your Claude account and appear on your phone and laptop. On this web address data stays in this browser; use Backup to move it.'
+        : (on ? 'Your profile, CVs, applications, stories, offers and practice progress are saved to your Claude account and appear on every device where you open Applywise in claude.ai.' : '') + (st.last ? ` Last synced ${new Date(st.last).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}.` : '') + (st.error ? ' ' + st.error : '');
+      const b = $('#sy-now', root); if (b) b.hidden = st.state === 'unavailable';
+    };
+    drawSync(window.CVT.sync.status());
+    const offSync = window.CVT.sync.onChange(drawSync);
+    new MutationObserver((_, o) => { if (!root.isConnected) { offSync(); o.disconnect(); } }).observe(document.body, { childList: true, subtree: true });
+    $('#sy-now', root).addEventListener('click', async e => { const btn = e.currentTarget; btn.disabled = true; const r = await window.CVT.sync.pull(); toast(r.changed ? `Synced: ${r.changed} update${r.changed > 1 ? 's' : ''} pulled in` : 'Everything is in sync'); if (r.changed) window.CVT.app.rerender(); else btn.disabled = false; });
 
     $('#bm', root).href = window.CVT.bookmarklet();
     $('#bm', root).addEventListener('click', e => { e.preventDefault(); toast('Drag this button to your bookmarks bar instead of clicking it.', 'warn'); });
@@ -522,7 +564,7 @@
 
     $('#export', root).addEventListener('click', async () => {
       const data = await S.exportAll();
-      download(new Blob([JSON.stringify(data)], { type: 'application/json' }), `cv-tailor-backup_${today()}.json`);
+      download(new Blob([JSON.stringify(data)], { type: 'application/json' }), `applywise-backup_${today()}.json`);
       $('#backup-status', root).textContent = `Exported ${data.masters.length} CV(s) and ${data.apps.length} application(s).`;
     });
     $('#import', root).addEventListener('change', async e => {
@@ -545,12 +587,17 @@
   async function help(root) {
     const inClaude = window.CVT.app.inClaude();
     root.innerHTML = String(html`
-      <header class="page-head"><div><p class="eyebrow">CV Tailor ${VERSION}</p><h1>Help and privacy</h1></div></header>
+      <header class="page-head"><div><p class="eyebrow">Applywise ${VERSION}</p><h1>Help and privacy</h1></div></header>
+      ${inClaude ? html`<section class="panel mb">
+        <div class="panel-head"><h2>Watch the 3-minute guide</h2><span class="muted small">AI voice · captions on</span></div>
+        <video class="help-video" controls preload="none" playsinline poster="/_blob/f007580ce716ede25ce4271f3ee9c15e" src="/_blob/dbb74236c941ca767f19c6e9ddb2e69f"></video>
+        <p class="muted small mt">The demo uses a fictional CV and fictional jobs.</p>
+      </section>` : ''}
       <div class="help-grid">
         <section class="panel">
           <h2>How it works</h2>
           <ol class="how">
-            <li><strong>Add your CV.</strong> Upload the Word (.docx) CV you already use. CV Tailor edits text inside it and never moves your layout, fonts, tables or images.</li>
+            <li><strong>Add your CV.</strong> Upload the Word (.docx) CV you already use. Applywise edits text inside it and never moves your layout, fonts, tables or images.</li>
             <li><strong>Find a job.</strong> The Jobs page pulls live roles and scores each against your CV. You can also paste any advert.</li>
             <li><strong>Analyse and tailor.</strong> The agent reads the advert, gives a fit score and an apply/skip view, and proposes additions to your CV. It keeps every word you wrote and only inserts the job's requirements where they belong. You tick what goes in.</li>
             <li><strong>Apply.</strong> Download the tailored CV and cover letter, copy recruiter messages, and use the autofill bookmark to fill application forms. You always press Submit yourself.</li>
@@ -559,14 +606,14 @@
         </section>
         <section class="panel">
           <h2>Where jobs come from</h2>
-          <p class="hint">${inClaude ? 'Inside claude.ai, live jobs come from Indeed through your own Indeed connector. Your Claude account runs the search; there is no extra cost.' : 'Live jobs come from Indeed when CV Tailor is opened inside claude.ai with the Indeed connector.'} A free daily robot on GitHub also collects Reed and Adzuna jobs through their official free APIs (switch it on from the Jobs page). LinkedIn, Totaljobs, CWJobs, Jobserve, CV-Library and Glassdoor open as one-click searches because they don't allow automated collection.</p>
+          <p class="hint">${inClaude ? 'Inside claude.ai, live jobs come from Indeed through your own Indeed connector. Your Claude account runs the search; there is no extra cost.' : 'Live jobs come from Indeed when Applywise is opened inside claude.ai with the Indeed connector.'} When you ask Claude to “run my job robot”, it also searches SimplyHired, Reed, ContractorUK, Jooble and consultancy career pages, removes duplicates and adds new matches here. LinkedIn, Totaljobs, CWJobs and Glassdoor don't allow automated reading, so they open as one-click searches; their free job-alert emails are another way in.</p>
           <p class="hint mt">The match score is worked out in your browser: it compares the skills named in each advert with your CV and career profile. A “~” means only the job title was checked so far.</p>
         </section>
         <section class="panel">
           <h2>Your data</h2>
           <ul class="tight">
-            <li>Your CVs, profile and applications are stored only in this browser (IndexedDB). There is no CV Tailor server and no account.</li>
-            <li>When you run the agent, the advert and your CV text go to the AI engine you chose: your Claude plan or Google Gemini. CV Tailor only uses free engines and never a paid API.</li>
+            <li>Your CVs, profile and applications are stored only in this browser (IndexedDB). There is no Applywise server and no account.</li>
+            <li>When you run the agent, the advert and your CV text go to the AI engine you chose: your Claude plan or Google Gemini. Applywise only uses free engines and never a paid API.</li>
             <li>A Gemini key stays in this browser's storage and is sent only to Google.</li>
             <li>Back up or move your data from Settings → Backup. Clearing browser data deletes it.</li>
           </ul>

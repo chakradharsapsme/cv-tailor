@@ -34,7 +34,9 @@
     'Design authority', 'Solution architecture|Solution architect', 'Pre-sales|presales', 'Workshops', 'Business case',
     'Change management', 'Team leadership|team lead|lead a team|line management', 'Offshore delivery|offshore',
     'Procurement transformation', 'Category management', 'Sustainability|ESG', 'AI|Artificial intelligence|Joule|machine learning',
-    'SAP Analytics Cloud|SAC', 'Power BI', 'Security clearance|SC clearance|SC cleared|DV clearance', 'Public sector'
+    'SAP Analytics Cloud|SAC', 'Power BI', 'Security clearance|SC clearance|SC cleared|DV clearance', 'Public sector',
+    'Business analysis|Business analyst|requirements gathering|requirements analysis', 'Process mapping|BPMN|as-is|to-be', 'User stories|acceptance criteria|backlog',
+    'Jira|Confluence', 'SQL', 'Product owner', 'Gap analysis', 'Functional specifications|functional specs|functional design'
   ];
   const escRe = s => s.replace(/[.*+?^${}()|[\]\\\/]/g, '\\$&');
   const TERMS = LEXICON.map(entry => {
@@ -66,6 +68,16 @@
 
   const AGENCY = /recruit|resourc|staffing|talent|selection|personnel|search|hays|harvey nash|nigel frank|tenth revolution|frank group|eursap|oliver james|robert walters|robert half|michael page|page personnel|randstad|adecco|hudson|montash|intaso|lorien|spinks|computer futures|progressive|experis|la fosse|sanderson|hanson|ampersand|jonathan lee|gibbs|conexus|square one|sap people|hunter|jobs|careers|associates/i;
   const isAgency = c => AGENCY.test(c || '');
+  // Only IT and business-analysis roles belong in N's feed.
+  const IT_STRONG = /\b(sap|ariba|s\/?4\s?hana|s4|erp|coupa|jaggaer|ivalua|oracle|workday|dynamics|salesforce|servicenow|it|ict|digital|systems?|technology|technical|software|data|integration|platform|applications?|business analyst|business analysis|product owner|solution|p2p|s2p|procure[- ]to[- ]pay|source[- ]to[- ]pay|ai|cloud)\b/i;
+  const IT_GENERIC = /\b(analyst|consultant|architect|transformation|programme|project|lead|manager|specialist|owner)\b/i;
+  const NON_IT = /\b(buyer|driver|warehouse operative|operative|nurse|carer|care assistant|chef|cleaner|forensics?|account executive|sales executive|business development|recruitment consultant|teacher|mechanic|electrician|labourer|retail|cashier|commercial lead|security officer)\b/i;
+  function isItRole(j) {
+    const t = j.title || '';
+    if (NON_IT.test(t)) return false;
+    if (IT_STRONG.test(t)) return true;
+    return IT_GENERIC.test(t) && IT_STRONG.test(j.jd || '');
+  }
   const JUNIOR = /\b(junior|graduate|trainee|apprentice|assistant|coordinator|co-ordinator|entry[- ]level|intern)\b/i;
 
   /** "£60,000.00-£65,000.00 per year" → { kind: 'year', value: 62500 }. */
@@ -104,7 +116,7 @@
   const errText = e => (e && ERR[e.code]) || (e && e.message) || 'Indeed could not be reached.';
   async function call(tool, input) {
     const m = await mcp();
-    if (!m) { const e = new Error('Live job search works when CV Tailor is opened inside claude.ai with the Indeed connector.'); e.code = 'no_mcp'; throw e; }
+    if (!m) { const e = new Error('Live job search works when Applywise is opened inside claude.ai with the Indeed connector.'); e.code = 'no_mcp'; throw e; }
     let r;
     try { r = await m.callTool(SERVER, tool, input); }
     catch (e) {
@@ -165,43 +177,75 @@
   const COLLECTED_URL = 'https://chakradharsapsme.github.io/cv-tailor/data/jobs.json';
   const REPO_URL = 'https://github.com/chakradharsapsme/cv-tailor';
   let collectedAt = 0, collectedInfo = null;
-  async function syncCollected(force) {
-    if (!force && Date.now() - collectedAt < 10 * 60e3) return collectedInfo;
-    collectedAt = Date.now();
-    const onPages = /github\.io$/.test(location.hostname);
-    let data = null;
-    for (const url of onPages ? ['data/jobs.json', COLLECTED_URL] : [COLLECTED_URL]) {
-      try { const r = await fetch(url + '?t=' + Math.floor(Date.now() / 600e3), { cache: 'no-store' }); if (r.ok) { data = await r.json(); break; } } catch (_) {}
-    }
-    if (!data) { collectedInfo = { ok: false }; return collectedInfo; }
-    const feed = await loadFeed(); let added = 0;
+  function mergeCollected(feed, data) {
+    let added = 0;
     for (const c of data.jobs || []) {
+      if (!c || !c.title) continue;
       const k = keyOf(c);
       const old = feed.items[k];
       if (old) {
         old.sources = [...new Set([...(old.sources || [old.source]), ...(c.sources || [c.source])])];
         if (!old.pay && c.pay) old.pay = c.pay;
         if (!old.jd && c.snippet) { old.jd = c.snippet; old.snippetOnly = true; }
+        if (!old.posted && c.posted) old.posted = c.posted;
         continue;
       }
-      feed.items[k] = { key: k, title: c.title, company: c.company, location: c.location, type: c.type, pay: c.pay, url: c.url, posted: c.posted,
-        source: c.source, sources: c.sources || [c.source], jd: c.snippet || '', snippetOnly: true, query: c.query,
+      feed.items[k] = { key: k, title: c.title, company: c.company || '', location: c.location || '', type: c.type || '', pay: c.pay || '', url: c.url || '', posted: c.posted || '',
+        source: c.source || 'Web', sources: c.sources || [c.source || 'Web'], jd: c.snippet || '', snippetOnly: true, query: c.query || '',
         firstSeen: new Date().toISOString(), lastSeen: c.lastSeen || new Date().toISOString(), status: 'new' };
       added++;
     }
-    feed.collected = { updated: data.updated, sources: data.sources || [], errors: data.errors || [], count: (data.jobs || []).length };
+    return added;
+  }
+  /** Jobs gathered while you're away: the Claude daily robot (this page's shared store, doc robot/latest)
+   *  and, optionally, the GitHub robot (data/jobs.json, Reed + Adzuna with free keys). */
+  async function syncCollected(force) {
+    if (!force && Date.now() - collectedAt < 10 * 60e3) return collectedInfo;
+    collectedAt = Date.now();
+    const robots = [];
+    const feed = await loadFeed(); let added = 0;
+    // 1. Claude daily robot
+    try {
+      const db = window.claude && window.claude.use ? await window.claude.use('db') : null;
+      if (db) {
+        const snap = await db.doc('robot/latest').get();
+        if (snap.exists) {
+          const d = snap.data();
+          added += mergeCollected(feed, d);
+          robots.push({ id: 'claude', name: 'Claude job robot', updated: d.updated, sources: d.sources || [], errors: d.errors || [], count: (d.jobs || []).length });
+        }
+      }
+    } catch (_) {}
+    // 2. GitHub robot (optional)
+    const onPages = /github\.io$/.test(location.hostname);
+    for (const url of onPages ? ['data/jobs.json', COLLECTED_URL] : [COLLECTED_URL]) {
+      try {
+        const r = await fetch(url + '?t=' + Math.floor(Date.now() / 600e3), { cache: 'no-store' });
+        if (!r.ok) continue;
+        const d = await r.json();
+        if ((d.jobs || []).length || (d.sources || []).length) {
+          added += mergeCollected(feed, d);
+          robots.push({ id: 'github', name: 'GitHub robot', updated: d.updated, sources: d.sources || [], errors: d.errors || [], count: (d.jobs || []).length });
+        }
+        break;
+      } catch (_) {}
+    }
+    feed.robots = robots;
     await saveFeed(feed);
-    collectedInfo = { ok: true, added, ...feed.collected };
+    collectedInfo = { ok: robots.length > 0, added, robots };
     return collectedInfo;
   }
 
+  const CORE_SEARCHES = ['SAP Ariba', 'SAP S2P P2P', 'S/4HANA Procurement', 'SAP Business Analyst', 'IT Business Analyst', 'ERP Business Analyst'];
+  /** Every search list keeps at least one business-analyst search. */
+  const withBA = qs => { const q = qs.slice(0, 6); if (!q.some(x => /analyst/i.test(x))) { if (q.length >= 6) q.pop(); q.push('IT Business Analyst'); } return q; };
   async function defaultSearches() {
     const p = await S.getProfile();
-    const roles = (p.targetRoles || []).filter(Boolean);
-    return (roles.length ? roles : ['SAP Ariba', 'SAP S2P', 'SAP P2P', 'S/4HANA Procurement']).slice(0, 6);
+    const roles = (p.targetRoles || []).filter(Boolean).slice(0, 3);
+    return withBA([...new Set(roles.concat(CORE_SEARCHES))].slice(0, 6));
   }
   async function searchesOf(feed) {
-    if (feed.searches && feed.searches.queries && feed.searches.queries.length) return feed.searches;
+    if (feed.searches && feed.searches.queries && feed.searches.queries.length) return Object.assign({}, feed.searches, { queries: withBA(feed.searches.queries) });
     const p = await S.getProfile();
     return { queries: await defaultSearches(), location: (p.targetLocations || [])[0] || 'United Kingdom', remote: true, type: p.workPreference === 'Contract' ? 'contract' : '' };
   }
@@ -432,6 +476,12 @@
   const TYPE_LABEL = { '': 'Any type', contract: 'Contract', fulltime: 'Full-time', parttime: 'Part-time', temporary: 'Temporary' };
   const relTime = iso => { if (!iso) return 'never'; const m = Math.round((Date.now() - new Date(iso)) / 60000); return m < 1 ? 'just now' : m < 60 ? m + ' min ago' : m < 1440 ? Math.round(m / 60) + ' h ago' : Math.round(m / 1440) + ' d ago'; };
 
+  const srcOf = j => [...new Set(j.sources && j.sources.length ? j.sources : [j.source || 'Indeed'])];
+  const kindOf = j => { const t = (j.type + ' ' + j.title + ' ' + (j.pay || '')).toLowerCase(); return /contract|fixed.?term|ftc|temporary|interim|per day|\/day|day rate|inside ir35|outside ir35/.test(t) ? 'contract' : /permanent|full.?time|per annum|a year/.test(t) ? 'perm' : ''; };
+  const modeOf = j => { const t = (j.location + ' ' + j.type + ' ' + (j.remote ? 'remote' : '') + ' ' + (j.jd || '').slice(0, 600)).toLowerCase(); return /\bhybrid\b/.test(t) ? 'hybrid' : /\bremote\b|work from home|wfh/.test(t) ? 'remote' : /on.?site|office based/.test(t) ? 'onsite' : ''; };
+  const payValue = j => { const p = parsePay(j.pay); if (!p) return 0; return p.kind === 'day' ? p.value * 220 : p.value; };
+  const MODE_LABEL = { remote: 'Remote', hybrid: 'Hybrid', onsite: 'On-site' };
+
   function jobCard(j, sc, dups, compact) {
     const age = sc.age;
     return html`<article class="job ${j.status === 'new' ? 'is-new' : ''}" data-key="${j.key}">
@@ -442,7 +492,8 @@
           ${j.status === 'new' ? html`<span class="chip accent">New</span>` : ''}
           ${j.status === 'imported' ? html`<span class="chip ok">In pipeline</span>` : ''}
         </div>
-        <div class="job-meta"><span class="src">${(j.sources || [j.source || 'Indeed']).join(' + ')}</span> · ${j.company || 'Company not shown'}${j.location ? ' · ' + j.location : ''}${j.remote ? ' · remote option' : ''}${j.type ? ' · ' + j.type : ''}${j.pay ? ' · ' + j.pay : ''}${age != null ? html` · <span class="${age > 30 ? 'warn-text' : ''}">${age === 0 ? 'today' : age + 'd ago'}</span>` : ''}</div>
+        <div class="job-srcs">${srcOf(j).map(x => html`<span class="src-badge">${x}</span>`)}${srcOf(j).length > 1 ? html`<span class="chip ok" title="The same job is advertised on several sites, a sign it is live and funded">Seen on ${srcOf(j).length} sites</span>` : ''}${modeOf(j) ? html`<span class="chip muted">${MODE_LABEL[modeOf(j)]}</span>` : ''}</div>
+        <div class="job-meta">${j.company || 'Company not shown'}${j.location ? ' · ' + j.location : ''}${j.remote ? ' · remote option' : ''}${j.type ? ' · ' + j.type : ''}${j.pay ? ' · ' + j.pay : ''}${age != null ? html` · <span class="${age > 30 ? 'warn-text' : ''}">${age === 0 ? 'today' : age + 'd ago'}</span>` : ''}</div>
         ${compact ? '' : html`<div class="job-chips">
           ${sc.flags.map(f => html`<span class="chip ${f.cls}">${f.text}</span>`)}
           ${dups.length ? html`<span class="chip bad" title="${dups.map(d => d.app.role + ' at ' + d.app.company + ': ' + d.why).join('; ')}">Possible duplicate in pipeline</span>` : ''}
@@ -462,19 +513,20 @@
     const col = await syncCollected();
     const [feed, apps, profile, avail, ev] = await Promise.all([loadFeed(), S.listApps(), S.getProfile(), available(), evidence()]);
     const cfg = await searchesOf(feed);
-    const ui = Object.assign({ min: 0, days: 30, type: '', q: '', sort: 'score', showHidden: false }, S.local.get('cvt.jobsUi', {}));
+    const ui = Object.assign({ min: 0, days: 30, type: '', q: '', sort: 'score', showHidden: false, allRoles: false, src: '', kind: '', mode: '' }, S.local.get('cvt.jobsUi', {}));
 
     root.innerHTML = String(html`
       <header class="page-head">
-        <div><p class="eyebrow">${[avail ? 'Indeed live · ' + relTime(feed.lastRun) : '', col && col.ok && col.sources.length ? col.sources.join(' + ') + ' daily · ' + relTime(col.updated) : ''].filter(Boolean).join('  ·  ') || 'Job search'}</p><h1>Jobs for you</h1></div>
+        <div><p class="eyebrow">${[avail ? 'Indeed live · ' + relTime(feed.lastRun) : '', col && col.ok ? 'Job robot · ' + relTime(col.robots[0].updated) : ''].filter(Boolean).join('  ·  ') || 'Job search'}</p><h1>Jobs for you</h1></div>
         <div class="row gap wrap">
           ${avail ? html`<button class="btn primary" id="jb-refresh" type="button">Refresh jobs</button>` : ''}
+          <a class="btn ghost" href="#/autopilot">Autopilot</a>
           <a class="btn ghost" href="#/new">Paste an advert</a>
         </div>
       </header>
       ${!avail ? html`<section class="panel callout">
         <h2>Live job feed</h2>
-        <p class="hint">Jobs are pulled from Indeed through your Claude account's Indeed connector, at no cost. Open CV Tailor inside claude.ai to switch it on. Here you can still search every UK board in one click (below) and paste any advert into a new application.</p>
+        <p class="hint">Jobs are pulled from Indeed through your Claude account's Indeed connector, at no cost. Open Applywise inside claude.ai to switch it on. Here you can still search every UK board in one click (below) and paste any advert into a new application.</p>
       </section>` : ''}
       <p class="error" id="jb-err" role="alert" ${feed.errors && feed.errors.length ? '' : raw('hidden')}>${feed.errors && feed.errors[0] ? feed.errors[0].text : ''}</p>
       <ol class="progress" id="jb-prog" hidden></ol>
@@ -485,10 +537,15 @@
             <input id="f-q" type="search" placeholder="Filter by title, company, skill" value="${ui.q}" aria-label="Filter jobs">
             <label class="inline-field">Min match <select id="f-min">${[0, 40, 50, 60, 70].map(n => html`<option value="${n}" ${ui.min == n ? raw('selected') : ''}>${n ? n + '+' : 'Any'}</option>`)}</select></label>
             <label class="inline-field">Posted <select id="f-days">${[[3, '3 days'], [7, '7 days'], [14, '14 days'], [30, '30 days'], [9999, 'Any time']].map(([v, l]) => html`<option value="${v}" ${ui.days == v ? raw('selected') : ''}>${l}</option>`)}</select></label>
-            <label class="inline-field">Sort <select id="f-sort"><option value="score" ${ui.sort === 'score' ? raw('selected') : ''}>Best match</option><option value="date" ${ui.sort === 'date' ? raw('selected') : ''}>Newest</option></select></label>
+            <label class="check-line"><input id="f-all" type="checkbox" ${ui.allRoles ? raw('checked') : ''}> Show non-IT roles</label>
+            <label class="inline-field">Sort <select id="f-sort"><option value="score" ${ui.sort === 'score' ? raw('selected') : ''}>Best match</option><option value="date" ${ui.sort === 'date' ? raw('selected') : ''}>Newest</option><option value="pay" ${ui.sort === 'pay' ? raw('selected') : ''}>Highest pay</option></select></label>
+            <label class="inline-field">Type <select id="f-kind">${[['', 'Any'], ['contract', 'Contract'], ['perm', 'Permanent']].map(([v, l]) => html`<option value="${v}" ${ui.kind === v ? raw('selected') : ''}>${l}</option>`)}</select></label>
+            <label class="inline-field">Work <select id="f-mode">${[['', 'Any'], ['remote', 'Remote'], ['hybrid', 'Hybrid'], ['onsite', 'On-site']].map(([v, l]) => html`<option value="${v}" ${ui.mode === v ? raw('selected') : ''}>${l}</option>`)}</select></label>
           </div>
+          <div class="src-bar" id="f-src" role="group" aria-label="Filter by job site"></div>
+          <div class="feed-sum" id="jb-sum"></div>
           <div id="jb-list" class="job-list"></div>
-          <p class="muted small" id="jb-foot"></p>
+          <div class="row gap wrap mt"><p class="muted small grow" id="jb-foot"></p><button class="btn small ghost" id="jb-csv" type="button">Export shortlist (CSV)</button></div>
         </section>
 
         <aside class="jobs-side">
@@ -505,19 +562,17 @@
           </section>
 
           <section class="panel">
-            <div class="panel-head"><h2>Daily job robot</h2>${col && col.ok && col.sources.length ? html`<span class="chip ok">On</span>` : html`<span class="chip muted">Not set up</span>`}</div>
-            ${col && col.ok && col.sources.length ? html`
-              <p class="hint">Collects UK jobs every morning from ${col.sources.join(' and ')} (official free APIs; Adzuna also lists jobs from many other UK boards). Last run ${relTime(col.updated)}, ${col.count} jobs kept.</p>
-              ${col.errors && col.errors.length ? html`<p class="error small">${col.errors[0]}</p>` : ''}
-              <p class="small"><a class="link" href="${REPO_URL}/actions/workflows/fetch-jobs.yml" target="_blank" rel="noopener">Run it now on GitHub</a> · <a class="link" href="${REPO_URL}/edit/main/jobs.config.json" target="_blank" rel="noopener">Change its searches</a></p>`
-            : html`
-              <p class="hint">A free robot on GitHub that collects Reed and Adzuna jobs every morning and adds them here. One-time setup, about 10 minutes, £0:</p>
-              <ol class="tight small">
-                <li>Get a free key at <a class="link" href="https://www.reed.co.uk/developers/jobseeker" target="_blank" rel="noopener">reed.co.uk/developers</a>.</li>
-                <li>Get a free app ID and key at <a class="link" href="https://developer.adzuna.com/signup" target="_blank" rel="noopener">developer.adzuna.com</a>.</li>
-                <li>In <a class="link" href="${REPO_URL}/settings/secrets/actions" target="_blank" rel="noopener">GitHub → Settings → Secrets → Actions</a>, add <code>REED_API_KEY</code>, <code>ADZUNA_APP_ID</code> and <code>ADZUNA_APP_KEY</code>.</li>
-                <li><a class="link" href="${REPO_URL}/actions/workflows/fetch-jobs.yml" target="_blank" rel="noopener">Run the workflow</a> once. After that it runs daily.</li>
-              </ol>`}
+            <div class="panel-head"><h2>Job robot</h2>${col && col.ok ? html`<span class="chip ok">Ready</span>` : html`<span class="chip muted">Not run yet</span>`}</div>
+            ${col && col.ok ? col.robots.map(r => html`<p class="hint"><strong>${r.name}</strong>: ${r.count} jobs from ${r.sources.join(', ') || 'job sites'}, last run ${relTime(r.updated)}.</p>
+              ${r.errors && r.errors.length ? html`<p class="muted small">Note: ${r.errors[0]}</p>` : ''}`)
+            : ''}
+            <p class="hint">Runs only when you ask. In any Claude chat, type <strong>“run my job robot”</strong>: Claude searches Indeed, SimplyHired, Reed, ContractorUK and consultancy career pages (Deloitte, PwC, KPMG, EY, Accenture, Capgemini) for SAP, S2P/P2P and IT business-analyst roles, removes duplicates across sites and adds new matches here. LinkedIn, Totaljobs and CWJobs block automated reading; set up their free job-alert emails instead. For Indeed only, press <strong>Refresh jobs</strong> above.</p>
+            <details class="small"><summary>Optional: add Reed and Adzuna feeds</summary>
+              <ol class="tight small mt">
+                <li>Get a free key at <a class="link" href="https://www.reed.co.uk/developers/jobseeker" target="_blank" rel="noopener">reed.co.uk/developers</a> and a free app ID and key at <a class="link" href="https://developer.adzuna.com/signup" target="_blank" rel="noopener">developer.adzuna.com</a>.</li>
+                <li>In <a class="link" href="${REPO_URL}/settings/secrets/actions" target="_blank" rel="noopener">GitHub → Settings → Secrets → Actions</a>, add <code>REED_API_KEY</code>, <code>ADZUNA_APP_ID</code> and <code>ADZUNA_APP_KEY</code>, then <a class="link" href="${REPO_URL}/actions/workflows/fetch-jobs.yml" target="_blank" rel="noopener">run the workflow</a> once.</li>
+              </ol>
+            </details>
           </section>
 
           <section class="panel" id="mk"></section>
@@ -543,24 +598,37 @@
       </div>`);
 
     // ---- list ----
+    let shown = [];
     const draw = async () => {
       const f = await loadFeed();
       const allApps = await S.listApps();
       const q = ui.q.toLowerCase();
-      const rows = Object.values(f.items)
+      const base = Object.values(f.items)
         .filter(j => j.status !== 'hidden')
+        .filter(j => ui.allRoles || isItRole(j))
         .filter(j => !q || (j.title + ' ' + j.company + ' ' + j.location + ' ' + (j.jd || '')).toLowerCase().includes(q))
+        .filter(j => !ui.kind || kindOf(j) === ui.kind)
+        .filter(j => !ui.mode || modeOf(j) === ui.mode)
         .map(j => ({ j, sc: score(j, ev, cfg.queries), dups: j.status === 'imported' ? [] : duplicates(j, allApps) }))
-        .filter(r => r.sc.score >= ui.min && (r.sc.age == null || r.sc.age <= ui.days))
-        .sort((a, b) => ui.sort === 'date' ? (b.j.posted || '').localeCompare(a.j.posted || '') : b.sc.score - a.sc.score || (b.j.posted || '').localeCompare(a.j.posted || ''));
+.filter(r => r.sc.score >= ui.min && (r.sc.age == null || r.sc.age <= ui.days));
+      // source counts use every other filter, so the numbers always add up
+      const counts = {}; base.forEach(r => srcOf(r.j).forEach(x => { counts[x] = (counts[x] || 0) + 1; }));
+      if (ui.src && !counts[ui.src]) ui.src = '';
+      const rows = base.filter(r => !ui.src || srcOf(r.j).includes(ui.src))
+        .sort((a, b) => ui.sort === 'pay' ? payValue(b.j) - payValue(a.j) || b.sc.score - a.sc.score : ui.sort === 'date' ? (b.j.posted || '').localeCompare(a.j.posted || '') : b.sc.score - a.sc.score || (b.j.posted || '').localeCompare(a.j.posted || ''));
+      $('#f-src', root).innerHTML = Object.keys(counts).length > 1 ? [html`<button type="button" class="src-pill ${!ui.src ? 'on' : ''}" data-src="">All sites <b>${base.length}</b></button>`, ...Object.entries(counts).sort((a, b) => b[1] - a[1]).map(([k, n]) => html`<button type="button" class="src-pill ${ui.src === k ? 'on' : ''}" data-src="${k}">${k} <b>${n}</b></button>`)].map(String).join('') : '';
+      const strong = rows.filter(r => r.sc.score >= 70).length, fresh = rows.filter(r => r.j.status === 'new').length, multi = rows.filter(r => srcOf(r.j).length > 1).length;
+      $('#jb-sum', root).innerHTML = rows.length ? String(html`<span><b>${rows.length}</b> jobs</span><span><b>${strong}</b> strong matches</span><span><b>${fresh}</b> new</span><span><b>${Object.keys(counts).length}</b> sites</span>${multi ? html`<span><b>${multi}</b> on several sites</span>` : ''}`) : '';
+      shown = rows;
       const list = $('#jb-list', root);
       if (!Object.keys(f.items).length) {
-        list.innerHTML = String(html`<div class="empty-state"><h2>No jobs yet</h2><p class="hint">${avail ? 'Press Refresh jobs. The first time, claude.ai asks you to allow the Indeed connector for this page.' : 'Open CV Tailor inside claude.ai to pull live jobs, or use the board links.'}</p></div>`);
+        list.innerHTML = String(html`<div class="empty-state"><h2>No jobs yet</h2><p class="hint">${avail ? 'Press Refresh jobs. The first time, claude.ai asks you to allow the Indeed connector for this page.' : 'Open Applywise inside claude.ai to pull live jobs, or use the board links.'}</p></div>`);
       } else if (!rows.length) {
         list.innerHTML = String(html`<p class="empty-note">No jobs match these filters. Lower the minimum match or widen the date range.</p>`);
       } else list.innerHTML = rows.map(r => String(jobCard(r.j, r.sc, r.dups))).join('');
       const hidden = Object.values(f.items).filter(j => j.status === 'hidden').length;
-      $('#jb-foot', root).textContent = `${rows.length} shown · ${Object.keys(f.items).length} in feed${hidden ? ` · ${hidden} hidden` : ''}. The match score compares the skills in each advert with your CV and career profile; “~” means only the title was checked.`;
+      const nonIt = ui.allRoles ? 0 : Object.values(f.items).filter(j => j.status !== 'hidden' && !isItRole(j)).length;
+      $('#jb-foot', root).textContent = `${rows.length} shown · ${Object.keys(f.items).length} in feed${hidden ? ` · ${hidden} hidden` : ''}${nonIt ? ` · ${nonIt} non-IT roles filtered out` : ''}. The match score compares the skills in each advert with your CV and career profile; “~” means only the title was checked.`;
     };
     await draw();
     const saveUi = () => S.local.set('cvt.jobsUi', ui);
@@ -568,6 +636,16 @@
     $('#f-min', root).addEventListener('change', e => { ui.min = Number(e.target.value); saveUi(); draw(); });
     $('#f-days', root).addEventListener('change', e => { ui.days = Number(e.target.value); saveUi(); draw(); });
     $('#f-sort', root).addEventListener('change', e => { ui.sort = e.target.value; saveUi(); draw(); });
+    $('#f-all', root).addEventListener('change', e => { ui.allRoles = e.target.checked; saveUi(); draw(); });
+    $('#f-kind', root).addEventListener('change', e => { ui.kind = e.target.value; saveUi(); draw(); });
+    $('#f-mode', root).addEventListener('change', e => { ui.mode = e.target.value; saveUi(); draw(); });
+    $('#f-src', root).addEventListener('click', e => { const b = e.target.closest('[data-src]'); if (!b) return; ui.src = b.dataset.src; saveUi(); draw(); });
+    $('#jb-csv', root).addEventListener('click', () => {
+      const cell = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+      const head = ['Match', 'Title', 'Company', 'Location', 'Type', 'Work', 'Pay', 'Posted', 'Sites', 'Status', 'Link'];
+      const lines = [head.map(cell).join(',')].concat(shown.map(({ j, sc }) => [sc.score, j.title, j.company, j.location, j.type || (kindOf(j) === 'perm' ? 'Permanent' : kindOf(j) === 'contract' ? 'Contract' : ''), MODE_LABEL[modeOf(j)] || '', j.pay, j.posted, srcOf(j).join(' + '), j.status, j.url].map(cell).join(',')));
+      window.CVT.ui.download(new Blob(['\ufeff' + lines.join('\r\n')], { type: 'text/csv' }), `Job_shortlist_${new Date().toISOString().slice(0, 10)}.csv`);
+    });
 
     // ---- actions on a job ----
     $('#jb-list', root).addEventListener('click', async e => {
@@ -708,12 +786,12 @@
     await syncCollected();
     const [feed, ev, apps] = await Promise.all([loadFeed(), evidence(), S.listApps()]);
     const cfg = await searchesOf(feed);
-    const items = Object.values(feed.items).filter(j => j.status === 'new' || j.status === 'seen')
+    const items = Object.values(feed.items).filter(j => (j.status === 'new' || j.status === 'seen') && isItRole(j))
       .map(j => ({ j, sc: score(j, ev, cfg.queries), dups: duplicates(j, apps) }))
       .filter(r => r.sc.age == null || r.sc.age <= 30)
       .sort((a, b) => b.sc.score - a.sc.score);
     return { feed, items: items.slice(0, n), newCount: items.filter(r => r.j.status === 'new' && r.sc.score >= 60).length, total: items.length };
   }
 
-  window.CVT.jobs = { syncCollected, view, refresh, top, jobCard, details, importJob, setStatus, available, duplicates, companyIntel, intelCard, boards, termsIn, parsePay, parseSearch, parseDetails, rateCalc, resetEvidence, relTime, checkTop, errText };
+  window.CVT.jobs = { isItRole, syncCollected, view, refresh, top, jobCard, details, importJob, setStatus, available, duplicates, companyIntel, intelCard, boards, termsIn, parsePay, parseSearch, parseDetails, rateCalc, resetEvidence, relTime, checkTop, errText };
 })();

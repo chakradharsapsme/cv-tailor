@@ -3,8 +3,8 @@
   const { html, raw, esc, $, $$, toast, download, copy, today, ukDate, daysBetween, slug, VERDICT, scoreCls, gauge, progress, state, masterModel } = window.CVT.ui;
   const S = window.CVT.store, A = window.CVT.agent, D = window.CVT.docx;
   const TABS = [
-    ['job', 'Job'], ['fit', 'Fit & decision'], ['cv', 'CV'], ['letter', 'Cover letter'],
-    ['outreach', 'Outreach'], ['interview', 'Interview prep'], ['apply', 'Apply']
+    ['job', 'Job'], ['fit', 'Fit & decision'], ['cv', 'CV'], ['compare', 'Compare CVs'], ['letter', 'Cover letter'],
+    ['outreach', 'Outreach'], ['interview', 'Interview prep'], ['docs', 'Documents'], ['apply', 'Apply']
   ];
   const opts = (list, cur) => list.map(o => html`<option value="${o}" ${o === cur ? raw('selected') : ''}>${o || '—'}</option>`);
 
@@ -174,7 +174,7 @@
 
     const body = $('#ws-body', root);
     const ctx = { a, an, profile, masters, body, saveSoon, saveNow, go, root };
-    await ({ job: tabJob, fit: tabFit, cv: tabCv, letter: tabLetter, outreach: tabOutreach, interview: tabInterview, apply: tabApply })[tab](ctx);
+    await ({ job: tabJob, fit: tabFit, cv: tabCv, compare: tabCompare, letter: tabLetter, outreach: tabOutreach, interview: tabInterview, docs: c => window.CVT.docs.tab(c), apply: tabApply })[tab](ctx);
   }
 
   const needAnalysis = ctx => { ctx.body.innerHTML = String(html`<div class="empty-state"><h2>Analyse the job first</h2><p class="hint">Paste the job description on the Job tab and run the analysis. Everything else builds on it.</p><a class="btn primary" href="#/app/${ctx.a.id}/job">Go to Job</a></div>`); };
@@ -412,7 +412,8 @@
             <p class="muted small">Master: ${mm.master.name}${t ? html` · ${t.applied} change${t.applied === 1 ? '' : 's'} applied${t.skipped.length ? `, ${t.skipped.length} skipped` : ''}` : ''}</p>
             <div class="stack">
               ${an ? html`<button class="btn primary" id="dl-cv" type="button">Download tailored CV</button>` : ''}
-              <button class="btn ghost" id="compare-btn" type="button">${an ? 'Compare with master' : 'Preview master'}</button>
+              ${an ? html`<a class="btn ghost" href="#/app/${a.id}/compare">Compare original and tailored</a>` : ''}
+              <button class="btn ghost" id="compare-btn" type="button">${an ? 'Word preview, side by side' : 'Preview master'}</button>
               <p class="muted small" id="pages-note"></p>
             </div>
           </section>
@@ -457,6 +458,99 @@
         $('#pages-note', body).textContent = pa === pb ? `Same page count in preview (${pa}). Confirm in Word.` : `Preview shows ${pa} → ${pb} pages. Reject a longer rewrite, then confirm in Word.`;
       } else { $('#cmp-b', body).closest('div').hidden = true; }
       c.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+
+
+  // =====================================================================
+  // COMPARE: original CV vs tailored CV, paragraph by paragraph, colour-marked
+  // =====================================================================
+  function compareRows(a, mm, t) {
+    const plan = planOf(a, mm);
+    const skipped = new Set((t.skipped || []).map(x => String(x.id)));
+    const edits = new Map(plan.edits.filter(e => !skipped.has(String(e.id))).map(e => [e.id, e]));
+    const removed = new Set(plan.remove.filter(id => !skipped.has(String(id))));
+    let order = mm.model.paras.map(p => p.id);
+    const moved = new Set();
+    plan.reorder.filter(g => !skipped.has(g.join(','))).forEach(g => {
+      const slots = g.map(id => order.indexOf(id)).sort((x, y) => x - y);
+      g.forEach((id, i) => { if (order[slots[i]] !== id) moved.add(id); order[slots[i]] = id; });
+    });
+    return order.map(id => paraById(mm, id)).filter(p => p && p.text.trim()).map(p => {
+      const e = edits.get(p.id);
+      const after = removed.has(p.id) ? '' : e ? editText(e, p) : p.text;
+      const kind = removed.has(p.id) ? 'removed' : (e && after !== p.text) ? (moved.has(p.id) ? 'edited moved' : 'edited') : moved.has(p.id) ? 'moved' : 'same';
+      const heading = /heading|title/i.test(p.style) || (!p.isList && p.text.length < 40 && p.text === p.text.toUpperCase() && /[A-Z]/.test(p.text));
+      return { p, before: p.text, after, kind, heading };
+    });
+  }
+  function sideHtml(r, side) {
+    const pre = r.p.isList ? '• ' : '';
+    if (r.kind === 'removed') return side === 'a' ? html`${pre}<del>${r.before}</del>` : html`<span class="cmp-gone">Removed from the tailored CV</span>`;
+    if (!/edited/.test(r.kind)) return html`${pre}${side === 'a' ? r.before : r.after}`;
+    const parts = wordDiff(r.before, r.after);
+    return side === 'a'
+      ? html`${pre}${parts.filter(x => x.t !== 'ins').map(x => x.t === 'del' ? html`<del>${x.s}</del>` : x.s)}`
+      : html`${pre}${parts.filter(x => x.t !== 'del').map(x => x.t === 'ins' ? html`<ins>${x.s}</ins>` : x.s)}`;
+  }
+
+  async function tabCompare(ctx) {
+    const { a, an, body } = ctx;
+    if (!an) return needAnalysis(ctx);
+    const mm = await masterModel(a.masterId);
+    if (!mm) { body.innerHTML = String(html`<div class="empty-state"><h2>No master CV yet</h2><a class="btn primary" href="#/profile">Career profile</a></div>`); return; }
+    const t = await tailored(a, mm);
+    const rows = compareRows(a, mm, t);
+    const ch = rows.filter(r => r.kind !== 'same');
+    const addedWords = rows.reduce((n, r) => n + (/edited/.test(r.kind) ? wordDiff(r.before, r.after).filter(x => x.t === 'ins').reduce((k, x) => k + (x.s.match(/\S+/g) || []).length, 0) : 0), 0);
+    const kws = an.keywords || [];
+    const before = D.keywordCoverage(D.plainText(mm.model), kws), after = D.keywordCoverage(t.text, kws);
+    const gained = after.hit.filter(k => !before.hit.includes(k));
+    const n = k => rows.filter(r => r.kind.includes(k)).length;
+    const ui = Object.assign({ only: false }, S.local.get('cvt.cmpUi', {}));
+
+    body.innerHTML = String(html`
+      <section class="panel cmp-head">
+        <div class="panel-head"><h2>Original vs tailored CV</h2>
+          <div class="row gap wrap"><label class="check-line"><input type="checkbox" id="cmp-only" ${ui.only ? raw('checked') : ''}> Show changes only</label>
+          <button class="btn ghost small" id="cmp-next" type="button" ${ch.length ? '' : raw('disabled')}>Next change ↓</button>
+          <button class="btn ghost small" id="cmp-dl" type="button">Download comparison</button>
+          <a class="btn primary small" href="#/app/${a.id}/cv">Accept or reject changes</a></div></div>
+        <div class="cmp-stats">
+          <div><b>${n('edited')}</b><span>paragraphs updated</span></div>
+          <div><b>${addedWords}</b><span>words added</span></div>
+          <div><b>${n('moved')}</b><span>moved</span></div>
+          <div><b>${n('removed')}</b><span>removed</span></div>
+          ${kws.length ? html`<div><b>${before.pct}% → ${after.pct}%</b><span>job keywords covered</span></div>` : ''}
+        </div>
+        <div class="cmp-legend" aria-label="Colour key">
+          <span><i class="lg-ins"></i>Added for this job</span><span><i class="lg-del"></i>Removed</span>
+          <span><i class="lg-edit"></i>Paragraph updated</span><span><i class="lg-move"></i>Moved higher</span><span><i class="lg-same"></i>Unchanged</span>
+        </div>
+        ${gained.length ? html`<p class="small mt">Keywords now on your CV: ${gained.map(k => html`<span class="chip ok">${k}</span> `)}</p>` : ''}
+        ${after.miss.length ? html`<p class="small muted">Still missing: ${after.miss.slice(0, 12).join(', ')}${after.miss.length > 12 ? '…' : ''}</p>` : ''}
+        ${t.skipped.length ? html`<p class="small warn-text">${t.skipped.length} change${t.skipped.length > 1 ? 's' : ''} could not be applied safely and ${t.skipped.length > 1 ? 'are' : 'is'} not shown.</p>` : ''}
+        ${ch.length ? '' : html`<p class="empty-note">No changes accepted yet. Tick changes on the CV tab, then come back here.</p>`}
+      </section>
+      <section class="panel cmp-panel ${ui.only ? 'only' : ''}" id="cmp">
+        <div class="cmp-cols cmp-titles"><div>Original · ${mm.master.name}</div><div>Tailored for ${a.company || 'this job'}</div></div>
+        ${rows.map((r, i) => html`<div class="cmp-row k-${r.kind.split(' ').join(' k-')} ${r.heading ? 'is-h' : ''}" data-i="${i}">
+          <div class="cmp-a"><span class="cmp-lbl">Original</span>${sideHtml(r, 'a')}</div>
+          <div class="cmp-b"><span class="cmp-lbl">Tailored</span>${sideHtml(r, 'b')}${r.kind.includes('moved') ? html` <span class="chip move">moved</span>` : ''}</div>
+        </div>`)}
+      </section>`);
+
+    $('#cmp-only', body).addEventListener('change', e => { ui.only = e.target.checked; S.local.set('cvt.cmpUi', ui); $('#cmp', body).classList.toggle('only', ui.only); });
+    let at = -1;
+    $('#cmp-next', body).addEventListener('click', () => {
+      const els = $$('.cmp-row:not(.k-same)', body); if (!els.length) return;
+      at = (at + 1) % els.length; els.forEach(x => x.classList.remove('focus'));
+      els[at].classList.add('focus'); els[at].scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+    $('#cmp-dl', body).addEventListener('click', () => {
+      const css = `body{font:14px/1.5 Calibri,Arial,sans-serif;color:#141922;margin:24px;max-width:1200px}h1{font-size:20px}table{border-collapse:collapse;width:100%}td,th{vertical-align:top;padding:8px 10px;border-bottom:1px solid #E3E6EC;width:50%}th{text-align:left;background:#F3F4F7}ins{background:#CDEFD8;text-decoration:none}del{background:#F8D3D3;color:#8A2A2A}tr.k-edited td{border-left:4px solid #E0A100}tr.k-moved td{border-left:4px solid #2447D6}tr.k-removed td{background:#FDF1F1}tr.k-same td{color:#5A6373}.h td{font-weight:700}.key span{margin-right:16px}`;
+      const out = `<!doctype html><meta charset="utf-8"><title>CV comparison · ${esc(a.role || '')}</title><style>${css}</style><h1>CV comparison: ${esc(a.role || '')}${a.company ? ' at ' + esc(a.company) : ''}</h1><p class="key"><span><ins>added</ins></span><span><del>removed</del></span><span>amber bar: updated</span><span>blue bar: moved</span></p><p>${n('edited')} paragraphs updated · ${addedWords} words added · ${n('moved')} moved · ${n('removed')} removed${kws.length ? ` · keywords ${before.pct}% → ${after.pct}%` : ''}</p><table><tr><th>Original</th><th>Tailored</th></tr>${rows.map(r => `<tr class="k-${r.kind.split(' ')[0]} ${r.heading ? 'h' : ''}"><td>${sideHtml(r, 'a')}</td><td>${sideHtml(r, 'b')}</td></tr>`).join('')}</table>`;
+      download(new Blob([out], { type: 'text/html' }), `${fileBase(a)}_CV_comparison.html`);
     });
   }
 
@@ -589,7 +683,7 @@
   // =====================================================================
   async function tabInterview(ctx) {
     const { a, an, body, profile } = ctx;
-    if (!an) return needAnalysis(ctx);
+    if (!an) { needAnalysis(ctx); return window.CVT.prep.interviewExtras(ctx); }
     const iv = a.interview;
     const typeCls = { technical: 'accent', behavioural: 'ok', situational: 'warn', motivation: 'muted' };
     body.innerHTML = String(html`
@@ -617,6 +711,7 @@
           <div><h3>Days 61–90</h3><ul class="tight">${(iv.plan_90.days_61_90 || []).map(t => html`<li>${t}</li>`)}</ul></div></div></section>` : ''}
       ` : html`<div class="empty-state"><p class="hint">Get a tailored pitch, 10–14 likely questions with STAR outlines from your CV, SAP topics to revise, gap handling, questions to ask, and a 90-day plan.</p></div>`}`);
 
+    await window.CVT.prep.interviewExtras(ctx);
     $('#gen', body).addEventListener('click', async e => {
       const btn = e.currentTarget, err = $('#err', body); err.hidden = true;
       const st = progress($('#prog', body), ['Preparing questions and answers (30–90 s)']);
@@ -685,7 +780,7 @@
             <div class="panel-head"><h2>Fill the employer's form</h2></div>
             <ol class="steps">
               <li><button class="btn primary small" id="pack" type="button">Copy autofill pack</button></li>
-              <li>${a.url ? html`<a class="link" href="${a.url}" target="_blank" rel="noopener">Open the application page</a>` : 'Open the application page'} and click your <a class="bookmarklet small" id="bm" href="#">⤓ CV Tailor autofill</a> bookmark. First time? Drag that button to your bookmarks bar.</li>
+              <li>${a.url ? html`<a class="link" href="${a.url}" target="_blank" rel="noopener">Open the application page</a>` : 'Open the application page'} and click your <a class="bookmarklet small" id="bm" href="#">⤓ Applywise autofill</a> bookmark. First time? Drag that button to your bookmarks bar.</li>
               <li>Check every highlighted field, fill anything left, and attach your CV:
                 <div class="row gap wrap mt">${an ? html`<button class="btn ghost small" id="dl-cv" type="button">Download CV</button>` : ''}${a.letter ? html`<button class="btn ghost small" id="dl-letter" type="button">Download letter</button>` : ''}</div></li>
               <li><strong>You</strong> press Submit. Autofill never submits.</li>
@@ -780,5 +875,52 @@ What you'll bring
 - Strong stakeholder management at Head of Procurement / CFO level
 - Desirable: SAP Ariba certification, PMP or PRINCE2, utilities sector experience, SAP Ariba Central Procurement / S/4HANA Cloud`;
 
+
+  // =====================================================================
+  // ENGINE: the same steps as the buttons, without the UI (used by Autopilot)
+  // =====================================================================
+  const engine = {
+    async analyse(a, profile, signal) {
+      if ((a.jd || '').trim().length < 200) throw new Error('Needs the full job advert');
+      const masters = await S.listMasters();
+      if (!a.masterId && masters.length) a.masterId = (masters.find(m => m.isDefault) || masters[0]).id;
+      const mm = await masterModel(a.masterId);
+      if (!mm) throw new Error('Add your master CV in Career profile first');
+      const out = await A.analyse({ key: state.key, model: state.model, signal, app: a, profile, paras: D.forModel(mm.model) });
+      const j = out.job || {};
+      const fill = (k, v) => { if (!a[k] && v && v !== 'unknown') a[k] = v; };
+      fill('company', j.company); fill('role', j.title); fill('location', j.location); fill('pay', j.pay); fill('agency', j.agency);
+      fill('workMode', { onsite: 'On-site', hybrid: 'Hybrid', remote: 'Remote' }[j.work_mode]);
+      fill('contractType', { permanent: 'Permanent', contract: 'Contract', 'fixed-term': 'Fixed-term' }[j.contract_type]);
+      if (/^\d{4}-\d{2}-\d{2}$/.test(j.closing_date || '')) fill('closing', j.closing_date);
+      a.masterId = mm.master.id; a.analysis = out; a.analysedAt = S.now();
+      prepareDecisions(a, mm);
+      a.coverageBefore = D.keywordCoverage(D.plainText(mm.model), out.keywords);
+      if (a.status === 'Saved') S.setStatus(a, 'Tailored');
+      if (!a.next && a.closing) a.next = { text: 'Apply before the closing date', due: a.closing };
+      await S.saveApp(a);
+      return out;
+    },
+    async cvText(a) { const mm = await masterModel(a.masterId); return a.analysis && !a.analysis.legacy ? (await tailored(a, mm)).text : D.plainText(mm.model); },
+    async letter(a, profile) {
+      const cvText = await engine.cvText(a), an = a.analysis || {};
+      const L = await A.coverLetter({ key: state.key, model: state.model, app: a, profile, cvText });
+      const lines = [ukDate(), '', `**Re: ${a.role || (an.job && an.job.title) || ''}${a.company ? ', ' + a.company : ''}**`, '', L.salutation || 'Dear Hiring Manager,', ''];
+      (L.paragraphs || []).forEach(p => lines.push(p, ''));
+      lines.push(L.signoff || 'Kind regards,', '', L.name || an.candidate_name || profile.name || '');
+      a.letter = lines.join('\n'); await S.saveApp(a);
+    },
+    async outreach(a, profile) { a.outreach = await A.outreach({ key: state.key, model: state.model, app: a, profile, cvText: await engine.cvText(a) }); await S.saveApp(a); },
+    async answers(a, profile) {
+      a.answers = a.answers || { why: '', salary: '', notice: '', qa: [] };
+      const out = await A.answers({ key: state.key, model: state.model, app: a, profile, cvText: await engine.cvText(a), questions: [] });
+      const ans = a.answers;
+      if (!ans.why && out.why) ans.why = out.why; if (!ans.salary && out.salary) ans.salary = out.salary; if (!ans.notice && out.notice) ans.notice = out.notice;
+      await S.saveApp(a);
+    },
+    async interview(a, profile) { a.interview = await A.interviewPrep({ key: state.key, model: state.model, app: a, profile, cvText: await engine.cvText(a) }); await S.saveApp(a); }
+  };
+
   window.CVT.views = Object.assign(window.CVT.views || {}, { workspace });
+  window.CVT.engine = engine;
 })();

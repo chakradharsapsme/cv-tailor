@@ -1,4 +1,4 @@
-/* demo.js — builds a small fictional Word CV in the browser so you can try CV Tailor without your own file. */
+/* demo.js — builds a small fictional Word CV in the browser so you can try Applywise without your own file. */
 (function () {
   const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   const run = (t, o = {}) => `<w:r>${o.b || o.i || o.sz || o.color ? `<w:rPr>${o.b ? '<w:b/>' : ''}${o.i ? '<w:i/>' : ''}${o.color ? `<w:color w:val="${o.color}"/>` : ''}${o.sz ? `<w:sz w:val="${o.sz}"/>` : ''}</w:rPr>` : ''}<w:t xml:space="preserve">${esc(t)}</w:t></w:r>`;

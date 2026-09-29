@@ -1,7 +1,7 @@
 /*
  * autofill.js — the "Autofill" bookmarklet.
  * It runs on the job site's application form, reads the application pack you
- * copied from CV Tailor, fills the fields it recognises, highlights them, and
+ * copied from Applywise, fills the fields it recognises, highlights them, and
  * shows a panel of what it did. It NEVER submits the form and never touches
  * file uploads: you review everything and press Submit yourself.
  */
@@ -25,7 +25,7 @@
       var pack;
       try { pack = JSON.parse(raw); } catch (e) { pack = null; }
       if (!pack || pack.kind !== 'cv-tailor-pack') {
-        ask('That clipboard text is not a CV Tailor pack. In CV Tailor, open the job, go to Apply and press "Copy autofill pack", then try again.');
+        ask('That clipboard text is not an Applywise pack. In Applywise, open the job, go to Apply and press "Copy autofill pack", then try again.');
         return;
       }
       var f = pack.fields || {};
@@ -117,7 +117,7 @@
         filled.push(short);
       });
 
-      panel('<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><strong>CV Tailor autofill</strong><button data-x style="border:0;background:none;font-size:18px;cursor:pointer" aria-label="Close">×</button></div>' +
+      panel('<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><strong>Applywise autofill</strong><button data-x style="border:0;background:none;font-size:18px;cursor:pointer" aria-label="Close">×</button></div>' +
         '<p style="margin:6px 0 10px;color:#5A6373">' + esc(pack.role || '') + (pack.company ? ' · ' + esc(pack.company) : '') + '</p>' +
         '<p style="margin:0 0 6px"><strong>' + filled.length + '</strong> field(s) filled and highlighted.</p>' +
         (skipped.length ? '<p style="margin:8px 0 4px"><strong>Check these yourself:</strong></p><ul style="margin:0 0 8px;padding-left:18px">' + skipped.slice(0, 15).map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ul>' : '') +
@@ -125,8 +125,8 @@
     }
 
     function ask(msg) {
-      var p = panel('<div style="display:flex;justify-content:space-between;align-items:center"><strong>CV Tailor autofill</strong><button data-x style="border:0;background:none;font-size:18px;cursor:pointer" aria-label="Close">×</button></div>' +
-        '<p style="margin:8px 0">' + esc(msg || 'Paste your application pack (copied from CV Tailor) below.') + '</p>' +
+      var p = panel('<div style="display:flex;justify-content:space-between;align-items:center"><strong>Applywise autofill</strong><button data-x style="border:0;background:none;font-size:18px;cursor:pointer" aria-label="Close">×</button></div>' +
+        '<p style="margin:8px 0">' + esc(msg || 'Paste your application pack (copied from Applywise) below.') + '</p>' +
         '<textarea style="width:100%;height:110px;box-sizing:border-box;font:12px monospace"></textarea>' +
         '<button style="margin-top:8px;padding:8px 12px;border:0;border-radius:6px;background:#2447D6;color:#fff;cursor:pointer">Fill this form</button>');
       p.querySelector('button:not([data-x])').onclick = function () { var v = p.querySelector('textarea').value; p.remove(); run(v); };

@@ -80,7 +80,7 @@
     const root = document.createElement('div');
     root.className = 'view';
     main.replaceChildren(root);
-    const navKey = view === 'app' ? 'pipeline' : (view || 'dashboard');
+    const navKey = view === 'app' ? 'pipeline' : view === 'autopilot' ? 'dashboard' : (view || 'dashboard');
     $$('.nav a').forEach(a => { if (a.dataset.nav === navKey) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
     try {
       if (view === 'new') {
@@ -94,11 +94,13 @@
       if (view === 'app') await V.workspace(root, id, tab);
       else if (view === 'pipeline') await V.pipeline(root);
       else if (view === 'jobs') await window.CVT.jobs.view(root);
+      else if (view === 'autopilot') await window.CVT.autopilot.view(root);
+      else if (view === 'prep') await window.CVT.prep.view(root, id, tab);
       else if (view === 'help') await V.help(root);
       else if (view === 'profile') await V.profile(root);
       else if (view === 'settings') await V.settings(root);
       else await V.dashboard(root);
-      document.title = ({ app: 'Application', pipeline: 'Pipeline', jobs: 'Jobs', help: 'Help and privacy', profile: 'Career profile', settings: 'Settings' }[view] || 'Dashboard') + ' · CV Tailor';
+      document.title = ({ app: 'Application', pipeline: 'Pipeline', jobs: 'Jobs', prep: 'Interview prep', autopilot: 'Autopilot', help: 'Help and privacy', profile: 'Career profile', settings: 'Settings' }[view] || 'Dashboard') + ' · Applywise';
     } catch (e) {
       console.error(e);
       root.innerHTML = `<section class="panel"><h1>Something went wrong</h1><p class="error">${window.CVT.ui.esc(e.message)}</p><p><a class="link" href="#/dashboard">Back to dashboard</a></p></section>`;
@@ -122,6 +124,12 @@
     window.addEventListener('hashchange', () => { if (location.hash && location.hash !== current) { current = location.hash; route(); } });
     await route();
     refreshBadges();
+    window.CVT.sync.onChange(st => { const n = $('#data-note'); if (n && st.state === 'on') n.textContent = 'Private to you and synced to your Claude account. Nothing is submitted without you.'; });
+    // Pull newer data from your other devices (inside claude.ai), then redraw if anything changed.
+    try {
+      const r = await window.CVT.sync.pull();
+      if (r.changed) { toast(`Updated from your other device (${r.changed} change${r.changed > 1 ? 's' : ''})`); rerender(); }
+    } catch (_) {}
   }
   /** Sidebar counts: follow-ups due, and strong new job matches. */
   async function refreshBadges() {
@@ -130,12 +138,16 @@
       const badge = $('#due-badge'); if (badge) { badge.textContent = n; badge.hidden = !n; }
       const t = await window.CVT.jobs.top(0);
       const jb = $('#jobs-badge'); if (jb) { jb.textContent = t.newCount; jb.hidden = !t.newCount; }
+      const d = await S.getKV('drills', null);
+      const t0 = new Date().toISOString().slice(0, 10);
+      const due = d ? Object.values(d.p || {}).filter(x => x.due <= t0).length : 0;
+      const pb = $('#prep-badge'); if (pb) { pb.textContent = due; pb.hidden = !due; }
     } catch (_) {}
   }
 
   window.addEventListener('error', e => toast('Error: ' + (e.message || e.error), 'bad'));
   window.addEventListener('unhandledrejection', e => toast('Error: ' + ((e.reason && e.reason.message) || e.reason), 'bad'));
   window.CVT.app = { route, rerender, refreshKey, loadModels, inClaude, go, refreshBadges };
-  if (!window.indexedDB) { $('#main').innerHTML = '<section class="panel"><h1>Storage unavailable</h1><p>This browser blocks local storage (private window?). Open CV Tailor in a normal window.</p></section>'; return; }
+  if (!window.indexedDB) { $('#main').innerHTML = '<section class="panel"><h1>Storage unavailable</h1><p>This browser blocks local storage (private window?). Open Applywise in a normal window.</p></section>'; return; }
   boot().catch(e => { console.error(e); toast(e.message, 'bad'); });
 })();

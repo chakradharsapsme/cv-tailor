@@ -6,7 +6,7 @@
  *   apps      : one record per job application
  */
 (function () {
-  const DB_NAME = 'cv-tailor', DB_VER = 1;
+  const DB_NAME = 'cv-tailor', DB_VER = 2;
   let dbp = null;
 
   function open() {
@@ -15,7 +15,7 @@
       const req = indexedDB.open(DB_NAME, DB_VER);
       req.onupgradeneeded = () => {
         const db = req.result;
-        ['kv', 'masters', 'apps'].forEach(n => { if (!db.objectStoreNames.contains(n)) db.createObjectStore(n, { keyPath: n === 'kv' ? 'k' : 'id' }); });
+        ['kv', 'masters', 'apps', 'files'].forEach(n => { if (!db.objectStoreNames.contains(n)) db.createObjectStore(n, { keyPath: n === 'kv' ? 'k' : 'id' }); });
       };
       req.onsuccess = () => resolve(req.result);
       req.onerror = () => reject(req.error);
@@ -146,14 +146,14 @@
     return { app: 'cv-tailor', version: 2, exported: now(), profile: await getProfile(), masters, apps: await listApps() };
   }
   async function importAll(obj) {
-    if (!obj || obj.app !== 'cv-tailor') throw new Error('This is not a CV Tailor backup file.');
+    if (!obj || obj.app !== 'cv-tailor') throw new Error('This is not an Applywise backup file.');
     if (obj.profile) await saveProfile(Object.assign({}, DEFAULT_PROFILE, obj.profile));
     for (const m of obj.masters || []) await put('masters', Object.assign({}, m, { data: b64.to(m.data) }));
     for (const a of obj.apps || []) await put('apps', a);
     return { masters: (obj.masters || []).length, apps: (obj.apps || []).length };
   }
   async function clearAll() {
-    for (const n of ['kv', 'masters', 'apps']) await tx(n, 'readwrite', s => req2p(s.clear()));
+    for (const n of ['kv', 'masters', 'apps', 'files']) await tx(n, 'readwrite', s => req2p(s.clear()));
     ['cvt.key', 'cvt.model', 'cvt.master', 'cvt.apps', 'cvt.draft', 'cvt.migrated'].forEach(local.del);
   }
 
@@ -182,6 +182,10 @@
     getProfile, saveProfile, DEFAULT_PROFILE, getKV, setKV,
     listMasters, addMaster, setDefaultMaster, getMaster, saveMaster, removeMaster,
     STATUSES, COLUMNS, newApp, listApps, getApp, saveApp, removeApp, setStatus,
-    exportAll, importAll, clearAll, migrateV1
+    exportAll, importAll, clearAll, migrateV1,
+    // large uploaded files (kept on this device; metadata lives on the application)
+    putFile: (id, blob) => put('files', { id, blob }), getFile: async id => { const r = await get('files', id); return r ? r.blob : null; }, delFile: id => del('files', id),
+    // raw access for device sync: writes without touching timestamps
+    _put: put, _del: del, _get: get, _all: all
   };
 })();

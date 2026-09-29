@@ -1,4 +1,4 @@
-// End-to-end test for CV Tailor v2: serves the site, mocks the AI engines (Claude plan, Gemini),
+// End-to-end test for Applywise v2: serves the site, mocks the AI engines (Claude plan, Gemini),
 // walks every view, checks the Word output and the autofill bookmarklet.
 // Run: npm i playwright jszip@3.10.1 docx-preview@0.3.5 && mkdir -p samples && python3 tests/make_demo_cv.py && node tests/e2e.mjs
 import { chromium } from 'playwright';
@@ -20,7 +20,7 @@ const browser = await chromium.launch({ executablePath: process.env.CHROME || un
 const ctx = await browser.newContext({ acceptDownloads: true, viewport: { width: 1360, height: 900 } });
 await ctx.grantPermissions(['clipboard-read', 'clipboard-write'], { origin: 'http://localhost:8765' });
 const page = await ctx.newPage();
-await page.route('https://cdnjs.cloudflare.com/**', r => r.fulfill({ path: NM + '/jszip/dist/jszip.min.js', contentType: 'text/javascript' }));
+await page.route('https://cdnjs.cloudflare.com/**', r => { const u = r.request().url(); const f = /pdf\.worker\.min\.js$/.test(u) ? NM + '/pdfjs-dist/build/pdf.worker.min.js' : /pdf\.min\.js$/.test(u) ? NM + '/pdfjs-dist/build/pdf.min.js' : NM + '/jszip/dist/jszip.min.js'; return r.fulfill({ path: f, contentType: 'text/javascript' }); });
 await page.route('https://cdn.jsdelivr.net/**', r => r.fulfill({ path: NM + '/docx-preview/dist/docx-preview.min.js', contentType: 'text/javascript' }));
 await page.route('https://fonts.googleapis.com/**', r => r.fulfill({ body: '', contentType: 'text/css' }));
 // Daily collector output (fictional).
@@ -72,6 +72,23 @@ function makeReply(sys, user) {
     calls.outreach = user;
     const m = (s, b) => ({ subject: s, body: b });
     reply = { linkedin_note: 'Hi Sarah, I led Guided Buying for a UK utility on Ariba + S/4HANA and have applied for your S2P Architect role. Would value connecting.', hiring_manager: m('S2P Architect', 'Hello...'), recruiter: m('SAP Ariba Architect – Alex Morgan', 'Hi...'), follow_up: m('Following up', 'Hi...'), thank_you: m('Thank you', 'Thanks for [topic]...') };
+  } else if (/most likely to ask, using what these documents reveal/.test(user)) {
+    calls.docQ = user;
+    reply = { questions: [{ q: 'How would you phase SLP supplier onboarding before the UK go-live?', type: 'case', why: 'Tests planning against the role pack timeline', source: 'role-pack.pdf', answer_outline: ['Segment suppliers by spend', 'Registration questionnaires first', 'Use the utility rollout lessons'], story_hint: '' }, { q: 'Walk us through an approval flow for IT hardware over £5,000.', type: 'functional', why: 'Case study task', source: 'role-pack.pdf', answer_outline: ['Guided Buying policy', 'Approval chain', 'Budget check'], story_hint: '' }], themes: ['Supplier onboarding', 'Maverick spend'] };
+  } else if (/Answer ONLY from the documents/.test(sys)) {
+    calls.docAsk = user;
+    reply = { answer: 'SAP Integration Suite connects Ariba to S/4HANA Central Procurement.', sources: ['role-pack.pdf'], ask_them: 'Is the Integration Suite tenant already provisioned?' };
+  } else if (/Ask the NEXT single question/.test(user)) {
+    calls.mockQ = (calls.mockQ || 0) + 1;
+    reply = { question: calls.mockQ === 1 ? 'Walk me through how you would design Guided Buying policies for IT hardware.' : 'Tell me about a time a go-live went wrong.', type: calls.mockQ === 1 ? 'functional' : 'behavioural', why: 'Design depth', look_for: ['thresholds', 'catalogue first', 'approvals'], story_hint: '' };
+  } else if (/Assess like the interviewer/.test(user)) {
+    reply = { score: 3, verdict: 'Solid structure, needs numbers.', strengths: ['Clear policy logic'], gaps: ['No result metrics'], better_answer: 'I would start with catalogue-first... [add: adoption figure]', follow_up: 'How did you measure adoption?' };
+  } else if (/Draft up to 8 interview stories/.test(user)) {
+    reply = { stories: [{ title: 'Guided Buying rollout for a UK utility', situation: 'Ariba Buying rollout to 4,000 users', task: 'Lead consultant', action: 'Configured policies, ran fit-to-standard workshops', result: 'Live on time', metrics: '4,000 users', tags: ['stakeholder management', 'cutover'], skills: ['SAP Ariba', 'Guided Buying'] }, { title: 'Vendor master migration', situation: 'Global manufacturer', task: 'Migrate vendor master and open POs', action: 'Cleansed and loaded data', result: 'Reconciled first time', metrics: '', tags: ['data migration'], skills: ['SAP MM', 'Data migration'] }] };
+  } else if (/counter-offer/.test(user)) {
+    reply = { email_subject: 'Offer – next steps', email: 'Thank you for the offer...', call_script: ['Thank them'], ask_for: ['Base £95k'], walk_away_note: 'Accept at £90k or more.' };
+  } else if (/interview practice cards/.test(user)) {
+    reply = { cards: [{ q: 'What is SAP Ariba Contracts?', a: 'Contract lifecycle management...' }, { q: 'What is a contract workspace?', a: 'A project container...' }] };
   } else if (/interview coach/.test(sys)) {
     calls.interview = user;
     reply = { pitch: 'I am an SAP procurement consultant...', questions: [{ q: 'Walk me through a CIG integration you designed.', type: 'technical', why: 'Integration depth', answer: 'S: utility... T: ... A: ... R: ...' }, { q: 'Tell me about a difficult stakeholder.', type: 'behavioural', why: 'Stakeholder management', answer: 'STAR...' }], topics: ['CIG vs Integration Suite', 'Guided Buying policies'], gaps: [{ gap: '3 full-cycle implementations', how: 'Be clear it was one end-to-end plus phases elsewhere.' }], ask_them: ['What does success look like at 6 months?'], plan_90: { first_30: ['Meet stakeholders'], days_31_60: ['Design authority'], days_61_90: ['Roadmap'] } };
@@ -115,9 +132,23 @@ if (PROVIDER === 'claude') {
     if (tool === 'get_company_data') return { employerData: { dossier: { employerDetails: { briefDescription: 'A fictional employer.', employeesLocalizedLabel: '1,001 to 5,000', sectors: { results: [{ localizedLabel: 'Energy' }] } } }, ugcStats: { interview: { difficulty: 'MEDIUM', experience: 'POSITIVE', processLength: 'TWO_WEEKS' }, recommendFriend: { yesCount: 70, noCount: 30 } }, companyPageUrl: 'https://example.com/cmp', salaries: { forJobTitle: input.jobTitle, averageSalary: 72000, count: 12, salaryType: 'YEARLY' } } };
     throw new Error('unknown tool');
   });
+  const ASSETS = new Map();
+  await page.exposeFunction('__assetPut', (id, text) => { ASSETS.set(id, text); });
+  await page.route('**/_blob/**', r => { const id = r.request().url().split('/_blob/')[1]; return ASSETS.has(id) ? r.fulfill({ body: ASSETS.get(id), contentType: 'text/plain' }) : r.fulfill({ status: 404, body: '' }); });
   await page.addInitScript(() => {
     window.claude = { use: async name => {
       if (name === 'sample') { const f = async () => { throw new Error('text mode unused'); }; f.json = input => window.__mockSample(input); return f; }
+      if (name === 'db') {
+        const M = window.__db || (window.__db = new Map());
+        const robot = { updated: new Date().toISOString(), sources: ['Indeed', 'LinkedIn', 'Totaljobs'], errors: [], jobs: [
+          { title: 'SAP S2P Solution Architect', company: 'Example Utilities plc', location: 'Manchester (hybrid)', pay: '£650 per day', url: 'https://example.com/li/1', posted: new Date(Date.now() - 864e5).toISOString().slice(0, 10), source: 'LinkedIn', sources: ['LinkedIn'], snippet: 'Lead SAP Ariba and S/4HANA Source-to-Pay design, Guided Buying, SLP, CIG integration and cutover.', type: 'Contract' }] };
+        if (!M.has('robot/latest')) M.set('robot/latest', robot);
+        const snap = (path, v) => ({ id: path.split('/').pop(), exists: v !== undefined, data: () => v });
+        const doc = path => ({ get: async () => snap(path, M.get(path)), set: async v => { M.set(path, JSON.parse(JSON.stringify(v))); } });
+        const col = c => { const q = { doc: id => doc(c + '/' + id), limit: () => q, get: async () => { const docs = [...M.entries()].filter(([k]) => k.startsWith(c + '/') && k.split('/').length === c.split('/').length + 1).map(([k, v]) => snap(k, v)); return { docs, size: docs.length, empty: !docs.length }; } }; return q; };
+        return { doc, collection: col };
+      }
+      if (name === 'assets') return { upload: async blob => { const id = 'a' + Math.random().toString(36).slice(2, 10); await window.__assetPut(id, await blob.text()); return { id, url: '/_blob/' + id, sizeBytes: blob.size, contentType: 'text/plain' }; } };
       if (name === 'mcp') return { callTool: async (server, tool, input) => ({ content: [], payload: await window.__mockMcp(server, tool, input) }) };
       if (name === 'downloads') return { save: async ({ filename, data }) => { const u = URL.createObjectURL(data); const a = document.createElement('a'); a.href = u; a.download = filename; document.body.append(a); a.click(); a.remove(); return 'saved'; } };
       return null;
@@ -188,6 +219,20 @@ await page.click('#compare-btn'); await page.waitForTimeout(1200);
 log('pages note:', await page.textContent('#pages-note'));
 await shot('04-cv');
 
+// 5b. Compare CVs tab
+await page.click('.ws-tabs a:has-text("Compare CVs")');
+await page.waitForSelector('.cmp-row');
+log('compare stats:', (await page.textContent('.cmp-stats')).replace(/\s+/g, ' ').trim());
+log('compare rows:', await page.locator('.cmp-row').count(), '| changed:', await page.locator('.cmp-row:not(.k-same)').count(), '| ins:', await page.locator('.cmp-b ins').count(), '| del:', await page.locator('.cmp-a del').count());
+log('first change:', ((await page.locator('.cmp-row:not(.k-same) .cmp-b').first().textContent()) || '').replace(/\s+/g, ' ').slice(0, 200));
+await page.click('#cmp-next'); await page.waitForTimeout(400);
+await shot('04b-compare');
+await page.check('#cmp-only'); await page.waitForTimeout(200);
+log('changes-only visible rows:', await page.locator('.cmp-row:visible').count());
+await shot('04c-compare-only');
+dl = page.waitForEvent('download'); await page.click('#cmp-dl'); d = await dl; await d.saveAs(`${out}/comparison.html`); log('comparison file:', d.suggestedFilename());
+await page.uncheck('#cmp-only');
+
 // 6. Letter
 await page.click('.ws-tabs a:has-text("Cover letter")');
 await page.click('#gen'); await page.waitForSelector('#letter', { timeout: 15000 });
@@ -205,6 +250,34 @@ await page.click('.ws-tabs a:has-text("Interview")');
 await page.click('#gen'); await page.waitForSelector('.qs', { timeout: 15000 });
 log('interview questions:', await page.locator('.qs details').count());
 await shot('07-interview');
+
+// 8b. Documents
+await page.click('.ws-tabs a:has-text("Documents")');
+await page.waitForSelector('#dz');
+await page.setInputFiles('#dz-in', ['tests/fixtures/role-pack.pdf', 'tests/fixtures/recruiter-notes.txt', 'tests/fixtures/slide.png', 'tests/fixtures/briefing.webm']);
+await page.waitForFunction(() => document.querySelectorAll('.doc').length === 4 && ![...document.querySelectorAll('.doc')].some(d => /Reading/.test(d.textContent)), null, { timeout: 30000 });
+log('docs:', JSON.stringify(await page.$$eval('.doc', els => els.map(e => e.querySelector('.doc-name').textContent + ' → ' + e.querySelector('.doc-main .muted.small').textContent.replace(/\s+/g, ' ').trim()))));
+await page.fill('[data-id] .doc-note >> nth=2', 'Slide shows the programme timeline: UK go-live Q3 2027.');
+await page.click('#dq-go'); await page.waitForSelector('.qs details', { timeout: 20000 });
+log('doc questions:', await page.locator('.qs details').count(), '| prompt had pdf text:', /maverick spend 22 percent/.test(calls.docQ || ''), '| had notes:', /UK go-live Q3 2027/.test(calls.docQ || ''), '| txt:', /650 outside IR35/.test(calls.docQ || ''));
+await page.fill('#dc-q', 'What connects Ariba to S/4HANA?'); await page.click('#dc-form button'); await page.waitForSelector('.chat-a', { timeout: 20000 });
+log('doc answer:', (await page.textContent('.chat-a')).replace(/\s+/g, ' ').slice(0, 160));
+await shot('07b-documents');
+const stored = await page.evaluate(async () => { const a = (await window.CVT.store.listApps()).find(x => (x.docs || []).length); return { n: a.docs.length, blob: !!(await window.CVT.store.getFile(a.docs[0].id)), synced: a.docs.filter(d => d.assetId).length }; });
+log('docs stored:', JSON.stringify(stored));
+const media = await page.evaluate(async () => {
+  const A = window.CVT.agent, orig = A.claudeSample; let sent = 0;
+  const fake = async () => { const f = async () => ({}); f.limits = async () => ({ images: { maxCount: 4, maxInputBytes: 5e6, mediaTypes: ['image/jpeg', 'image/png'] } }); f.json = async (input, o) => { sent = (o.images || []).length; return { text: 'Timeline slide: UK go-live Q3 2027', summary: 'A programme timeline.' }; }; return f; };
+  A.claudeSample = fake;
+  try {
+    const v = await (await fetch('/tests/fixtures/briefing.webm')).blob();
+    const r1 = await window.CVT.docs.extract({ kind: 'video', name: 'briefing.webm' }, v); const n1 = sent;
+    const im = await (await fetch('/tests/fixtures/slide.png')).blob();
+    const r2 = await window.CVT.docs.extract({ kind: 'image', name: 'slide.png' }, im);
+    return { video: r1.status + ' frames=' + n1 + ' ' + r1.text.slice(0, 40), image: r2.status + ' ' + r2.text.slice(0, 40) };
+  } catch (e) { return { err: e.message }; } finally { A.claudeSample = orig; }
+});
+log('media read:', JSON.stringify(media));
 
 // 9. Apply
 await page.click('.ws-tabs a:has-text("Apply")');
@@ -237,9 +310,20 @@ if (PROVIDER === 'claude') {
   await page.click('#jb-refresh');
   await page.waitForSelector('.job .score-pill');
   await page.waitForTimeout(800);
-  const jobRows = await page.$$eval('.job', els => els.map(e => e.querySelector('.src').textContent.trim() + ': ' + e.querySelector('.job-title').textContent.trim() + ' = ' + e.querySelector('.score-pill').textContent.trim() + ' [' + [...e.querySelectorAll('.job-chips .chip')].map(c => c.textContent.trim()).join(', ') + ']'));
+  const jobRows = await page.$$eval('.job', els => els.map(e => [...e.querySelectorAll('.src-badge')].map(x => x.textContent.trim()).join('+') + ': ' + e.querySelector('.job-title').textContent.trim() + ' = ' + e.querySelector('.score-pill').textContent.trim() + ' [' + [...e.querySelectorAll('.job-chips .chip')].map(c => c.textContent.trim()).join(', ') + ']'));
   log('robot panel:', (await page.locator('.jobs-side .panel').first().textContent()).replace(/\s+/g, ' ').slice(0, 160));
   log('jobs (default 30d filter):', JSON.stringify(jobRows));
+  log('source bar:', (await page.textContent('#f-src')).replace(/\s+/g, ' ').trim(), '| summary:', (await page.textContent('#jb-sum')).replace(/\s+/g, ' ').trim());
+  const nAll = await page.locator('.job').count();
+  const firstSrc = page.locator('#f-src [data-src]:not([data-src=""])').first();
+  if (await firstSrc.count()) { const lbl = (await firstSrc.textContent()).trim(); await firstSrc.click(); await page.waitForTimeout(300); log('source filter', lbl, '→', await page.locator('.job').count(), 'of', nAll); await page.click('#f-src [data-src=""]'); await page.waitForTimeout(300); }
+  await page.selectOption('#f-kind', 'contract'); await page.waitForTimeout(300); log('contract only:', await page.locator('.job').count());
+  await page.selectOption('#f-kind', ''); await page.selectOption('#f-sort', 'pay'); await page.waitForTimeout(300);
+  log('by pay:', JSON.stringify(await page.$$eval('.job .job-meta', els => els.slice(0, 3).map(e => e.textContent.replace(/\s+/g, ' ').trim().slice(0, 90)))));
+  await page.selectOption('#f-sort', 'score'); await page.waitForTimeout(200);
+  await page.evaluate(() => { window.__dl = null; const o = window.CVT.ui.download; window.CVT.ui.download = async (b, n) => { window.__dl = { n, t: await b.text() }; }; });
+  await page.click('#jb-csv'); await page.waitForTimeout(300);
+  log('csv:', await page.evaluate(() => window.__dl && (window.__dl.n + ' | ' + window.__dl.t.split('\r\n').length + ' lines | ' + window.__dl.t.split('\r\n')[0])));
   await page.click('.job [data-j="details"]');
   await page.waitForSelector('.job-detail');
   log('detail kw:', (await page.textContent('.kw-cols')).replace(/\s+/g, ' ').slice(0, 200));
@@ -269,6 +353,87 @@ if (PROVIDER === 'claude') {
   await page.click('.side-link'); await page.waitForSelector('.help-grid'); await shot('10d-help');
 }
 
+// 10e. Interview prep (claude only)
+if (PROVIDER === 'claude') {
+  const aid = await page.evaluate(async () => (await window.CVT.store.listApps()).find(a => a.jd && a.jd.length > 300).id);
+  // Story bank: draft from CV
+  await page.evaluate(() => window.CVT.app.go('#/prep/stories'));
+  await page.waitForSelector('#st-draft');
+  await page.click('#st-draft'); await page.waitForSelector('.story');
+  log('stories drafted:', await page.locator('.story').count(), '| missing themes:', (await page.textContent('#prep-body .panel')).includes('not covered'));
+  // Interview slot + calendar on the application
+  await page.evaluate(id => window.CVT.app.go('#/app/' + id + '/interview'), aid);
+  await page.waitForSelector('#iv-at');
+  const when = new Date(Date.now() + 3 * 864e5); when.setHours(10, 0, 0, 0);
+  const local = new Date(when.getTime() - when.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+  await page.fill('#iv-at', local);
+  const [icsDl] = await Promise.all([page.waitForEvent('download'), page.click('#iv-ics')]);
+  const ics = fs.readFileSync(await icsDl.path(), 'utf8');
+  log('ics:', icsDl.suggestedFilename(), '| events', (ics.match(/BEGIN:VEVENT/g) || []).length, '| alarms', (ics.match(/BEGIN:VALARM/g) || []).length);
+  log('stories for job:', await page.locator('.story-hits li').count());
+  await shot('10e-interview-tab');
+  // Mock interview
+  await page.evaluate(id => window.CVT.app.go('#/prep/mock/' + id), aid);
+  await page.waitForSelector('#mk-start'); await page.click('#mk-start');
+  await page.waitForSelector('#mk-ans');
+  // Microphone blocked (as inside claude.ai): Speak must fall back to device dictation help.
+  await page.evaluate(() => { window.webkitSpeechRecognition = window.SpeechRecognition = class { start() { setTimeout(() => this.onerror && this.onerror({ error: 'not-allowed' }), 50); } stop() {} }; });
+  await page.click('#mk-mic'); await page.waitForSelector('#mk-mic-help:not([hidden])');
+  log('mic blocked help:', (await page.textContent('#mk-mic-help')).slice(0, 140), '| read-aloud button:', await page.locator('#mk-say').count());
+  await shot('10f0-mic-help');
+  log('mock q:', (await page.textContent('.mock-question')).slice(0, 80));
+  await page.fill('#mk-ans', 'I would start with catalogue-first policies for standard hardware, a threshold above which a sourcing request is required, and approvals from the IT budget owner.');
+  await page.click('#mk-send'); await page.waitForSelector('.score-stars');
+  log('mock feedback:', (await page.textContent('.score-stars')), '|', (await page.textContent('.mock-q')).replace(/\s+/g, ' ').slice(0, 120));
+  await shot('10f-mock');
+  await page.click('#mk-next'); await page.waitForSelector('#mk-ans'); await page.click('#mk-end');
+  log('mock summary:', (await page.textContent('#mk-live')).replace(/\s+/g, ' ').slice(0, 80));
+  // Drill cards
+  await page.evaluate(() => window.CVT.app.go('#/prep/drills'));
+  await page.waitForSelector('.flash'); await page.click('#dr-show'); await page.click('[data-r="2"]'); await page.click('#dr-show'); await page.click('[data-r="0"]');
+  log('drills progress:', await page.evaluate(async () => Object.keys((await window.CVT.store.getKV('drills')).p).length));
+  await page.fill('#dr-topic', 'SAP Ariba Contracts'); await page.click('#dr-gen'); await page.waitForTimeout(500);
+  log('custom cards:', await page.evaluate(async () => (await window.CVT.store.getKV('drills')).custom.length));
+  await shot('10g-drills');
+  // Offers
+  await page.evaluate(() => window.CVT.app.go('#/prep/offers'));
+  await page.waitForSelector('#of-add'); await page.click('#of-add');
+  await page.fill('[data-k="company"]', 'Northgate Energy'); await page.fill('[data-k="salary"]', '90000'); await page.fill('[data-k="bonus"]', '10'); await page.fill('[data-k="pension"]', '8'); await page.click('[data-save]');
+  await page.click('#of-add'); await page.fill('[data-k="company"]', 'Example Resourcing'); await page.selectOption('[data-k="type"]', 'Contract'); await page.fill('[data-k="rate"]', '600'); await page.selectOption('[data-k="ir35"]', 'Outside'); await page.click('[data-save]');
+  await page.waitForSelector('table.offers');
+  log('offers:', (await page.textContent('table.offers')).replace(/\s+/g, ' ').slice(0, 260));
+  await page.click('[data-of="counter"]'); await page.fill('#co-goal', '£95k'); await page.click('#co-go'); await page.waitForSelector('#co-out .copy-block');
+  log('counter-offer ok');
+  await shot('10h-offers');
+  // Dashboard prep panel
+  await page.click('a[data-nav="dashboard"]'); await page.waitForSelector('#dash-prep .prep-tile');
+  log('dash prep:', (await page.textContent('#dash-prep')).replace(/\s+/g, ' ').slice(0, 200));
+  // Sync: the other device's copy should restore a locally lost application and profile
+  await page.waitForTimeout(1500);
+  const synced = await page.evaluate(async () => { const S = window.CVT.store; const apps = await S._all('apps'); const id = apps[0].id; await S._del('apps', id); const m = JSON.parse(localStorage.getItem('cvt.syncMeta')); m.profile = '2000-01-01T00:00:00Z'; localStorage.setItem('cvt.syncMeta', JSON.stringify(m)); const r = await window.CVT.sync.pull(); return { r, back: !!(await S.getApp(id)), remoteApps: [...window.__db.keys()].filter(k => k.startsWith('apps/')).length, remoteMasters: [...window.__db.keys()].filter(k => k.startsWith('masters/')).length }; });
+  log('sync:', JSON.stringify(synced));
+  const cvRestore = await page.evaluate(async () => { const S = window.CVT.store; const m = (await S._all('masters'))[0]; await S._del('masters', m.id); await window.CVT.sync.pull(); const back = await S.getMaster(m.id); return back ? back.data.byteLength === m.data.byteLength : false; });
+  log('cv restored from sync:', cvRestore);
+  await page.click('a[data-nav="settings"]'); await page.waitForSelector('#sy-chip');
+  log('settings sync chip:', await page.textContent('#sy-chip'));
+}
+
+// 10i. Autopilot (claude only)
+if (PROVIDER === 'claude') {
+  await page.evaluate(async () => { const S = window.CVT.store; const a = S.newApp(''); a.created = new Date(Date.now() - 2 * 3600e3).toISOString(); await S.saveApp(a); await S.setKV('autopilot', { max: 2, min: 40, letter: true, outreach: true, answers: true, interview: false, includeAgency: true }); });
+  await page.click('a[data-nav="dashboard"]'); await page.waitForSelector('.kpis');
+  await page.click('.page-head [data-go="#/autopilot"]'); await page.waitForSelector('#ap-run');
+  await page.click('#ap-run');
+  await page.waitForSelector('#ap-log');
+  await page.waitForFunction(() => { const h = document.querySelector('#ap-live h2'); return h && h.textContent === 'Last run'; }, null, { timeout: 180000 });
+  log('autopilot summary:', (await page.textContent('#ap-live')).replace(/\s+/g, ' ').slice(0, 400));
+  log('ready rows:', await page.locator('table.list tbody tr').count());
+  const prepared = await page.evaluate(async () => (await window.CVT.store.listApps()).filter(a => a.autopilot).map(a => ({ role: a.role, fit: a.analysis && a.analysis.fit.score, letter: !!a.letter, outreach: !!a.outreach, why: !!(a.answers && a.answers.why), status: a.status })));
+  log('prepared apps:', JSON.stringify(prepared));
+  log('empty drafts left:', await page.evaluate(async () => (await window.CVT.store.listApps()).filter(a => !a.role && !a.company && !a.jd).length));
+  await shot('10i-autopilot');
+}
+
 // 11. Autofill bookmarklet on a test form (never submits)
 const form = await ctx.newPage();
 await form.goto('http://localhost:8765/tests/fixtures/form.html');
@@ -285,15 +450,15 @@ await form.screenshot({ path: `${out}/11-autofill.png`, fullPage: true });
 // 12. Mobile layout
 await page.setViewportSize({ width: 400, height: 860 });
 const overflow = async () => page.evaluate(() => [...document.querySelectorAll('body *')].filter(e => e.getBoundingClientRect().right > window.innerWidth + 1 && !e.closest('.table-wrap,.preview-box,.board-wrap,.side,.ws-tabs')).slice(0, 6).map(e => e.tagName + '.' + e.className + ' ' + Math.round(e.getBoundingClientRect().right)));
-for (const h of ['#/dashboard', '#/jobs', '#/pipeline', '#/profile', '#/settings', '#/help']) { await page.goto('http://localhost:8765/' + h); await page.waitForTimeout(500); log('overflow', h, JSON.stringify(await overflow())); }
+for (const h of ['#/dashboard', '#/jobs', '#/pipeline', '#/profile', '#/settings', '#/help', '#/prep/mock', '#/prep/stories', '#/prep/drills', '#/prep/offers', '#/autopilot']) { await page.goto('http://localhost:8765/' + h); await page.waitForTimeout(500); log('overflow', h, JSON.stringify(await overflow())); }
 const appId = await page.evaluate(async () => (await window.CVT.store.listApps())[0].id);
-for (const t of ['job', 'fit', 'cv', 'letter', 'outreach', 'interview', 'apply']) { await page.goto(`http://localhost:8765/#/app/${appId}/${t}`); await page.waitForTimeout(600); log('overflow', t, JSON.stringify(await overflow())); }
+for (const t of ['job', 'fit', 'cv', 'letter', 'outreach', 'interview', 'docs', 'apply']) { await page.goto(`http://localhost:8765/#/app/${appId}/${t}`); await page.waitForTimeout(600); log('overflow', t, JSON.stringify(await overflow())); }
 await page.goto(`http://localhost:8765/#/app/${appId}/fit`); await page.waitForTimeout(600);
 await page.screenshot({ path: `${out}/12-mobile-fit.png`, fullPage: false });
 await page.goto('http://localhost:8765/#/dashboard'); await page.waitForTimeout(600);
 await page.screenshot({ path: `${out}/13-mobile-dashboard.png`, fullPage: false });
 
 log('calls:', JSON.stringify({ gemini: calls.gemini || 0, sample: calls.sample || 0, mcp: calls.mcp || 0, paidApiCalls: calls.paid || 0 }));
-await page.goto('http://localhost:8765/#/jobs'); await page.waitForTimeout(700); await page.screenshot({ path: `${out}/14-mobile-jobs.png`, fullPage: false });
+for (const [h, n] of [['#/jobs', '14-mobile-jobs'], ['#/app/' + (await page.evaluate(async () => (await window.CVT.store.listApps()).find(a => a.analysis)?.id)) + '/compare', '18-mobile-compare'], ['#/prep/drills', '15-mobile-drills'], ['#/prep/stories', '16-mobile-stories'], ['#/dashboard', '17-mobile-dash']]) { await page.goto('http://localhost:8765/' + h); await page.waitForTimeout(800); await page.screenshot({ path: `${out}/${n}.png`, fullPage: false }); }
 log('errors:', JSON.stringify(errors));
 await browser.close(); srv.close();

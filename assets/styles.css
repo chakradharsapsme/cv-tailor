@@ -879,3 +879,5 @@ sup.cite.unv { color: var(--warn); background: var(--warn-soft); }
 .st-note .q-del { margin-left: auto; }
 .st-note-t { white-space: pre-wrap; font-size: .9rem; }
 .docs-ask { grid-column: 1 / -1; } .docs-ask .chat, .docs-ask #dc-form, .docs-ask .dc-suggest { max-width: 900px; }
+.docs-upd { display: flex; align-items: center; gap: 8px; padding: 10px 14px; margin-bottom: 12px; border: 1px solid var(--accent); background: var(--accent-soft); color: var(--accent); border-radius: 10px; font-size: .9rem; font-weight: 500; }
+.docs-upd[hidden] { display: none; }

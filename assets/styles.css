@@ -1252,3 +1252,78 @@ body { transition: background-color .3s var(--ease), color .3s var(--ease); }
 .d-left .prep-tile .btn { white-space: normal; }
 .d-left .sec-tools button, .d-right .sec-tools button { width: 24px; }
 @media (max-width: 900px) { .d-left .prep-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* ===== v22: installable app, offline, update bar, dialogs ===== */
+.tb-install { margin-right: 4px; }
+.upd-bar, .offline-bar { position: fixed; left: 50%; transform: translateX(-50%); z-index: 90; display: flex; gap: 12px; align-items: center;
+  background: #1B1F29; color: #fff; border-radius: 12px; padding: 10px 14px; box-shadow: 0 8px 28px rgba(0,0,0,.25); max-width: calc(100vw - 32px); font-size: 14px; }
+.upd-bar { bottom: 24px; }
+.offline-bar { top: 12px; background: #7A4B00; }
+@media (max-width: 900px) { .upd-bar { bottom: calc(76px + env(safe-area-inset-bottom)); } }
+dialog.modal { border: 1px solid var(--line, #E3DFD8); border-radius: 16px; padding: 0; max-width: min(460px, calc(100vw - 32px)); background: var(--surface, #fff); color: var(--ink); }
+dialog.modal::backdrop { background: rgba(15, 23, 41, .45); }
+dialog.modal .modal-body { padding: 22px; }
+dialog.modal h2 { margin-top: 0; }
+.is-app .site-foot .sf-note { display: none; }
+
+/* ===== v23: first-run welcome ===== */
+body.no-scroll { overflow: hidden; }
+.welcome { position: fixed; inset: 0; z-index: 120; background: rgba(15, 23, 41, .55); display: grid; place-items: center; padding: 16px; overflow-y: auto; }
+.wl-card { background: var(--surface); color: var(--ink); border-radius: 18px; width: min(560px, 100%); padding: 22px 22px 18px; box-shadow: 0 24px 60px rgba(0,0,0,.3); max-height: calc(100dvh - 32px); overflow-y: auto; }
+.wl-top { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.wl-steps { display: flex; gap: 6px; list-style: none; padding: 0; margin: 0 0 16px; counter-reset: s; }
+.wl-steps li { flex: 1; font-size: 12px; color: var(--muted); border-top: 4px solid var(--line); padding-top: 6px; }
+.wl-steps li.on { color: var(--accent); border-color: var(--accent); font-weight: 600; }
+.wl-steps li.done { border-color: var(--accent); opacity: .6; }
+.wl-card h2 { margin: 0 0 4px; font-size: 22px; }
+.wl-fields { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.wl-chip { border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); border-radius: 999px; padding: 9px 14px; font: inherit; font-size: 14px; cursor: pointer; min-height: 40px; }
+.wl-chip:hover { border-color: var(--accent); }
+.wl-chip.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.wl-acts { display: flex; gap: 10px; align-items: center; margin-top: 18px; }
+.wl-card .linkish { min-height: 32px; }
+@media (max-width: 520px) { .wl-card { padding: 18px 16px 14px; border-radius: 14px; } .wl-card h2 { font-size: 19px; } .wl-chip { padding: 8px 12px; font-size: 13px; } }
+
+/* ===== v24: tablets and touch ===== */
+/* Tablets in portrait (701-900px): app-style bottom tab bar instead of a cramped top menu. */
+@media (min-width: 701px) and (max-width: 900px) {
+  .side { overflow: visible; padding-top: calc(10px + env(safe-area-inset-top, 0px)); }
+  .new-btn { display: flex !important; margin-left: auto; }
+  .nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; display: grid !important; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0; margin: 0;
+    background: var(--side); border-top: 1px solid var(--side-2); padding: 4px 8px calc(4px + env(safe-area-inset-bottom, 0px)); }
+  .nav a { position: relative; flex-direction: column; justify-content: center; gap: 3px; padding: 6px 4px; min-height: 56px; font-size: .74rem; border-radius: 10px; text-align: center; }
+  .nav svg { display: block !important; width: 22px; height: 22px; }
+  .nav a[aria-current] { box-shadow: none; background: var(--side-2); color: var(--side-strong); }
+  .nav .badge { position: absolute; top: 3px; right: calc(50% - 24px); margin: 0; font-size: .62rem; padding: 0 5px; }
+  .lbl { display: none; }
+  .lbl-s { display: inline; }
+  .side-foot { display: none !important; }
+  .main { padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px)); }
+  .site-foot { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
+  #toasts { bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important; }
+}
+/* Fingers need bigger targets than mouse pointers. */
+@media (pointer: coarse) {
+  .btn { min-height: 42px; }
+  .btn.small { min-height: 38px; }
+  .pill-link { min-height: 38px; display: inline-flex; align-items: center; padding-left: 12px; padding-right: 12px; }
+  .linkish, .sf-links a { min-height: 36px; display: inline-flex; align-items: center; }
+  .sf-links { row-gap: 2px; }
+  .chip[data-src], #f-src [data-src] { min-height: 36px; }
+  input[type=checkbox], input[type=radio] { width: 20px; height: 20px; }
+  select, input, textarea { font-size: 16px; }
+}
+/* Wide tables scroll inside their card, never the whole page. */
+.table-scroll, .compare-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
+/* Jobs intro: short on phones, full text one tap away. Filters fold away on phones. */
+.jobs-intro .more, .f-toggle { display: none; }
+@media (max-width: 700px) {
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; }
+  .filters #f-q { flex: 1 1 60%; }
+  .filters .f-toggle { display: inline-flex; flex: 0 0 auto; }
+  .filters:not(.open) > :not(#f-q):not(.f-toggle) { display: none; }
+  .jobs-intro .hint { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .jobs-intro.open .hint { display: block; }
+  .jobs-intro .more { display: inline-flex; margin-top: 6px; }
+}
+@media (max-width: 700px) { .page-head .row { flex-wrap: wrap; } }

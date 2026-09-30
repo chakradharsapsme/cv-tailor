@@ -686,3 +686,10 @@ p.grow { flex: 1 1 auto; }
 .chat-a { max-width: 92%; background: var(--surface-2); padding: 10px 12px; border-radius: 12px 12px 12px 2px; font-size: .9rem; white-space: pre-wrap; }
 #dc-form input { flex: 1 1 auto; min-width: 0; }
 @media (max-width: 900px) { .docs-grid { grid-template-columns: minmax(0, 1fr); } .docs-grid > .panel:first-child { grid-row: auto; } .doc { grid-template-columns: auto minmax(0, 1fr); } .doc-actions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; justify-content: flex-start; } }
+.doc-check { margin-top: 10px; padding: 10px 12px; border-radius: 10px; background: var(--bg); border: 1px solid var(--line); font-size: .9rem; }
+.doc-check.ok { border-color: color-mix(in srgb, var(--ok) 40%, var(--line)); background: color-mix(in srgb, var(--ok) 6%, var(--surface)); }
+.doc-check.warn { border-color: color-mix(in srgb, var(--warn) 40%, var(--line)); background: color-mix(in srgb, var(--warn) 7%, var(--surface)); }
+.doc-check.busy { display: flex; gap: 8px; align-items: center; color: var(--muted); }
+.qs-doc details { padding: 6px 0; }
+.spinner { width: 14px; height: 14px; border: 2px solid var(--line); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; flex: none; }
+@keyframes spin { to { transform: rotate(360deg); } }

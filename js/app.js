@@ -108,6 +108,7 @@
       console.error(e);
       root.innerHTML = `<section class="panel"><h1>Something went wrong</h1><p class="error">${window.CVT.ui.esc(e.message)}</p><p><a class="link" href="#/dashboard">Back to dashboard</a></p></section>`;
     }
+    if (window.CVT.pwa) window.CVT.pwa.refresh();
     if (!window.CVT._keepScroll) window.scrollTo(0, 0);
     window.CVT._keepScroll = false;
   }
@@ -123,12 +124,15 @@
     if (state.provider === 'claude-plan' && !inClaude()) state.provider = 'gemini';
     refreshKey();
     try { await S.migrateV1(); } catch (e) { console.warn('Migration skipped', e); }
+    try { window.CVT.fields.use(await S.getProfile()); } catch (_) {}
     if (state.provider === 'gemini' && state.geminiKey) loadModels();
     window.addEventListener('hashchange', () => { if (location.hash && location.hash !== current) { current = location.hash; route(); } });
     if (window.CVT.shell) window.CVT.shell.initTopbar();
+    if (window.CVT.pwa) window.CVT.pwa.init();
     await route();
     refreshBadges();
-    if (window.CVT.shell) setTimeout(() => window.CVT.shell.tour(false), 400);
+    // First visit: the 3-step welcome; otherwise the short tour (each only once).
+    setTimeout(async () => { let shown = false; try { shown = window.CVT.welcome ? await window.CVT.welcome.open(false) : false; } catch (_) {} if (!shown && window.CVT.shell) window.CVT.shell.tour(false); }, 400);
     window.CVT.sync.onChange(st => { const n = $('#data-note'); if (n && st.state === 'on') n.textContent = 'Private to you and synced to your own account. Nothing is submitted without you.'; });
     // Pull newer data from your other devices (inside claude.ai), then redraw if anything changed.
     try {

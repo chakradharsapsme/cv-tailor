@@ -1,4 +1,4 @@
-/* drills.js — built-in practice cards for SAP procurement consultant and SAP business analyst interviews.
+/* drills.js — built-in practice cards: interview essentials for everyone, plus SAP procurement and business-analysis decks for IT profiles.
  * Answers are concise model answers; details can vary by release and configuration. */
 (function () {
   const C = (id, deck, q, a) => ({ id, deck, q, a });
@@ -8,7 +8,8 @@
     p2p: 'P2P controls and finance',
     integ: 'Integration and data',
     ba: 'Business analysis',
-    delivery: 'Delivery and leadership'
+    delivery: 'Delivery and leadership',
+    core: 'Any interview: the essentials'
   };
   const CARDS = [
     // ---- SAP Ariba ----
@@ -90,8 +91,39 @@
     C('d5', 'delivery', 'Why should we hire you? (Structure)',
       'Three points tied to the job: the core requirement you have done repeatedly (with a result), a differentiator (for example end-to-end S2P across Ariba and S/4, or client-side and consultancy views), and how you work (stakeholders, delivery). Close with why this role and company specifically.'),
     C('d6', 'delivery', 'What is your approach to adoption and change management?',
-      'Stakeholder analysis, sponsor messages, super-user network, role-based training close to go-live, simple guides, early wins, adoption metrics (for example catalogue share) and follow-up with low-adoption areas.')
+      'Stakeholder analysis, sponsor messages, super-user network, role-based training close to go-live, simple guides, early wins, adoption metrics (for example catalogue share) and follow-up with low-adoption areas.'),
+    // ---- Any interview, any field ----
+    C('g1', 'core', 'Tell me about yourself.',
+      'Two minutes, present-past-future: what you do now and the result you are proudest of, the two or three experiences that led here, and why this role is the logical next step. Tie each point to what the advert asks for. Leave out personal life and a full CV walk-through.'),
+    C('g2', 'core', 'Why do you want to leave your current job?',
+      'Stay positive and forward-looking: what you want more of (scope, growth, a sector, stability) and how this role gives it. Never criticise your employer or manager. If you were made redundant, say so plainly and move on to what you learned.'),
+    C('g3', 'core', 'Why do you want to work here?',
+      'Show you researched them: one specific thing about the organisation (product, mission, recent news, values), one thing about the role that fits your strengths, and how you would contribute in the first months.'),
+    C('g4', 'core', 'What is your greatest strength?',
+      'Pick one strength the job needs, name it plainly, and prove it with a short example with a measurable result (STAR). Finish with how it would help in this role.'),
+    C('g5', 'core', 'What is a weakness you are working on?',
+      'A real but non-critical weakness, the specific steps you are taking, and evidence of progress. Avoid clichés like "I am a perfectionist" and anything that is a core requirement of the job.'),
+    C('g6', 'core', 'Tell me about a time you handled a conflict.',
+      'STAR: the situation and what was at stake, your task, what you did (listened, found the shared goal, agreed next steps, escalated only if needed), and the outcome, including what the relationship was like afterwards.'),
+    C('g7', 'core', 'Tell me about a mistake or failure.',
+      'Choose a genuine but recoverable mistake. Own it without blaming others, explain how you fixed it quickly, and the change you made so it would not happen again. The lesson matters more than the mistake.'),
+    C('g8', 'core', 'Where do you see yourself in five years?',
+      'Show ambition that fits the organisation: growing expertise in this area, taking on more responsibility, and adding value here. Avoid naming a different job or company.'),
+    C('g9', 'core', 'What are your salary expectations?',
+      'Research the market range first. Give a range based on the role and your experience, say you are flexible for the right total package, or ask what budget they have in mind. Never undersell yourself early.'),
+    C('g10', 'core', 'Do you have any questions for us?',
+      'Always yes. Ask two or three: what success looks like in the first 90 days, the biggest challenge facing the team, how performance is measured, and the next steps in the process. Avoid pay and holiday questions until an offer.'),
+    C('g11', 'core', 'What is the STAR method?',
+      'Situation (brief context), Task (your responsibility), Action (what YOU did, the longest part), Result (the outcome, with numbers if possible, and what you learned). Aim for about two minutes per answer.'),
+    C('g12', 'core', 'Tell me about a time you worked under pressure.',
+      'STAR: a real deadline or crisis, how you prioritised, communicated and kept quality, and the result. Show calm, planning and teamwork rather than heroics.')
   ];
+  // SAP / IT decks appear for IT and business-analysis profiles; everyone gets the essentials.
+  const IT_DECKS = ['ariba', 's4', 'p2p', 'integ', 'ba', 'delivery'];
+  const isIt = () => { const f = window.CVT.fields; return !f || f.current().id === 'it'; };
   window.CVT = window.CVT || {};
-  window.CVT.drills = { DECKS, CARDS };
+  window.CVT.drills = {
+    get DECKS() { return isIt() ? DECKS : { core: DECKS.core }; },
+    get CARDS() { return isIt() ? CARDS : CARDS.filter(c => !IT_DECKS.includes(c.deck)); }
+  };
 })();

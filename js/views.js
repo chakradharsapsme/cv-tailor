@@ -2,7 +2,8 @@
 (function () {
   const { html, raw, esc, $, $$, toast, download, copy, today, ukDate, longDate, daysBetween, VERDICT, scoreCls, state, masterModel } = window.CVT.ui;
   const S = window.CVT.store, A = window.CVT.agent, D = window.CVT.docx;
-  const VERSION = 'v4.1';
+  const FL = window.CVT.fields;
+  const VERSION = 'v5.0';
   const ACTIVE = ['Applied', 'Screening', 'Interview', 'Offer'];
   const REACHED = s => ['Screening', 'Interview', 'Offer', 'Accepted'].includes(s);
 
@@ -54,7 +55,7 @@
     const head = (extra = '') => html`<div class="panel-head"><h2>New jobs for you</h2><div class="row gap">${raw(extra)}<a class="link" href="#/jobs">All jobs</a></div></div>`;
     const paint = (note = '') => {
       box.removeAttribute('aria-busy');
-      const roles = (profile.targetRoles || []).length ? profile.targetRoles : ['SAP Ariba', 'SAP S2P'];
+      const roles = (profile.targetRoles || []).length ? profile.targetRoles : window.CVT.fields.current().titles.slice(0, 3);
       if (!t.items.length) {
         box.innerHTML = String(html`${head()}
           <div class="empty-state slim"><p class="hint">Find roles that match your target job titles and the skills on your CV, from company career portals and job boards, scored against your CV.</p>
@@ -304,7 +305,7 @@
 
       <section class="panel">
         <div class="panel-head"><h2>Master CVs</h2></div>
-        <p class="hint">Keep one Word CV per positioning, for example “Ariba consultant” and “S2P architect / lead”. Each application picks one. Files stay in this browser.</p>
+        <p class="hint">Keep one Word CV per positioning, for example “team leader” and “specialist”. Each application picks one. Files stay on this device.</p>
         <div class="masters">${masters.map(m => html`
           <div class="master">
             <span class="file-ext">DOCX</span>
@@ -319,7 +320,7 @@
           <span class="drop-title">${masters.length ? 'Add another master CV (.docx)' : 'Drop your master CV (.docx) here or choose a file'}</span>
           <span class="drop-sub">Word .docx only. PDFs can't be edited without changing the layout.</span>
         </label>
-        <p class="row gap wrap small"><button class="btn ghost small" id="m-demo" type="button">Try with a demo CV</button><span class="muted">A fictional SAP consultant CV, handy for a first test run.</span></p>
+        <p class="row gap wrap small"><button class="btn ghost small" id="m-demo" type="button">Try with a demo CV</button><span class="muted">A fictional CV for your field, handy for a first test run.</span></p>
         <div class="preview-box" id="m-preview" hidden></div>
       </section>
 
@@ -342,12 +343,13 @@
         <section class="panel">
           <div class="panel-head"><h2>Targets</h2></div>
           <div class="grid-2">
-            <label class="field span-2"><span>Target job titles (one per line)</span><textarea data-p="targetRoles" data-list rows="4" placeholder="SAP Ariba Solution Architect&#10;S2P Programme Lead&#10;SAP Procurement Consultant">${lines(p.targetRoles)}</textarea></label>
+            <label class="field span-2"><span>Your field</span><select data-p="field">${Object.values(FL.list).map(f => html`<option value="${f.id}" ${f.id === FL.idOf(p) ? raw('selected') : ''}>${f.name}</option>`)}</select></label>
+            <label class="field span-2"><span>Target job titles (one per line)</span><textarea data-p="targetRoles" data-list rows="4" placeholder="${FL.get(FL.idOf(p)).example}">${lines(p.targetRoles)}</textarea></label>
             <label class="field span-2"><span>Preferred locations (one per line)</span><textarea data-p="targetLocations" data-list rows="2">${lines(p.targetLocations)}</textarea></label>
             <label class="field"><span>Work preference</span><select data-p="workPreference">${['Both', 'Permanent', 'Contract'].map(o => html`<option ${o === p.workPreference ? raw('selected') : ''}>${o}</option>`)}</select></label>
             ${field('weeklyGoal', 'Weekly application goal', { type: 'number' })}
-            ${field('salary', 'Salary expectation', { ph: 'e.g. £95,000–£110,000 + bonus' })}
-            ${field('dayRate', 'Day rate expectation', { ph: 'e.g. £650–£750 outside IR35' })}
+            ${field('salary', 'Salary expectation', { ph: 'e.g. your expected range + bonus' })}
+            ${field('dayRate', 'Day or hourly rate (contract work)', { ph: 'Leave blank if not relevant' })}
             ${field('notice', 'Notice / availability', { ph: 'e.g. 1 month' })}
             ${field('eligibility', 'Work eligibility (for forms)', { ph: 'As you would answer on a form' })}
           </div>
@@ -356,10 +358,10 @@
 
       <section class="panel">
         <div class="panel-head"><h2>Achievements bank</h2><button class="btn ghost small" id="ach-add" type="button">Add achievement</button></div>
-        <p class="hint">True, specific results the agent may quote. Format: what you did, scale, result. Example: “Led Guided Buying rollout to 12,000 users across 9 countries; cut PO cycle time by 40%.”</p>
+        <p class="hint">True, specific results the agent may quote. Format: what you did, scale, result. Example: “Led a team of 8 through a system change for 2,000 customers; cut complaints by 30%.”</p>
         <ol class="ach" id="ach">${(p.achievements || []).map((x, i) => html`<li><textarea data-ach="${i}" rows="2" aria-label="Achievement ${i + 1}">${x}</textarea><button class="icon-btn" data-achdel="${i}" type="button" aria-label="Remove achievement">×</button></li>`)}</ol>
-        <label class="field"><span>Skills and experience not on my CV (true; the agent may add these where a job needs them)</span><textarea data-p="extraSkills" rows="3" placeholder="e.g. SAP Ariba SLP configuration (2 projects); catalogue strategy incl. punch-out; CFO-level steering committees at Nokia; mentored 4 junior consultants">${p.extraSkills || ''}</textarea></label>
-        <label class="field"><span>Never claim (the agent will not write or imply these)</span><textarea data-p="neverClaim" rows="2" placeholder="e.g. Hands-on ABAP development; SAP IBP">${p.neverClaim || ''}</textarea></label>
+        <label class="field"><span>Skills and experience not on my CV (true; the agent may add these where a job needs them)</span><textarea data-p="extraSkills" rows="3" placeholder="e.g. Excel pivot tables, trained 5 new starters, first-aid certificate, fluent Hindi">${p.extraSkills || ''}</textarea></label>
+        <label class="field"><span>Never claim (the agent will not write or imply these)</span><textarea data-p="neverClaim" rows="2" placeholder="e.g. a qualification you don't hold, a tool you've never used">${p.neverClaim || ''}</textarea></label>
       </section>
 
       <section class="panel">
@@ -372,7 +374,7 @@
     let timer;
     const save = () => {
       clearTimeout(timer);
-      timer = setTimeout(async () => { await S.saveProfile(p); state.profile = p; $('#p-saved', root).textContent = 'Saved'; setTimeout(() => { const s = $('#p-saved', root); if (s) s.textContent = ''; }, 1500); }, 350);
+      timer = setTimeout(async () => { await S.saveProfile(p); state.profile = p; FL.use(p); window.CVT.jobs.resetEvidence(); $('#p-saved', root).textContent = 'Saved'; setTimeout(() => { const s = $('#p-saved', root); if (s) s.textContent = ''; }, 1500); }, 350);
     };
     root.addEventListener('input', e => {
       const t = e.target;
@@ -506,8 +508,8 @@
         </section>
 
         <section class="panel">
-          <div class="panel-head"><h2>Backup</h2></div>
-          <p class="hint">Browser data can be cleared by the browser. Export a backup now and then, especially before switching computers.</p>
+          <div class="panel-head"><h2>Backup and move to another device</h2></div>
+          <p class="hint">One file holds everything: profile, CVs, applications, documents, notes, interview prep and settings (never your AI key). Use it to move between your phone, tablet and computer: export here, open Applywise on the other device, then Import backup. Keep a copy now and then, as clearing browser data erases the app's storage.</p>
           <div class="row gap wrap">
             <button class="btn ghost" id="export" type="button">Export backup (.json)</button>
             <label class="btn ghost">Import backup<input type="file" id="import" accept=".json,application/json" hidden></label>
@@ -516,9 +518,16 @@
         </section>
 
         <section class="panel">
-          <div class="panel-head"><h2>Reset</h2></div>
-          <p class="hint">Removes your CVs, profile, applications and API key from this browser. Copies synced to your account are kept.</p>
-          <button class="btn ghost danger" id="clear" type="button">Clear all data</button>
+          <div class="panel-head"><h2>Install the app</h2></div>
+          <p class="hint">Add Applywise to your phone, tablet or computer. It opens full screen like any other app and your saved work is available offline.</p>
+          <button class="btn primary" id="st-install" type="button" hidden>Install app</button>
+          <p class="muted small">${window.CVT.pwa && window.CVT.pwa.standalone() ? 'You are using the installed app.' : 'No button? Use your browser menu → “Install app” or “Add to Home screen”. On iPhone: Safari → Share → Add to Home Screen.'}</p>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head"><h2>Delete all my data</h2></div>
+          <p class="hint">Permanently erases your CVs, documents, profile, applications, notes and settings from this device. Export a backup first if you might want them later.${window.claude && window.claude.use ? ' Copies synced to your account are kept.' : ''} Read the <a class="link" href="privacy.html" target="_blank" rel="noopener">privacy policy</a>.</p>
+          <button class="btn ghost danger" id="clear" type="button">Delete all my data</button>
         </section>
       </div>`;
 
@@ -598,18 +607,19 @@
     $('#export', root).addEventListener('click', async () => {
       const data = await S.exportAll();
       download(new Blob([JSON.stringify(data)], { type: 'application/json' }), `applywise-backup_${today()}.json`);
-      $('#backup-status', root).textContent = `Exported ${data.masters.length} CV(s) and ${data.apps.length} application(s).`;
+      $('#backup-status', root).textContent = `Exported ${data.masters.length} CV(s), ${data.apps.length} application(s) and ${data.files.length} document(s).`;
     });
     $('#import', root).addEventListener('change', async e => {
       const f = e.target.files[0]; if (!f) return;
-      try { const r = await S.importAll(JSON.parse(await f.text())); state.masterCache.clear(); $('#backup-status', root).textContent = `Imported ${r.masters} CV(s) and ${r.apps} application(s).`; }
+      try { const r = await S.importAll(JSON.parse(await f.text())); state.masterCache.clear(); FL.use(await S.getProfile()); window.CVT.jobs.resetEvidence();
+        toast(`Restored ${r.masters} CV(s), ${r.apps} application(s) and ${r.docs || 0} document(s)`); window.CVT.app.rerender(); }
       catch (x) { $('#backup-status', root).textContent = x.message; }
     });
     $('#clear', root).addEventListener('click', async e => {
       const b = e.currentTarget;
       if (b.dataset.armed !== '1') { b.dataset.armed = '1'; b.textContent = 'Click again to delete everything'; return; }
-      await S.clearAll(); state.key = ''; state.model = ''; state.masterCache.clear();
-      toast('All data cleared'); window.CVT.app.go('#/dashboard');
+      await S.clearAll(); state.key = ''; state.model = ''; state.geminiKey = ''; state.masterCache.clear();
+      toast('All your data has been deleted from this device'); window.CVT.app.go('#/dashboard');
     });
   }
 
@@ -619,9 +629,9 @@
   // =====================================================================
   async function help(root) {
     const inClaude = window.CVT.app.inClaude();
-    root.addEventListener('click', e => { if (e.target.closest('#help-tour')) window.CVT.shell.tour(true); });
+    root.addEventListener('click', e => { if (e.target.closest('#help-tour')) window.CVT.shell.tour(true); if (e.target.closest('#help-setup')) window.CVT.welcome.open(true); });
     root.innerHTML = String(html`
-      <header class="page-head"><div><p class="eyebrow">Applywise ${VERSION}</p><h1>Help and privacy</h1></div><div class="row gap"><button class="btn ghost" type="button" id="help-tour">Take the tour</button><a class="btn ghost" href="#/pricing">Plans and pricing</a></div></header>
+      <header class="page-head"><div><p class="eyebrow">Applywise ${VERSION}</p><h1>Help and privacy</h1></div><div class="row gap"><button class="btn ghost" type="button" id="help-setup">Run setup again</button><button class="btn ghost" type="button" id="help-tour">Take the tour</button><a class="btn ghost" href="#/pricing">Plans and pricing</a><a class="btn ghost" href="privacy.html" target="_blank" rel="noopener">Privacy policy</a><a class="btn ghost" href="terms.html" target="_blank" rel="noopener">Terms</a></div></header>
       ${inClaude ? html`<section class="panel mb">
         <div class="panel-head"><h2>Watch the 3-minute guide</h2><span class="muted small">AI voice · captions on</span></div>
         <video class="help-video" controls preload="none" playsinline poster="/_blob/f007580ce716ede25ce4271f3ee9c15e" src="/_blob/dbb74236c941ca767f19c6e9ddb2e69f"></video>

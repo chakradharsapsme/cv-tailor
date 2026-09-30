@@ -337,7 +337,7 @@
     if (!missing.length) out.push({ status: 'ok', title: 'Standard section headings', detail: 'Experience, education, skills and certifications are easy to find.' });
     else out.push({ status: 'info', title: 'Some standard headings not found', detail: 'Consider standard names such as "Experience", "Education", "Skills", "Certifications".' });
 
-    if (words < 450) out.push({ status: 'warn', title: `Short CV (${words} words)`, detail: 'Senior SAP roles usually need 2 pages of evidence.' });
+    if (words < 450) out.push({ status: 'warn', title: `Short CV (${words} words)`, detail: 'Experienced candidates usually need about 2 pages of evidence.' });
     else if (words > 1500) out.push({ status: 'warn', title: `Long CV (${words} words)`, detail: 'Aim for 2–3 pages. Trim older roles to one line each.' });
     else out.push({ status: 'ok', title: `Length looks right (${words} words)`, detail: 'Roughly 2–3 pages for a senior profile.' });
     return out;

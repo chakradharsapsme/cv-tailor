@@ -244,7 +244,7 @@
       });
     });
     const ex = $('#example', body);
-    if (ex) ex.addEventListener('click', () => { a.jd = EXAMPLE_JD; a.company = a.company || 'Northgate Energy (fictional example)'; a.role = a.role || 'SAP Ariba Solution Architect'; ctx.saveNow().then(() => window.CVT.app.rerender()); });
+    if (ex) ex.addEventListener('click', () => { const it = window.CVT.fields.current().id === 'it'; a.jd = it ? EXAMPLE_JD : EXAMPLE_GENERIC; a.company = a.company || (it ? 'Northgate Energy (fictional example)' : 'Brightside Services (fictional example)'); a.role = a.role || (it ? 'SAP Ariba Solution Architect' : 'Operations Team Leader'); ctx.saveNow().then(() => window.CVT.app.rerender()); });
 
     let ctl = null;
     $('#stop', body).addEventListener('click', () => ctl && ctl.abort());
@@ -851,6 +851,23 @@
   }
 
   // ---------- example job (fictional) ----------
+  const EXAMPLE_GENERIC = `Operations Team Leader
+
+Brightside Services (fictional) is growing and needs a team leader to run day-to-day operations for our customer support centre.
+
+What you'll do
+- Lead, coach and schedule a team of 10-12 advisors across phone, email and chat
+- Hit service levels and quality targets; report weekly KPIs to the operations manager
+- Handle escalated complaints and turn them into process improvements
+- Train new starters and run monthly one-to-ones and performance reviews
+- Work with other departments to fix recurring customer issues
+
+What you'll bring
+- 2+ years leading a team in a customer-facing or operations role
+- Strong communication and stakeholder management
+- Confident with Excel and a CRM system
+- Calm, organised and good at problem solving under pressure
+- Desirable: a leadership or customer-service qualification, experience with Zendesk or Salesforce`;
   const EXAMPLE_JD = `SAP Ariba Solution Architect (Source-to-Pay)
 Northgate Energy (fictional example) · Manchester, hybrid (2 days on site) · Permanent · £95,000–£110,000 + bonus
 

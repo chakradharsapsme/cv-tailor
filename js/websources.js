@@ -1,6 +1,7 @@
 /*
  * websources.js — live jobs straight from the browser, no keys and no server:
  *   • company career portals on Greenhouse, Lever, Ashby and SmartRecruiters (their public job APIs)
+ *   • The Muse (every profession, by your field's categories)
  *   • remote-job boards Remotive and Jobicy (roles open to people in your country)
  * Everything is limited to the chosen country (plus remote roles open to it), then filtered against your
  * searches (target titles + skills from your CV) before it reaches the feed.
@@ -61,6 +62,25 @@
     delete j._gh; return j;
   }
 
+  /** The Muse: a free public jobs API covering every profession (strongest in the US and UK). */
+  async function muse(cats, cc) {
+    const c = K().get(cc), out = [];
+    const locs = (c.muse || []).map(l => '&location=' + encodeURIComponent(l)).join('');
+    for (const cat of cats.length ? cats : ['']) {
+      for (let page = 0; page < 3; page++) {
+        const d = await getJSON(`https://www.themuse.com/api/public/jobs?page=${page}${cat ? '&category=' + encodeURIComponent(cat) : ''}${locs}`);
+        (d.results || []).forEach(j => {
+          const here = (j.locations || []).map(l => l.name).filter(n => K().inCountry(cc, n));
+          if (!here.length) return;
+          out.push({ title: j.name, company: (j.company || {}).name || '', location: here.join(' / '), type: (j.levels || []).map(l => l.name).join(', '),
+            url: (j.refs || {}).landing_page || '', posted: day(j.publication_date), jd: textOf(j.contents).slice(0, 4000) });
+        });
+        if (page + 1 >= (d.page_count || 0)) break;
+      }
+    }
+    return out;
+  }
+
   async function remotive(q, cc) {
     const d = await getJSON(`https://remotive.com/api/remote-jobs?search=${encodeURIComponent(q)}&limit=50`);
     return (d.jobs || []).filter(j => K().remoteOk(cc, j.candidate_required_location || 'Worldwide'))
@@ -77,11 +97,13 @@
    * Search every source. relevant(job) decides what is kept (title/skill match against your searches).
    * onStep(label) reports progress. Returns { jobs, errors, bySource }.
    */
-  async function search({ queries, portals, relevant, onStep, country }) {
+  async function search({ queries, portals, relevant, onStep, country, field }) {
     const cc = K().list[country] ? country : 'GB';
     const out = [], errors = [], bySource = {};
     const add = (list, source) => { const keep = list.filter(j => j && j.title && relevant(j)); keep.forEach(j => { j.source = source; j.sources = [source]; j.country = cc; }); out.push(...keep); bySource[source] = (bySource[source] || 0) + keep.length; };
-    const list = (portals && portals.length ? portals : portalsFor(cc)).map(detect).filter(Boolean);
+    // The built-in employer lists are tech and business firms: skip them for fields they don't hire in (your own list always runs).
+    const noPortals = ['healthcare', 'education', 'trades', 'hospitality'].includes(field);
+    const list = (portals && portals.length ? portals : noPortals ? [] : portalsFor(cc)).map(detect).filter(Boolean);
     // Career portals: one call each, limited to the country and your searches.
     for (let i = 0; i < list.length; i += 4) {
       const batch = list.slice(i, i + 4);
@@ -97,6 +119,12 @@
           add(jobs, 'Careers · ' + nice(p.slug));
         } catch (e) { errors.push(`${nice(p.slug)} careers: ${e.message}`); }
       }));
+    }
+    // Every profession: The Muse, by the categories that match your field.
+    const cats = (window.CVT.fields ? window.CVT.fields.get(field || window.CVT.fields.current().id) : { muse: [] }).muse || [];
+    if ((K().get(cc).muse || []).length || cc === 'US') {
+      onStep && onStep(`Searching The Muse in ${K().get(cc).name}`);
+      try { add(await muse(cats, cc), 'The Muse'); } catch (e) { errors.push(`The Muse: ${e.message}`); }
     }
     // Remote boards, per search.
     for (const q of queries.slice(0, 6)) {

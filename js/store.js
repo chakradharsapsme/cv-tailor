@@ -141,20 +141,51 @@
     from(buf) { let s = ''; const b = new Uint8Array(buf); for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000)); return btoa(s); },
     to(str) { const bin = atob(str); const b = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) b[i] = bin.charCodeAt(i); return b.buffer; }
   };
+  // Binary data (Word files, uploads) travels as base64 inside the JSON backup.
+  const enc = v => {
+    if (v instanceof ArrayBuffer) return { __b64: b64.from(v) };
+    if (ArrayBuffer.isView(v)) return { __b64: b64.from(v.buffer.slice(v.byteOffset, v.byteOffset + v.byteLength)) };
+    if (Array.isArray(v)) return v.map(enc);
+    if (v && typeof v === 'object' && !(v instanceof Blob)) { const o = {}; for (const k in v) o[k] = enc(v[k]); return o; }
+    return v;
+  };
+  const dec = v => {
+    if (v && typeof v === 'object' && typeof v.__b64 === 'string' && Object.keys(v).length === 1) return b64.to(v.__b64);
+    if (Array.isArray(v)) return v.map(dec);
+    if (v && typeof v === 'object') { const o = {}; for (const k in v) o[k] = dec(v[k]); return o; }
+    return v;
+  };
+  // Settings worth moving to another device (never API keys).
+  const LOCAL_KEYS = ['cvt.country', 'cvt.field', 'cvt.theme', 'cvt.provider', 'cvt.geminiModel', 'cvt.tourDone', 'cvt.jobsUi', 'cvt.deck', 'cvt.rc'];
+  /** Everything in one file: profile, CVs, applications, documents, notes, prep, job feed and settings. */
   async function exportAll() {
     const masters = (await listMasters()).map(m => Object.assign({}, m, { data: b64.from(m.data) }));
-    return { app: 'cv-tailor', version: 2, exported: now(), profile: await getProfile(), masters, apps: await listApps() };
+    const kv = (await all('kv')).filter(r => r.k !== 'profile').map(r => ({ k: r.k, v: enc(r.v) }));
+    const files = [];
+    for (const f of await all('files')) {
+      try { const b = f.blob; files.push({ id: f.id, name: b && b.name || '', type: b && b.type || '', data: b64.from(await b.arrayBuffer()) }); } catch (_) {}
+    }
+    const settings = {}; LOCAL_KEYS.forEach(k => { const v = local.get(k); if (v != null) settings[k] = v; });
+    return { app: 'cv-tailor', version: 3, exported: now(), profile: await getProfile(), masters, apps: enc(await listApps()), kv, files, settings };
   }
   async function importAll(obj) {
     if (!obj || obj.app !== 'cv-tailor') throw new Error('This is not an Applywise backup file.');
     if (obj.profile) await saveProfile(Object.assign({}, DEFAULT_PROFILE, obj.profile));
     for (const m of obj.masters || []) await put('masters', Object.assign({}, m, { data: b64.to(m.data) }));
-    for (const a of obj.apps || []) await put('apps', a);
-    return { masters: (obj.masters || []).length, apps: (obj.apps || []).length };
+    for (const a of dec(obj.apps || [])) await put('apps', a);
+    for (const r of obj.kv || []) await put('kv', { k: r.k, v: dec(r.v) });
+    for (const f of obj.files || []) {
+      const buf = b64.to(f.data);
+      await put('files', { id: f.id, blob: f.name ? new File([buf], f.name, { type: f.type }) : new Blob([buf], { type: f.type }) });
+    }
+    Object.entries(obj.settings || {}).forEach(([k, v]) => { if (LOCAL_KEYS.includes(k)) local.set(k, v); });
+    return { masters: (obj.masters || []).length, apps: (obj.apps || []).length, docs: (obj.files || []).length, extras: (obj.kv || []).length };
   }
   async function clearAll() {
     for (const n of ['kv', 'masters', 'apps', 'files']) await tx(n, 'readwrite', s => req2p(s.clear()));
-    ['cvt.key', 'cvt.model', 'cvt.master', 'cvt.apps', 'cvt.draft', 'cvt.migrated'].forEach(local.del);
+    // Every Applywise setting on this device too (keys, theme, country, field, drafts...).
+    try { [localStorage, sessionStorage].forEach(st => Object.keys(st).filter(k => /^cvt\./.test(k)).forEach(k => st.removeItem(k))); } catch (_) {}
+    try { if (window.caches) (await caches.keys()).forEach(k => caches.delete(k)); } catch (_) {}
   }
 
   /** One-time move of v1 data (localStorage) into IndexedDB. */

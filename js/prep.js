@@ -2,7 +2,7 @@
  * prep.js — interview preparation and offers.
  *   Mock interview : Claude asks one question at a time for a chosen job, scores your answer, shows a stronger version.
  *   Story bank     : your STAR stories, saved once, matched to every job.
- *   Drill cards    : SAP procurement and business-analysis practice with spaced repetition.
+ *   Drill cards    : interview essentials (plus SAP / BA decks for IT profiles) with spaced repetition.
  *   Offers         : compare offers (perm vs contract), draft a counter-offer, checklist before you accept.
  *   Calendar       : interview slots as .ics files with prep and thank-you reminders.
  */
@@ -137,8 +137,8 @@
         <div class="panel-head"><h2>Practise with an AI interviewer</h2></div>
         <p class="hint">One question at a time, tailored to the job. Answer as you would out loud: type, or press Speak. You get a score out of 5, what was missing, and a stronger answer built only from your real experience.</p>
         <div class="grid-2">
-          <label class="field"><span>Job</span><select id="mk-app"><option value="">General SAP procurement / BA interview</option>${withJd.map(a => html`<option value="${a.id}" ${a.id === appId ? raw('selected') : ''}>${a.role || 'Role'} · ${a.company || ''}</option>`)}</select></label>
-          <label class="field"><span>Question type</span><select id="mk-kind"><option value="mixed">Mixed</option><option value="functional">SAP functional scenarios</option><option value="ba">Business analysis</option><option value="behavioural">Behavioural (STAR)</option></select></label>
+          <label class="field"><span>Job</span><select id="mk-app"><option value="">General interview for my target roles</option>${withJd.map(a => html`<option value="${a.id}" ${a.id === appId ? raw('selected') : ''}>${a.role || 'Role'} · ${a.company || ''}</option>`)}</select></label>
+          <label class="field"><span>Question type</span><select id="mk-kind"><option value="mixed">Mixed</option><option value="functional">Technical / role scenarios</option>${window.CVT.fields.current().id === 'it' ? raw('<option value="ba">Business analysis</option>') : ''}<option value="behavioural">Behavioural (STAR)</option></select></label>
         </div>
         <button class="btn primary start-btn" id="mk-start" type="button">Start mock interview</button>
       </section>
@@ -306,7 +306,7 @@
         <div class="grid-2">
           <label class="field"><span>Numbers (e.g. 4,000 users, 30% faster)</span><input data-k="metrics" value="${s.metrics || ''}"></label>
           <label class="field"><span>Themes (comma separated)</span><input data-k="tags" value="${(s.tags || []).join(', ')}" placeholder="${THEMES.slice(0, 4).join(', ')}"></label>
-          <label class="field span-2"><span>Skills shown (comma separated)</span><input data-k="skills" value="${(s.skills || []).join(', ')}" placeholder="SAP Ariba, Guided Buying, cutover"></label>
+          <label class="field span-2"><span>Skills shown (comma separated)</span><input data-k="skills" value="${(s.skills || []).join(', ')}" placeholder="e.g. stakeholder management, budgeting, Excel"></label>
         </div>
         <div class="row gap"><button class="btn primary" data-save type="button">Save story</button><button class="btn ghost" data-cancel type="button">Cancel</button></div>`);
       body.prepend(card); card.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -369,7 +369,7 @@
         </section>` : html`<section class="panel empty-state"><h2>${doneToday ? 'Done for today' : 'Nothing due'}</h2><p class="hint">${doneToday ? `You reviewed ${doneToday} card${doneToday === 1 ? '' : 's'}. Come back tomorrow.` : 'All cards in this deck are scheduled for later.'}</p></section>`}
         <section class="panel">
           <div class="panel-head"><h2>Add cards on a topic</h2></div>
-          <p class="hint">For example: "SAP Ariba Contracts", "S/4HANA MDG supplier", "requirements traceability", or anything from a job advert.</p>
+          <p class="hint">For example a skill from a job advert, a tool you use, or a topic you want to revise.</p>
           <div class="row gap wrap"><input id="dr-topic" type="text" placeholder="Topic" class="grow"><button class="btn ghost" id="dr-gen" type="button">Create 8 cards</button></div>
         </section>`);
       $('#dr-deck', body).addEventListener('change', e => { deck = e.target.value; S.local.set('cvt.deck', deck); build(); draw(); });

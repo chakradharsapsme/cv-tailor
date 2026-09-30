@@ -13,44 +13,31 @@
   const MAX_ITEMS = 400;
 
   // ---------------------------------------------------------------------
-  // Skills lexicon. "Display|alias|alias". Short all-caps aliases match case-sensitively.
+  // Skills vocabulary: the user's field (fields.js) + skills shared by every field + their own "extra skills".
+  // "Display|alias|alias". Short all-caps aliases match case-sensitively.
   // ---------------------------------------------------------------------
-  const LEXICON = [
-    'SAP Ariba|Ariba', 'Ariba Buying|Ariba Buying and Invoicing|ABI', 'Guided Buying', 'Ariba Sourcing|Strategic Sourcing',
-    'Ariba Contracts|Contract lifecycle management|CLM', 'SLP|Supplier Lifecycle and Performance|Supplier Lifecycle',
-    'Supplier Risk', 'Ariba Network|SAP Business Network', 'Catalogues|Catalog|Catalogue|punchout|punch-out',
-    'Spend Analysis|Spend visibility', 'CIG|Cloud Integration Gateway', 'SAP Integration Suite|CPI|Cloud Platform Integration',
-    'SAP BTP|BTP|Business Technology Platform', 'S/4HANA|S4HANA|S/4 HANA|S4 HANA|S4',
-    'S/4HANA Public Cloud|Public Cloud|GROW with SAP', 'RISE with SAP|RISE', 'Central Procurement',
-    'SAP MM|Materials Management|MM', 'SAP SRM|SRM', 'SAP ECC|ECC', 'SAP FI/CO|FICO|FI/CO|SAP FI',
-    'Source-to-Pay|S2P|Source to Pay', 'Procure-to-Pay|P2P|Procure to Pay|Purchase to Pay',
-    'Invoice automation|Invoice Management|VIM|OpenText', 'GR/IR', 'UK VAT|VAT',
-    'Vendor master|Supplier master|Business Partner|vendor onboarding|supplier onboarding', 'MDG|Master Data Governance',
-    'SAP Fieldglass|Fieldglass', 'SAP Concur|Concur', 'Coupa', 'Jaggaer', 'Oracle Procurement|Oracle', 'Ivalua', 'Basware', 'Tungsten',
-    'Signavio', 'Solution Manager|SolMan|Cloud ALM', 'SAP Activate|Activate methodology',
-    'Fit-to-standard|fit to standard|fit-gap|fit gap', 'Global template', 'Data migration|Migration Cockpit|LTMC',
-    'Cutover', 'SIT|System integration testing', 'UAT|User acceptance testing', 'Hypercare', 'Fiori', 'ABAP', 'IDoc|IDocs',
-    'cXML', 'EDI', 'APIs|API', 'Approval workflow|Workflow', 'Agile|Scrum', 'PMP', 'PRINCE2', 'Stakeholder management|stakeholders',
-    'Design authority', 'Solution architecture|Solution architect', 'Pre-sales|presales', 'Workshops', 'Business case',
-    'Change management', 'Team leadership|team lead|lead a team|line management', 'Offshore delivery|offshore',
-    'Procurement transformation', 'Category management', 'Sustainability|ESG', 'AI|Artificial intelligence|Joule|machine learning',
-    'SAP Analytics Cloud|SAC', 'Power BI', 'Security clearance|SC clearance|SC cleared|DV clearance', 'Public sector',
-    'Business analysis|Business analyst|requirements gathering|requirements analysis', 'Process mapping|BPMN|as-is|to-be', 'User stories|acceptance criteria|backlog',
-    'Jira|Confluence', 'SQL', 'Product owner', 'Gap analysis', 'Functional specifications|functional specs|functional design'
-  ];
+  const FL = () => window.CVT.fields;
   const escRe = s => s.replace(/[.*+?^${}()|[\]\\\/]/g, '\\$&');
-  const TERMS = LEXICON.map(entry => {
-    const names = entry.split('|');
-    const cs = names.filter(n => /^[A-Z0-9\/]{2,5}$/.test(n)), ci = names.filter(n => !/^[A-Z0-9\/]{2,5}$/.test(n));
+  const compile = entry => {
+    const names = entry.split('|').map(x => x.trim()).filter(Boolean);
+    const cs = names.filter(n => /^[A-Z0-9\/&]{2,5}$/.test(n)), ci = names.filter(n => !/^[A-Z0-9\/&]{2,5}$/.test(n));
     const b = x => `(?<![A-Za-z0-9])(?:${x})(?![A-Za-z0-9])`;
-    return {
-      name: names[0],
-      ci: ci.length ? new RegExp(b(ci.map(escRe).join('|')), 'i') : null,
-      cs: cs.length ? new RegExp(b(cs.map(escRe).join('|'))) : null
-    };
-  });
+    return { name: names[0], ci: ci.length ? new RegExp(b(ci.map(escRe).join('|')), 'i') : null, cs: cs.length ? new RegExp(b(cs.map(escRe).join('|'))) : null };
+  };
+  let TERMS = [], termsSig = '';
+  /** Rebuild the vocabulary when the field or the user's own skills change. */
+  function vocab(extra) {
+    const f = FL().current(), own = String(extra || '').split(/[\n,;•]+/).map(x => x.trim()).filter(x => x.length > 1 && x.length <= 40 && x.split(/\s+/).length <= 5);
+    const sig = f.id + '|' + own.join('|');
+    if (sig === termsSig && TERMS.length) return;
+    const seen = new Set();
+    TERMS = f.lexicon.concat(FL().GENERAL, own.map(escLex)).map(compile).filter(t => { const k = t.name.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; });
+    termsSig = sig;
+  }
+  const escLex = x => x.replace(/\|/g, ' ');
   const hasTerm = (t, text) => (t.ci && t.ci.test(text)) || (t.cs && t.cs.test(text));
-  const termsIn = text => TERMS.filter(t => hasTerm(t, text || '')).map(t => t.name);
+  const termsIn = text => { if (!TERMS.length) vocab(''); return termsIn2(text); };
+  const termsIn2 = text => TERMS.filter(t => hasTerm(t, text || '')).map(t => t.name);
 
   // ---------------------------------------------------------------------
   // Small text helpers
@@ -68,16 +55,8 @@
 
   const AGENCY = /recruit|resourc|staffing|talent|selection|personnel|search|hays|harvey nash|nigel frank|tenth revolution|frank group|eursap|oliver james|robert walters|robert half|michael page|page personnel|randstad|adecco|hudson|montash|intaso|lorien|spinks|computer futures|progressive|experis|la fosse|sanderson|hanson|ampersand|jonathan lee|gibbs|conexus|square one|sap people|hunter|jobs|careers|associates/i;
   const isAgency = c => AGENCY.test(c || '');
-  // Only IT and business-analysis roles belong in N's feed.
-  const IT_STRONG = /\b(sap|ariba|s\/?4\s?hana|s4|erp|coupa|jaggaer|ivalua|oracle|workday|dynamics|salesforce|servicenow|it|ict|digital|systems?|technology|technical|software|data|integration|platform|applications?|business analyst|business analysis|product owner|solution|p2p|s2p|procure[- ]to[- ]pay|source[- ]to[- ]pay|ai|cloud)\b/i;
-  const IT_GENERIC = /\b(analyst|consultant|architect|transformation|programme|project|lead|manager|specialist|owner)\b/i;
-  const NON_IT = /\b(buyer|driver|warehouse operative|operative|nurse|carer|care assistant|chef|cleaner|forensics?|account executive|sales executive|business development|recruitment consultant|teacher|mechanic|electrician|labourer|retail|cashier|commercial lead|security officer)\b/i;
-  function isItRole(j) {
-    const t = j.title || '';
-    if (NON_IT.test(t)) return false;
-    if (IT_STRONG.test(t)) return true;
-    return IT_GENERIC.test(t) && IT_STRONG.test(j.jd || '');
-  }
+  // Only roles in the user's own field belong in the feed (IT / BA for an IT profile, nursing for a nurse, ...).
+  const isItRole = j => FL().current().fits(j);
   const JUNIOR = /\b(junior|graduate|trainee|apprentice|assistant|coordinator|co-ordinator|entry[- ]level|intern)\b/i;
 
   /** "£60,000.00-£65,000.00 per year" → { kind: 'year', value: 62500 }. */
@@ -218,7 +197,9 @@
     } catch (_) {}
     // 2. GitHub robot (optional)
     const onPages = /github\.io$/.test(location.hostname);
-    for (const url of onPages ? ['data/jobs.json', COLLECTED_URL] : [COLLECTED_URL]) {
+    // The site owner's robot collects UK IT / business-analysis roles only: other visitors don't get them.
+    const itUk = FL().current().id === 'it' && (window.CVT.countries ? window.CVT.countries.current() === 'GB' : true);
+    for (const url of !itUk ? [] : onPages ? ['data/jobs.json', COLLECTED_URL] : [COLLECTED_URL]) {
       try {
         const r = await fetch(url + '?t=' + Math.floor(Date.now() / 600e3), { cache: 'no-store' });
         if (!r.ok) continue;
@@ -236,13 +217,13 @@
     return collectedInfo;
   }
 
-  const CORE_SEARCHES = ['SAP Ariba', 'SAP S2P P2P', 'S/4HANA Procurement', 'SAP Business Analyst', 'IT Business Analyst', 'ERP Business Analyst'];
-  /** Every search list keeps at least one business-analyst search. */
-  const withBA = qs => { const q = qs.slice(0, 6); if (!q.some(x => /analyst/i.test(x))) { if (q.length >= 6) q.pop(); q.push('IT Business Analyst'); } return q; };
+  /** An IT / business-analysis profile always keeps one business-analyst search. */
+  const withBA = qs => { const q = qs.slice(0, 6); if (FL().current().id === 'it' && !q.some(x => /analyst/i.test(x))) { if (q.length >= 6) q.pop(); q.push('IT Business Analyst'); } return q; };
   // Skills that make useful searches on their own (not soft skills or methods).
   const GENERIC_TERMS = new Set(['Workshops', 'Agile', 'Stakeholder management', 'Change management', 'Business case', 'Team leadership', 'APIs', 'Approval workflow', 'PMP', 'PRINCE2',
     'Offshore delivery', 'Design authority', 'Pre-sales', 'Global template', 'Cutover', 'SIT', 'UAT', 'Hypercare', 'Gap analysis', 'User stories', 'Process mapping', 'Jira', 'Public sector', 'Security clearance',
-    'Sustainability', 'AI', 'EDI', 'cXML', 'IDoc', 'UK VAT', 'GR/IR', 'Workflow', 'Catalogues', 'Functional specifications', 'Fit-to-standard', 'SAP Activate', 'Data migration']);
+    'Sustainability', 'AI', 'EDI', 'cXML', 'IDoc', 'UK VAT', 'GR/IR', 'Workflow', 'Catalogues', 'Functional specifications', 'Fit-to-standard', 'SAP Activate', 'Data migration',
+    'Communication skills', 'Microsoft Office', 'Problem solving', 'Customer service', 'Training', 'Budget management', 'Data analysis', 'Negotiation', 'Driving licence', 'Health and safety', 'Project management', 'Git', 'Agile', 'Safeguarding', 'KPIs']);
   /** Searches built from your target job titles first, then the strongest skills on your CV. */
   async function defaultSearches() {
     const p = await S.getProfile();
@@ -251,7 +232,7 @@
     try { const ev = await evidence(); skills = TERMS.map(t => t.name).filter(n => ev.terms.has(n) && !GENERIC_TERMS.has(n)).slice(0, 4); } catch (_) {}
     if (!roles.length && p.currentTitle) roles.push(p.currentTitle);
     const qs = [...new Set(roles.concat(skills))];
-    return withBA((qs.length ? qs : CORE_SEARCHES).slice(0, 6));
+    return withBA((qs.length ? qs : FL().current().titles).slice(0, 6));
   }
   const CO = () => window.CVT.countries;
   /** A place in the country: your target location if it is there, else the country itself. */
@@ -269,8 +250,9 @@
   /** Everything that proves a skill: the default CV, extra skills and achievements from the profile. */
   async function evidence() {
     const [p, masters] = await Promise.all([S.getProfile(), S.listMasters()]);
+    FL().use(p); vocab(p.extraSkills);
     const def = masters.find(m => m.isDefault) || masters[0];
-    const sig = (def ? def.id : '') + '|' + p.extraSkills + '|' + (p.achievements || []).join('|') + '|' + p.currentTitle;
+    const sig = termsSig + '|' + (def ? def.id : '') + '|' + p.extraSkills + '|' + (p.achievements || []).join('|') + '|' + p.currentTitle;
     if (evidenceCache && evidenceCache.sig === sig) return evidenceCache;
     let cv = '';
     try { const mm = def ? await masterModel(def.id) : null; if (mm) cv = D.plainText(mm.model); } catch (_) {}
@@ -322,6 +304,7 @@
     running = (async () => {
       const feed = await loadFeed();
       const cfg = await searchesOf(feed);
+      if (!cfg.queries.length) return { added: 0, found: 0, errors: [{ code: 'no_searches', text: 'Add the job titles you want in Career profile (or pick your field) so Applywise knows what to search for.' }] };
       const cc = CO().get(cfg.country);
       const locs = [cfg.location || cc.name].concat(cfg.remote ? ['remote'] : []);
       const plan = [];
@@ -357,12 +340,12 @@
           const titleRel = Math.max(0, ...qt.map(q => frac(q, tt))), bodyRel = Math.max(0, ...qt.map(q => frac(q, bt)));
           const skills = termsIn(j.title + ' ' + (j.jd || '')).filter(t => ev.terms.has(t)).length;
           // The title must fit what you're looking for; the advert body alone is only enough for analyst/consultant-type titles that ask for your skills.
-          const offTrack = /\b(engineer|engineering|developer|designer|scientist|marketing|sales)\b/i.test(j.title);
+          const fl = FL().current(), offTrack = !!(fl.offTrack && fl.offTrack.test(j.title));
           const titleSkill = termsIn(j.title).some(t => ev.terms.has(t) && !GENERIC_TERMS.has(t));
-          return titleRel >= 0.5 || (!offTrack && titleSkill && skills >= 3) || (!offTrack && bodyRel >= 0.67 && skills >= 3 && IT_GENERIC.test(j.title));
+          return titleRel >= 0.5 || (!offTrack && titleSkill && skills >= 3) || (!offTrack && bodyRel >= 0.67 && skills >= 3 && (fl.analyst ? fl.analyst.test(j.title) : fl.fits(j)));
         };
         const W = window.CVT.websources;
-        const r = await W.search({ queries: cfg.queries, portals: cfg.portals, country: cfg.country, relevant, onStep: t => onStep && onStep(-1, 0, t) });
+        const r = await W.search({ queries: cfg.queries, portals: cfg.portals, country: cfg.country, field: FL().current().id, relevant, onStep: t => onStep && onStep(-1, 0, t) });
         found += r.jobs.length;
         for (const j of r.jobs) {
           const k = keyOf(j), old = feed.items[k];
@@ -370,7 +353,7 @@
           else { feed.items[k] = Object.assign(j, { key: k, query: '', firstSeen: new Date().toISOString(), lastSeen: new Date().toISOString(), status: 'new' }); added++; }
         }
         // Drop earlier web results that no longer fit your searches (untouched ones only).
-        Object.values(feed.items).forEach(j => { if (j.status === 'new' && /^(Careers · |Remotive|Jobicy)/.test(j.source || '') && (!relevant(j) || (j.country || 'GB') !== cfg.country)) delete feed.items[j.key]; });
+        Object.values(feed.items).forEach(j => { if (j.status === 'new' && /^(Careers · |Remotive|Jobicy|The Muse)/.test(j.source || '') && (!relevant(j) || (j.country || 'GB') !== cfg.country)) delete feed.items[j.key]; });
         feed.webRun = { at: new Date().toISOString(), bySource: r.bySource };
         if (r.errors.length) feed.webErrors = r.errors.slice(0, 5); else delete feed.webErrors;
       } catch (e) { errors.push({ code: 'web', text: 'Job sites: ' + (e.message || e) }); }
@@ -559,9 +542,11 @@
           <a class="btn ghost" href="#/new">Paste an advert</a>
         </div>
       </header>
-      <section class="panel callout">
+      ${cfg.queries.length ? '' : html`<section class="panel callout warn-callout"><h2>Tell us what you're looking for</h2><p class="hint">Add your target job titles and your field in <a class="link" href="#/profile">Career profile</a>, or type searches in the Searches box. Applywise then finds matching jobs in your country.</p></section>`}
+      <section class="panel callout jobs-intro" ${cfg.queries.length ? '' : raw('hidden')}>
         <h2>Matched to your target titles and CV</h2>
-        <p class="hint">Find jobs now searches ${avail ? 'Indeed, ' : ''}company career portals and remote job boards for: <strong>${cfg.queries.join(' · ')}</strong>, in <strong>${CO().get(cfg.country).flag} ${CO().get(cfg.country).name}</strong> (plus remote roles open to it) <button class="linkish" type="button" id="jb-country">change country</button>. Only roles that match these titles or several skills on your CV are kept, then scored against your CV.${feed.webRun ? ` Last run found ${Object.entries(feed.webRun.bySource || {}).filter(([, n]) => n).map(([k, n]) => `${n} on ${k}`).join(', ') || 'no new matches'}.` : ''} Big boards such as LinkedIn and ${CO().get(cfg.country).boards('x', '').filter(b => b.name !== 'LinkedIn' && b.name !== 'Google Jobs').slice(0, 2).map(b => b.name).join(' and ')} don't allow other sites to read them: use the one-click searches below for those.</p>
+        <p class="hint">Find jobs now searches ${avail ? 'Indeed, ' : ''}The Muse, company career portals and remote job boards for: <strong>${cfg.queries.join(' · ')}</strong>, in <strong>${CO().get(cfg.country).flag} ${CO().get(cfg.country).name}</strong> (plus remote roles open to it) <button class="linkish" type="button" id="jb-country">change country</button>. Only roles that match these titles or several skills on your CV are kept, then scored against your CV.${feed.webRun ? ` Last run found ${Object.entries(feed.webRun.bySource || {}).filter(([, n]) => n).map(([k, n]) => `${n} on ${k}`).join(', ') || 'no new matches'}.` : ''} Big boards such as LinkedIn and ${CO().get(cfg.country).boards('x', '').filter(b => b.name !== 'LinkedIn' && b.name !== 'Google Jobs').slice(0, 2).map(b => b.name).join(' and ')} don't allow other sites to read them: use the one-click searches below for those.</p>
+      <button class="linkish more" type="button" id="jb-more">Show details</button>
       </section>
       <p class="error" id="jb-err" role="alert" ${feed.errors && feed.errors.length ? '' : raw('hidden')}>${feed.errors && feed.errors[0] ? feed.errors[0].text : ''}</p>
       <ol class="progress" id="jb-prog" hidden></ol>
@@ -570,9 +555,10 @@
         <section class="panel jobs-feed">
           <div class="filters">
             <input id="f-q" type="search" placeholder="Filter by title, company, skill" value="${ui.q}" aria-label="Filter jobs">
+            <button class="btn ghost small f-toggle" type="button" id="f-toggle" aria-expanded="false">Filters${Number(ui.min) || ui.days != 30 || ui.kind || ui.mode || ui.allRoles || ui.sort !== 'score' ? ' •' : ''}</button>
             <label class="inline-field">Min match <select id="f-min">${[0, 40, 50, 60, 70].map(n => html`<option value="${n}" ${ui.min == n ? raw('selected') : ''}>${n ? n + '+' : 'Any'}</option>`)}</select></label>
             <label class="inline-field">Posted <select id="f-days">${[[3, '3 days'], [7, '7 days'], [14, '14 days'], [30, '30 days'], [9999, 'Any time']].map(([v, l]) => html`<option value="${v}" ${ui.days == v ? raw('selected') : ''}>${l}</option>`)}</select></label>
-            <label class="check-line"><input id="f-all" type="checkbox" ${ui.allRoles ? raw('checked') : ''}> Show non-IT roles</label>
+            <label class="check-line"><input id="f-all" type="checkbox" ${ui.allRoles ? raw('checked') : ''}> Show roles outside my field</label>
             <label class="inline-field">Sort <select id="f-sort"><option value="score" ${ui.sort === 'score' ? raw('selected') : ''}>Best match</option><option value="date" ${ui.sort === 'date' ? raw('selected') : ''}>Newest</option><option value="pay" ${ui.sort === 'pay' ? raw('selected') : ''}>Highest pay</option></select></label>
             <label class="inline-field">Type <select id="f-kind">${[['', 'Any'], ['contract', 'Contract'], ['perm', 'Permanent']].map(([v, l]) => html`<option value="${v}" ${ui.kind === v ? raw('selected') : ''}>${l}</option>`)}</select></label>
             <label class="inline-field">Work <select id="f-mode">${[['', 'Any'], ['remote', 'Remote'], ['hybrid', 'Hybrid'], ['onsite', 'On-site']].map(([v, l]) => html`<option value="${v}" ${ui.mode === v ? raw('selected') : ''}>${l}</option>`)}</select></label>
@@ -600,7 +586,7 @@
             <div class="row gap wrap mt"><button class="btn small" id="s-save" type="button">Save searches</button><button class="btn small ghost" id="s-auto" type="button">Rebuild from my titles and CV</button></div>
           </section>
 
-          <section class="panel">
+          ${!(col && col.ok) && !(window.claude && window.claude.use) ? '' : html`<section class="panel">
             <div class="panel-head"><h2>Job robot</h2>${col && col.ok ? html`<span class="chip ok">Ready</span>` : html`<span class="chip muted">Not run yet</span>`}</div>
             ${col && col.ok ? col.robots.map(r => html`<p class="hint"><strong>${r.name}</strong>: ${r.count} jobs from ${r.sources.join(', ') || 'job sites'}, last run ${relTime(r.updated)}.</p>
               ${r.errors && r.errors.length ? html`<p class="muted small">Note: ${r.errors[0]}</p>` : ''}`)
@@ -612,7 +598,7 @@
                 <li>In <a class="link" href="${REPO_URL}/settings/secrets/actions" target="_blank" rel="noopener">GitHub → Settings → Secrets → Actions</a>, add <code>REED_API_KEY</code>, <code>ADZUNA_APP_ID</code> and <code>ADZUNA_APP_KEY</code>, then <a class="link" href="${REPO_URL}/actions/workflows/fetch-jobs.yml" target="_blank" rel="noopener">run the workflow</a> once.</li>
               </ol>
             </details>
-          </section>
+          </section>`}
 
           <section class="panel" id="mk"></section>
 
@@ -668,7 +654,7 @@
       } else list.innerHTML = rows.map(r => String(jobCard(r.j, r.sc, r.dups))).join('');
       const hidden = Object.values(f.items).filter(j => j.status === 'hidden').length;
       const nonIt = ui.allRoles ? 0 : Object.values(f.items).filter(j => j.status !== 'hidden' && !isItRole(j)).length;
-      $('#jb-foot', root).textContent = `${rows.length} shown · ${Object.keys(f.items).length} in feed${hidden ? ` · ${hidden} hidden` : ''}${nonIt ? ` · ${nonIt} non-IT roles filtered out` : ''}. The match score compares the skills in each advert with your CV and career profile; “~” means only the title was checked.`;
+      $('#jb-foot', root).textContent = `${rows.length} shown · ${Object.keys(f.items).length} in feed${hidden ? ` · ${hidden} hidden` : ''}${nonIt ? ` · ${nonIt} roles outside your field filtered out` : ''}. The match score compares the skills in each advert with your CV and career profile; “~” means only the title was checked.`;
     };
     await draw();
     const saveUi = () => S.local.set('cvt.jobsUi', ui);
@@ -750,6 +736,10 @@
       } catch (e2) { prog.hidden = true; err.textContent = errText(e2); err.hidden = false; rb.disabled = false; rb.textContent = 'Find jobs now'; }
     });
 
+    $('#f-toggle', root).addEventListener('click', e => { const f = e.currentTarget.closest('.filters'); f.classList.toggle('open'); e.currentTarget.setAttribute('aria-expanded', f.classList.contains('open')); });
+    $('#jb-more', root).addEventListener('click', e => { const box = e.target.closest('.jobs-intro'); box.classList.toggle('open'); e.target.textContent = box.classList.contains('open') ? 'Show less' : 'Show details'; });
+    // Straight after first-run setup: start the first search automatically.
+    if (window.CVT._autoFind) { window.CVT._autoFind = false; setTimeout(() => { const b = $('#jb-refresh', root); if (b && document.body.contains(b)) b.click(); }, 300); }
     // ---- searches ----
     const portalsOf = code => window.CVT.websources.portalsFor(code).join('\n');
     const readPortals = () => $('#s-portals', root).value.split('\n').map(s => s.trim()).filter(Boolean).slice(0, 30);

@@ -41,10 +41,26 @@
     <div class="side-foot">
       <span class="pill" id="key-pill" data-state="missing">No API key</span>
       <p id="data-note">Your data stays in this browser. Nothing is submitted without you.</p>
-      <p><a class="side-link" href="#/help">Help and privacy</a></p>
+      <p><a class="side-link" href="#/help">Help and privacy</a> · <a class="side-link" href="#/pricing">Pricing</a></p>
     </div>
   </aside>
-  <main id="main" class="main" tabindex="-1"></main>
+  <div class="work">
+    <header class="topbar">
+      <div class="tb-title" id="tb-title">Dashboard</div>
+      <div class="tb-search" role="search">
+        <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5"/><path d="M12.3 12.3 17 17"/></svg>
+        <input id="tb-q" type="search" placeholder="Search applications, jobs and pages" aria-label="Search Applywise" autocomplete="off">
+        <kbd>/</kbd>
+        <div class="tb-results" id="tb-results" hidden></div>
+      </div>
+      <div class="tb-actions">
+        <a class="tb-link" href="#/pricing">Pricing</a>
+        <button class="tb-icon" id="tb-tour" type="button" title="Take the tour" aria-label="Take the tour">?</button>
+        <a class="tb-avatar" id="tb-avatar" href="#/profile" aria-label="Career profile">Me</a>
+      </div>
+    </header>
+    <main id="main" class="main" tabindex="-1"></main>
+  </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -66,6 +82,7 @@
 <script src="js/studio.js"></script>
 <script src="js/myqs.js"></script>
 <script src="js/autopilot.js"></script>
+<script src="js/shell.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

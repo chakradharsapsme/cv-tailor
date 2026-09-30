@@ -193,6 +193,21 @@
     return { tree: { center: raw.center || 'Your documents', branches }, removed, kept };
   }
 
+  /** Keep only questions whose quote is really in the uploaded documents; record where it came from. */
+  function verifyQuestions(list, passages, docs) {
+    const byId = new Map(passages.map(p => [p.id, p]));
+    const docText = docs.map(d => [d.name, (d.text || '') + '\n' + (d.note || '')]);
+    let removed = 0;
+    const items = (list || []).filter(q => q && q.q).map(q => {
+      const p = byId.get(String(q.ref || '').trim());
+      const inP = !!(q.quote && p && found(q.quote, p.text));
+      const hit = inP ? [p.doc] : (q.quote ? docText.find(([, t]) => found(q.quote, t)) : null);
+      if (!hit) { removed++; return null; }
+      return Object.assign({}, q, { source: hit[0], ref: inP ? p.id : '' });
+    }).filter(Boolean);
+    return { items, removed };
+  }
+
   async function tab(ctx) {
     const { a, body, profile } = ctx;
     a.docs = a.docs || [];
@@ -200,12 +215,25 @@
     const statusText = d => d.status === 'reading' ? 'Reading…' : d.status === 'ready' ? `Ready · ${(d.text || '').length.toLocaleString('en-GB')} characters${d.pages ? ' · ' + d.pages + ' pages' : ''}` : d.status === 'error' ? 'Could not read' : (d.note || '').trim() ? 'Using your notes' : 'Needs notes';
     const readable = () => a.docs.filter(d => d.use !== false && (((d.text || '').trim()) || (d.note || '').trim()));
     const dqHint = () => {
-      const n = readable().length, waiting = a.docs.filter(d => d.use !== false && !((d.text || '').trim() || (d.note || '').trim()));
-      if (n) return `Built from ${n} document${n === 1 ? '' : 's'}, the advert and your real experience. Answer outlines never invent experience.${waiting.length ? ` ${waiting.length} file${waiting.length > 1 ? 's have' : ' has'} no readable text yet and will be skipped.` : ''}`;
-      return a.docs.length ? `None of your files has readable text yet${waiting.some(d => d.kind === 'video' || d.kind === 'audio') ? ' (videos and audio need a transcript or notes)' : ''}. Questions will come from the job advert and your experience; add notes to a file to include it.` : 'Questions come from the job advert and your experience. Add documents to make them more specific.';
+      const n = readable().length, waiting = a.docs.filter(d => d.use !== false && !hasContent(d));
+      const skip = waiting.length ? ` ${waiting.length} file${waiting.length > 1 ? 's have' : ' has'} no readable text yet and will be skipped${waiting.some(d => d.kind === 'video' || d.kind === 'audio') ? ' (add a transcript or notes to a video to include it)' : ''}.` : '';
+      if (n) return `Questions come only from your ${n} document${n === 1 ? '' : 's'}, never from the job advert. Each one quotes the words it came from, checked against your files. Answer outlines use only your real experience.${skip}`;
+      return a.docs.length ? `None of your files has readable text yet.${skip} Add notes or a transcript to a file, then prepare questions.` : 'Upload the documents for this job (role pack, client deck, case study, notes). Questions are drawn only from them.';
     };
 
-    const groups = items => { const m = new Map(); items.forEach(q => { const k = q.source ? 'From ' + q.source : 'From the job advert'; if (!m.has(k)) m.set(k, []); m.get(k).push(q); }); return [...m.entries()]; };
+    const groups = items => { const m = new Map(); items.forEach(q => { const k = q.source || 'Your documents'; if (!m.has(k)) m.set(k, []); m.get(k).push(q); }); return [...m.entries()]; };
+    const TYPE = { functional: 'Functional', ba: 'Business analysis', behavioural: 'Behavioural', motivation: 'Motivation', case: 'Case study' };
+    const pnum = ref => (String(ref || '').split('-')[1] || '').replace('P', '');
+    /** One question card. del = data attribute for its delete button. */
+    const qCard = (q, n, del) => html`<li class="dq"><details>
+      <summary><span class="dq-n">${n}</span><span class="dq-body"><span class="dq-q">${q.q}</span><span class="dq-meta"><span class="chip muted">${TYPE[q.type] || q.type || 'Question'}</span>${q.ref ? html`<span>passage ${pnum(q.ref)}</span>` : ''}</span></span>${raw(`<button class="q-del" ${del} type="button" title="Delete this question" aria-label="Delete question">🗑</button>`)}</summary>
+      <div class="dq-more">
+        ${q.quote ? html`<blockquote class="mm-quote">“${q.quote}”</blockquote><p class="small ok-text">✓ Found in ${q.source || d0(q)}${q.ref ? ', passage ' + pnum(q.ref) : ''}</p>` : ''}
+        ${q.why ? html`<p class="small"><strong>What it tests:</strong> ${q.why}</p>` : ''}
+        ${(q.answer_outline || []).length ? html`<p class="small"><strong>How to answer</strong></p><ul class="tight small">${q.answer_outline.map(x => html`<li>${x}</li>`)}</ul>` : ''}
+        ${q.story_hint && stories.find(s => s.id === q.story_hint) ? html`<p class="small">Story to use: <strong>${stories.find(s => s.id === q.story_hint).title}</strong></p>` : ''}
+      </div></details></li>`;
+    const d0 = () => 'your document';
     const mapSig = () => readable().map(d => d.id + ':' + sigOf(d)).join('|');
     let mmApi = null;
     const mountMap = () => { const root = $('#mm-root', body); if (!root || !a.docMap) return; mmApi = window.CVT.mindmap.mount(root, JSON.parse(JSON.stringify(a.docMap.tree)), { collapsed: a.docMap.collapsed || [], onChange: c => { a.docMap.collapsed = c; ctx.saveSoon ? ctx.saveSoon() : save(); } }); };
@@ -222,7 +250,7 @@
         <div class="row gap wrap"><strong>✓ Read and understood</strong>${g.relevance ? html`<span class="chip ${/^high/i.test(g.relevance) ? 'ok' : /^low/i.test(g.relevance) ? 'bad' : 'muted'}" title="${g.relevance}">Relevance to this job: ${g.relevance.split(':')[0]}</span>` : ''}${stale ? html`<span class="chip warn">Notes changed since check</span>` : ''}<button class="linkish small" data-digest="${d.id}" type="button">Check again</button></div>
         <p class="small mt-s">${g.summary}</p>
         ${(g.facts || []).length ? html`<p class="small muted mt-s">Facts it found (check these against your file):</p><ul class="tight small">${g.facts.map(f => html`<li>${f}</li>`)}</ul>` : ''}
-        ${(g.questions || []).length ? html`<p class="small mt-s"><strong>Questions from this file</strong></p><div class="qs qs-doc">${g.questions.map((q, qi) => html`<details><summary><span class="chip muted">${q.type || 'question'}</span> <span class="q-text">${q.q}</span><button class="q-del" data-gqdel="${d.id}:${qi}" type="button" title="Delete this question" aria-label="Delete question">🗑</button></summary><p class="small muted">${q.why || ''}</p><ul class="tight small">${(q.answer_outline || []).map(x => html`<li>${x}</li>`)}</ul></details>`)}</div>` : ''}
+        ${(g.questions || []).length ? html`<p class="small mt-s"><strong>Questions from this file</strong></p><ol class="dq-list compact">${g.questions.map((q, qi) => qCard(Object.assign({ source: d.name }, q), qi + 1, `data-gqdel="${d.id}:${qi}"`))}</ol>` : ''}
       </div>`;
     };
     async function digest(d) {
@@ -230,7 +258,7 @@
       checking.add(d.id); draw();
       try {
         const r = await A.docDigest({ app: a, profile, stories, doc: d });
-        d.digest = { at: new Date().toISOString(), sig: sigOf(d), summary: r.summary || '', facts: (r.facts || []).slice(0, 8), relevance: r.relevance || '', questions: (r.questions || []).filter(q => q && q.q).slice(0, 6) };
+        d.digest = { at: new Date().toISOString(), sig: sigOf(d), summary: r.summary || '', facts: (r.facts || []).slice(0, 8), relevance: r.relevance || '', questions: verifyQuestions(r.questions, [], [d]).items.map(q => Object.assign(q, { ref: '' })).slice(0, 6) };
       } catch (e) { toast(`${d.name}: ${e.message}`, 'bad'); }
       checking.delete(d.id); await save(); draw();
     }
@@ -271,14 +299,12 @@
           <section class="panel">
             <div class="panel-head"><h2>Likely interview questions</h2>${a.docQuestions ? html`<div class="row gap"><button class="btn ghost small" id="dq-copy" type="button">Copy all</button><button class="btn ghost small danger" id="dq-clear" data-label="Delete all" type="button" title="Delete all these questions">🗑 Delete all</button></div>` : ''}</div>
             <p class="hint" id="dq-hint">${dqHint()}</p>
-            <button class="btn primary" id="dq-go" type="button">${a.docQuestions ? 'Prepare again' : 'Prepare questions'}</button>
-            <ol class="progress" id="dq-prog" hidden></ol>
+            ${a.docQuestions && !a.docQuestions.grounded ? html`<p class="small"><span class="chip warn">These were made before document-only mode and may include advert questions. Press Prepare again.</span></p>` : ''}
+            <button class="btn primary" id="dq-go" type="button" ${readable().length ? '' : raw('disabled')}>${a.docQuestions ? 'Prepare again' : 'Prepare questions'}</button>
             ${a.docQuestions ? html`
-              ${(a.docQuestions.themes || []).length ? html`<p class="small mt">Themes: ${a.docQuestions.themes.map(t => html`<span class="chip accent">${t}</span> `)}</p>` : ''}
-              ${groups(a.docQuestions.items).map(([src, items]) => html`<h3 class="h-sub mt">${src}</h3><div class="qs">${items.map(q => html`<details><summary><span class="chip muted">${q.type}</span> <span class="q-text">${q.q}</span><button class="q-del" data-qdel="${a.docQuestions.items.indexOf(q)}" type="button" title="Delete this question" aria-label="Delete question">🗑</button></summary>
-                <p class="small muted">${q.why}</p>
-                <ul class="tight small">${(q.answer_outline || []).map(x => html`<li>${x}</li>`)}</ul>
-                ${q.story_hint && stories.find(s => s.id === q.story_hint) ? html`<p class="small">Story to use: <strong>${stories.find(s => s.id === q.story_hint).title}</strong></p>` : ''}</details>`)}</div>`)}` : ''}
+              ${a.docQuestions.grounded ? html`<p class="small muted mt-s">${a.docQuestions.items.length} question${a.docQuestions.items.length === 1 ? '' : 's'} from ${a.docQuestions.from}${a.docQuestions.coverage < 100 ? ` (${a.docQuestions.coverage}% of the text read)` : ''}${a.docQuestions.removed ? html` · <strong>${a.docQuestions.removed} dropped</strong> because their quote wasn't in your files` : ''}${a.docQuestions.sig !== mapSig() ? html` · <span class="chip warn">Documents changed since. Prepare again to include them</span>` : ''}</p>` : ''}
+              ${(a.docQuestions.themes || []).length ? html`<p class="small mt-s dq-themes">Themes: ${a.docQuestions.themes.map(t => html`<span class="chip accent">${t}</span> `)}</p>` : ''}
+              ${(() => { let n = 0; return groups(a.docQuestions.items).map(([src, items]) => html`<h3 class="h-sub mt">From ${src} <span class="muted">· ${items.length}</span></h3><ol class="dq-list">${items.map(q => qCard(q, ++n, `data-qdel="${a.docQuestions.items.indexOf(q)}"`))}</ol>`); })()}` : ''}
           </section>
 
           <section class="panel docs-map">
@@ -336,7 +362,7 @@
       const n = readable().length, go = $('#dq-go', body), q = $('#dc-q', body), qb = $('#dc-form button', body);
       const h = $('#dq-hint', body); if (h) h.textContent = dqHint();
       const cb = row && $('[data-digest]', row); if (cb) cb.disabled = !hasContent(d);
-      if (q) q.disabled = !n; if (qb) qb.disabled = !n;
+      if (q) q.disabled = !n; if (qb) qb.disabled = !n; if (go) go.disabled = !n;
     });
     const dz = () => $('#dz', body);
     body.addEventListener('dragover', e => { if (e.target.closest('#dz')) { e.preventDefault(); dz().classList.add('over'); } });
@@ -373,12 +399,17 @@
       const retry = t.closest('[data-retry]');
       if (retry) { const d = a.docs.find(x => x.id === retry.dataset.retry); const b = await blobOf(d); if (!b) { toast('The file is not on this device.', 'warn'); return; } d.status = 'reading'; draw(); process(d, b); return; }
       if (t.id === 'dq-go') {
+        const docs = readable();
+        if (!docs.length) { toast('Add a readable document (or notes) first: questions come only from your documents.', 'warn'); return; }
         t.disabled = true; t.textContent = 'Preparing… (30–60 s)';
         try {
-          const r = await A.docQuestions({ app: a, profile, stories, docs: a.docs });
-          a.docQuestions = { at: new Date().toISOString(), items: (r.questions || []).filter(q => q && q.q), themes: r.themes || [] };
-          await save(); draw(); toast(`${a.docQuestions.items.length} questions ready`);
-        } catch (err) { toast(err.message, 'bad'); t.disabled = false; t.textContent = 'Prepare questions'; }
+          const { passages, coverage } = passagesOf(docs);
+          const r = await A.docQuestions({ app: a, profile, stories, passages });
+          const v = verifyQuestions(r && r.questions, passages, docs);
+          if (!v.items.length) throw new Error('None of the questions could be matched to your documents. Press Prepare again, or add clearer documents.');
+          a.docQuestions = { at: new Date().toISOString(), grounded: true, sig: mapSig(), from: `${docs.length} document${docs.length === 1 ? '' : 's'}`, coverage, removed: v.removed, items: v.items, themes: (r && r.themes) || [] };
+          await save(); draw(); toast(`${v.items.length} questions ready`);
+        } catch (err) { toast(err.message, 'bad'); t.disabled = false; t.textContent = a.docQuestions ? 'Prepare again' : 'Prepare questions'; }
         return;
       }
       if (t.id === 'mm-go') {
@@ -396,7 +427,7 @@
         return;
       }
       if (t.id === 'mm-dl' && mmApi) { window.CVT.ui.download(new Blob([mmApi.svgText()], { type: 'image/svg+xml' }), `${(a.company || 'job').replace(/\W+/g, '_')}_mind_map.svg`); return; }
-      if (t.id === 'dq-copy') { copy(a.docQuestions.items.map((q, i) => `${i + 1}. ${q.q}\n   ${(q.answer_outline || []).map(x => '- ' + x).join('\n   ')}`).join('\n\n')); return; }
+      if (t.id === 'dq-copy') { copy(a.docQuestions.items.map((q, i) => `${i + 1}. ${q.q}${q.source ? `\n   (From ${q.source}${q.quote ? ': "' + q.quote + '"' : ''})` : ''}\n   ${(q.answer_outline || []).map(x => '- ' + x).join('\n   ')}`).join('\n\n')); return; }
       if (t.id === 'dc-clear') { if (!confirmInline(t)) return; a.docChat = []; await save(); draw(); toast('Deleted'); return; }
       const ca = t.closest('[data-copyask]'); if (ca) { copy(ca.dataset.copyask); return; }
     });

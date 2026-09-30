@@ -153,6 +153,32 @@
       return a.docs.length ? `None of your files has readable text yet${waiting.some(d => d.kind === 'video' || d.kind === 'audio') ? ' (videos and audio need a transcript or notes)' : ''}. Questions will come from the job advert and your experience; add notes to a file to include it.` : 'Questions come from the job advert and your experience. Add documents to make them more specific.';
     };
 
+    const groups = items => { const m = new Map(); items.forEach(q => { const k = q.source ? 'From ' + q.source : 'From the job advert'; if (!m.has(k)) m.set(k, []); m.get(k).push(q); }); return [...m.entries()]; };
+    const sigOf = d => (d.text || '').length + ':' + (d.note || '').trim().length;
+    const hasContent = d => !!(((d.text || '').trim()) || (d.note || '').trim());
+    const checking = new Set();
+    const checkBlock = d => {
+      if (checking.has(d.id)) return html`<div class="doc-check busy"><span class="spinner" aria-hidden="true"></span> Checking what Applywise understood and drawing questions from this file…</div>`;
+      if (!hasContent(d)) return d.status === 'reading' ? '' : html`<div class="doc-check warn"><strong>Not read yet.</strong> Nothing in this file could be read, so it isn't used for questions. Add notes or a transcript above, then press <em>Check reading</em>.<div class="mt-s"><button class="btn ghost small" data-digest="${d.id}" type="button" disabled>Check reading</button></div></div>`;
+      const g = d.digest;
+      if (!g) return html`<div class="doc-check"><button class="btn ghost small" data-digest="${d.id}" type="button">Check reading &amp; get questions</button> <span class="muted small">See a summary and the facts Applywise found, so you can confirm it read this file.</span></div>`;
+      const stale = g.sig !== sigOf(d);
+      return html`<div class="doc-check ok">
+        <div class="row gap wrap"><strong>✓ Read and understood</strong>${g.relevance ? html`<span class="chip ${/^high/i.test(g.relevance) ? 'ok' : /^low/i.test(g.relevance) ? 'bad' : 'muted'}" title="${g.relevance}">Relevance to this job: ${g.relevance.split(':')[0]}</span>` : ''}${stale ? html`<span class="chip warn">Notes changed since check</span>` : ''}<button class="linkish small" data-digest="${d.id}" type="button">Check again</button></div>
+        <p class="small mt-s">${g.summary}</p>
+        ${(g.facts || []).length ? html`<p class="small muted mt-s">Facts it found (check these against your file):</p><ul class="tight small">${g.facts.map(f => html`<li>${f}</li>`)}</ul>` : ''}
+        ${(g.questions || []).length ? html`<p class="small mt-s"><strong>Questions from this file</strong></p><div class="qs qs-doc">${g.questions.map(q => html`<details><summary><span class="chip muted">${q.type || 'question'}</span> ${q.q}</summary><p class="small muted">${q.why || ''}</p><ul class="tight small">${(q.answer_outline || []).map(x => html`<li>${x}</li>`)}</ul></details>`)}</div>` : ''}
+      </div>`;
+    };
+    async function digest(d) {
+      if (checking.has(d.id) || !hasContent(d)) return;
+      checking.add(d.id); draw();
+      try {
+        const r = await A.docDigest({ app: a, profile, stories, doc: d });
+        d.digest = { at: new Date().toISOString(), sig: sigOf(d), summary: r.summary || '', facts: (r.facts || []).slice(0, 8), relevance: r.relevance || '', questions: (r.questions || []).filter(q => q && q.q).slice(0, 6) };
+      } catch (e) { toast(`${d.name}: ${e.message}`, 'bad'); }
+      checking.delete(d.id); await save(); draw();
+    }
     const draw = () => {
       body.innerHTML = String(html`
         <div class="docs-grid">
@@ -173,7 +199,8 @@
                   ${d.why ? html`<p class="small muted mt-s">${d.why}</p>` : ''}
                   <details ${(d.status === 'notes' && !(d.note || '').trim()) ? raw('open') : ''}><summary class="small">${(d.note || '').trim() ? 'Your notes' : 'Add notes or a transcript'}</summary>
                     <textarea class="doc-note" data-note="${d.id}" rows="4" placeholder="What matters in this file: key points, names, numbers, or paste a transcript.">${d.note || ''}</textarea></details>
-                  ${d.text ? html`<details><summary class="small">What Applywise read</summary><div class="pre small doc-text">${d.text.slice(0, 3000)}${d.text.length > 3000 ? '…' : ''}</div></details>` : ''}
+                  ${d.text ? html`<details><summary class="small">Raw text Applywise extracted</summary><div class="pre small doc-text">${d.text.slice(0, 3000)}${d.text.length > 3000 ? '…' : ''}</div></details>` : ''}
+                  ${checkBlock(d)}
                 </div>
                 <div class="doc-actions">
                   <label class="check-line small"><input type="checkbox" data-use="${d.id}" ${d.use !== false ? raw('checked') : ''}> Use</label>
@@ -192,10 +219,10 @@
             <ol class="progress" id="dq-prog" hidden></ol>
             ${a.docQuestions ? html`
               ${(a.docQuestions.themes || []).length ? html`<p class="small mt">Themes: ${a.docQuestions.themes.map(t => html`<span class="chip accent">${t}</span> `)}</p>` : ''}
-              <div class="qs">${a.docQuestions.items.map((q, i) => html`<details ${i === 0 ? raw('open') : ''}><summary><span class="chip muted">${q.type}</span> ${q.q}</summary>
-                <p class="small muted">${q.why}${q.source ? html` · <em>from ${q.source}</em>` : ''}</p>
+              ${groups(a.docQuestions.items).map(([src, items]) => html`<h3 class="h-sub mt">${src}</h3><div class="qs">${items.map((q, i) => html`<details><summary><span class="chip muted">${q.type}</span> ${q.q}</summary>
+                <p class="small muted">${q.why}</p>
                 <ul class="tight small">${(q.answer_outline || []).map(x => html`<li>${x}</li>`)}</ul>
-                ${q.story_hint && stories.find(s => s.id === q.story_hint) ? html`<p class="small">Story to use: <strong>${stories.find(s => s.id === q.story_hint).title}</strong></p>` : ''}</details>`)}</div>` : ''}
+                ${q.story_hint && stories.find(s => s.id === q.story_hint) ? html`<p class="small">Story to use: <strong>${stories.find(s => s.id === q.story_hint).title}</strong></p>` : ''}</details>`)}</div>`)}` : ''}
           </section>
 
           <section class="panel docs-ask">
@@ -230,6 +257,7 @@
         if (as) { try { const r = await as.upload(blob, { type: d.type }); d.assetId = r.id; } catch (e) { console.warn('asset upload', e); } }
       }
       await save(); draw();
+      if (hasContent(d)) digest(d);
     }
 
     body.addEventListener('change', async e => {
@@ -244,6 +272,7 @@
       const st = row && $('.doc-main .muted.small span', row); if (st) { st.textContent = statusText(d); st.className = d.status === 'ready' || (d.note || '').trim() ? 'ok-text' : 'warn-text'; }
       const n = readable().length, go = $('#dq-go', body), q = $('#dc-q', body), qb = $('#dc-form button', body);
       const h = $('#dq-hint', body); if (h) h.textContent = dqHint();
+      const cb = row && $('[data-digest]', row); if (cb) cb.disabled = !hasContent(d);
       if (q) q.disabled = !n; if (qb) qb.disabled = !n;
     });
     const dz = () => $('#dz', body);
@@ -268,6 +297,8 @@
         if (d.assetId) { const as = await assets(); if (as) as.delete(d.assetId).catch(() => {}); }
         a.docs = a.docs.filter(x => x !== d); await save(); draw(); toast('Removed'); return;
       }
+      const dg = t.closest('[data-digest]');
+      if (dg) { const d = a.docs.find(x => x.id === dg.dataset.digest); if (d) digest(d); return; }
       const retry = t.closest('[data-retry]');
       if (retry) { const d = a.docs.find(x => x.id === retry.dataset.retry); const b = await blobOf(d); if (!b) { toast('The file is not on this device.', 'warn'); return; } d.status = 'reading'; draw(); process(d, b); return; }
       if (t.id === 'dq-go') {

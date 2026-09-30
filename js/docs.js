@@ -141,6 +141,58 @@
   // ---------------------------------------------------------------------
   // View
   // ---------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Grounding: numbered passages in, every mind-map node must quote one
+  // ---------------------------------------------------------------------
+  const PASSAGE = 700, BUDGET = 42000;
+  function passagesOf(docs) {
+    const all = [];
+    docs.forEach((d, i) => {
+      const body = [(d.text || '').trim(), (d.note || '').trim() ? 'Notes: ' + d.note.trim() : ''].filter(Boolean).join('\n\n');
+      const parts = []; let cur = '';
+      body.split(/(?<=[.!?])\s+|\n{2,}/).forEach(seg => {
+        if ((cur + ' ' + seg).length > PASSAGE && cur) { parts.push(cur.trim()); cur = seg; } else cur = cur ? cur + ' ' + seg : seg;
+      });
+      if (cur.trim()) parts.push(cur.trim());
+      parts.forEach((t, j) => all.push({ id: `D${i + 1}-P${j + 1}`, doc: d.name, text: t }));
+    });
+    const total = all.reduce((n, x) => n + x.text.length, 0);
+    if (total <= BUDGET) return { passages: all, coverage: 100 };
+    // Too long for one request: keep an even spread from every document.
+    const keep = Math.max(1, Math.floor(all.length * BUDGET / total));
+    const step = all.length / keep, picked = [];
+    for (let k = 0; k < keep; k++) picked.push(all[Math.floor(k * step)]);
+    return { passages: picked, coverage: Math.round(100 * picked.reduce((n, x) => n + x.text.length, 0) / total) };
+  }
+  const norm = t => String(t || '').toLowerCase().replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/[^a-z0-9%£$.' ]+/g, ' ').replace(/\s+/g, ' ').trim();
+  function found(quote, text) {
+    const q = norm(quote), t = norm(text);
+    if (!q || q.split(' ').length < 3) return false;
+    if (t.includes(q)) return true;
+    const w = q.split(' '), grams = new Set(); const tw = t.split(' ');
+    for (let i = 0; i + 3 <= tw.length; i++) grams.add(tw.slice(i, i + 3).join(' '));
+    let hit = 0, n = 0;
+    for (let i = 0; i + 3 <= w.length; i++) { n++; if (grams.has(w.slice(i, i + 3).join(' '))) hit++; }
+    return n > 0 && hit / n >= 0.8;
+  }
+  /** Keep only nodes whose quote is really in the cited passage (or elsewhere in that document). */
+  function verifyTree(raw, passages, docs) {
+    const byId = new Map(passages.map(p => [p.id, p]));
+    const docText = new Map(docs.map(d => [d.name, (d.text || '') + '\n' + (d.note || '')]));
+    let removed = 0, kept = 0;
+    const check = n => {
+      const p = byId.get(String(n.ref || '').trim());
+      const ok = !!(n.quote && ((p && found(n.quote, p.text)) || [...docText.values()].some(t => found(n.quote, t))));
+      const src = p ? p.doc : ([...docText.entries()].find(([, t]) => found(n.quote, t)) || [])[0];
+      const kids = (n.children || []).map(check).filter(Boolean);
+      if (ok) { kept++; return { label: n.label, detail: n.detail, quote: n.quote, ref: p ? p.id : '', source: src || 'your documents', children: kids }; }
+      removed++;
+      return kids.length ? { label: n.label, detail: 'Heading grouping the topics below (not quoted directly).', grouping: true, source: 'your documents', children: kids } : null;
+    };
+    const branches = (raw.branches || []).map(check).filter(Boolean);
+    return { tree: { center: raw.center || 'Your documents', branches }, removed, kept };
+  }
+
   async function tab(ctx) {
     const { a, body, profile } = ctx;
     a.docs = a.docs || [];
@@ -231,8 +283,8 @@
 
           <section class="panel docs-map">
             <div class="panel-head"><h2>Mind map of your documents</h2>
-              <div class="row gap wrap">${a.docMap ? html`<button class="btn ghost small" id="mm-dl" type="button">Download (SVG)</button>` : ''}<button class="btn ${a.docMap ? 'ghost' : 'primary'} small" id="mm-go" type="button">${a.docMap ? 'Rebuild' : 'Build mind map'}</button></div></div>
-            <p class="hint">${a.docMap ? html`Built from ${a.docMap.from} on ${new Date(a.docMap.at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}.${a.docMap.sig !== mapSig() ? html` <span class="chip warn">Documents changed since. Rebuild to include them</span>` : ''}` : readable().length ? `Organises everything in your ${readable().length} readable document${readable().length === 1 ? '' : 's'} (and the advert) around this job: programme, scope, systems, people, pain points and timeline.` : 'Add a readable document (or notes) first. Until then the map uses the job advert only.'}</p>
+              <div class="row gap wrap">${a.docMap ? html`<button class="btn ghost small" id="mm-dl" type="button">Download (SVG)</button>` : ''}<button class="btn ${a.docMap ? 'ghost' : 'primary'} small" id="mm-go" type="button" ${readable().length ? '' : raw('disabled')}>${a.docMap ? 'Rebuild' : 'Build mind map'}</button></div></div>
+            <p class="hint">${a.docMap && a.docMap.grounded ? html`Built only from your ${a.docMap.from} (${a.docMap.passages} passages${a.docMap.coverage < 100 ? `, ${a.docMap.coverage}% of the text` : ''}) on ${new Date(a.docMap.at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}. Every topic quotes the passage it came from: ${a.docMap.kept} checked against your files${a.docMap.removed ? html`, <strong>${a.docMap.removed} removed</strong> because the quote wasn't found` : ''}.${a.docMap.sig !== mapSig() ? html` <span class="chip warn">Documents changed since. Rebuild to include them</span>` : ''}` : a.docMap ? html`<span class="chip warn">This map was built before document-only mode. Rebuild it.</span>` : readable().length ? `Built only from your ${readable().length} readable document${readable().length === 1 ? '' : 's'}: nothing from the advert or outside knowledge. Every topic is checked against the exact words in your files.` : 'Add a readable document or notes first. The mind map uses only your documents.'}</p>
             <div id="mm-root">${a.docMap ? '' : ''}</div>
           </section>
 
@@ -322,12 +374,15 @@
         return;
       }
       if (t.id === 'mm-go') {
+        const docs = readable();
+        if (!docs.length) { toast('Add a readable document (or notes) first: the mind map uses only your documents.', 'warn'); return; }
         t.disabled = true; t.textContent = 'Building… (30–60 s)';
         try {
-          const r = await A.docMindmap({ app: a, docs: a.docs });
-          if (!r || !(r.branches || []).length) throw new Error('The mind map came back empty. Try again.');
-          const n = readable().length;
-          a.docMap = { at: new Date().toISOString(), sig: mapSig(), from: n ? `${n} document${n === 1 ? '' : 's'} and the advert` : 'the job advert', tree: { center: r.center || a.role || 'This job', branches: r.branches }, collapsed: [] };
+          const { passages, coverage } = passagesOf(docs);
+          const r = await A.docMindmap({ passages });
+          const v = verifyTree(r || {}, passages, docs);
+          if (!v.tree.branches.length) throw new Error('Nothing in the mind map could be matched to your documents. Try Rebuild, or add clearer documents.');
+          a.docMap = { at: new Date().toISOString(), sig: mapSig(), from: `${docs.length} document${docs.length === 1 ? '' : 's'}`, grounded: true, passages: passages.length, coverage, kept: v.kept, removed: v.removed, tree: v.tree, collapsed: [] };
           await save(); draw(); toast('Mind map ready');
         } catch (err) { toast(err.message, 'bad'); t.disabled = false; t.textContent = a.docMap ? 'Rebuild' : 'Build mind map'; }
         return;

@@ -90,9 +90,12 @@ function makeReply(sys, user) {
   } else if (/interviewer would ask BECAUSE of what these passages say/.test(user)) {
     calls.docQ = user;
     reply = { questions: [{ q: 'How would you phase SLP supplier onboarding before the UK go-live?', type: 'case', ref: 'D1-P1', quote: 'phased, UK first in Q3 2027, then Ireland', why: 'Tests planning against the role pack timeline', answer_outline: ['Segment suppliers by spend', 'Registration questionnaires first', 'Use the utility rollout lessons'], story_hint: '' }, { q: 'Walk us through an approval flow for IT hardware over £5,000.', type: 'functional', ref: 'D1-P1', quote: 'design an approval flow for IT hardware over 5,000 GBP', why: 'Case study task', answer_outline: ['Guided Buying policy', 'Approval chain', 'Budget check'], story_hint: '' }, { q: 'Tell me about yourself (from the advert).', type: 'motivation', ref: 'D1-P1', quote: 'seeking a passionate architect to join our dynamic team', why: 'Generic', answer_outline: [] }], themes: ['Supplier onboarding', 'Maverick spend'] };
-  } else if (/Answer ONLY from the documents/.test(sys)) {
+  } else if (/expects \(or was asked\) this interview question|wants to ASK the interviewer/.test(user)) {
+    calls.myAns = user;
+    reply = { outline: ['Explain the supplier value first', 'Offer light enablement', 'Escalate via procurement policy'], answer: 'At the utility I phased onboarding by spend tier and ran supplier webinars.', listen_for: ['Blaming the supplier'], follow_ups: ['What if a key supplier still refuses?'], sources: [] };
+  } else if (/retrieval-augmented answering/.test(sys)) {
     calls.docAsk = user;
-    reply = { answer: 'SAP Integration Suite connects Ariba to S/4HANA Central Procurement.', sources: ['role-pack.pdf'], ask_them: 'Is the Integration Suite tenant already provisioned?' };
+    reply = { answer: 'They are replacing legacy procurement with SAP Ariba and S/4HANA 2023 [D1-P1]. The team is 40 people in Leeds [D1-P1].', found: true, claims: [{ ref: 'D1-P1', quote: 'replace legacy procurement with SAP Ariba and S/4HANA 2023' }, { ref: 'D1-P1', quote: 'a team of 40 people based in Leeds' }], ask_them: 'Is the Integration Suite tenant already provisioned?' };
   } else if (/Ask the NEXT single question/.test(user)) {
     calls.mockQ = (calls.mockQ || 0) + 1;
     reply = { question: calls.mockQ === 1 ? 'Walk me through how you would design Guided Buying policies for IT hardware.' : 'Tell me about a time a go-live went wrong.', type: calls.mockQ === 1 ? 'functional' : 'behavioural', why: 'Design depth', look_for: ['thresholds', 'catalogue first', 'approvals'], story_hint: '' };
@@ -303,8 +306,30 @@ await page.click('.docs-grid > section:nth-child(2) .dq summary >> nth=0'); log(
   }
   await page.setViewportSize({ width: 1360, height: 900 });
 }
+{ // My questions tab
+  const aidQ = await page.evaluate(async () => (await window.CVT.store.listApps()).find(x => x.docQuestions || (x.docs || []).length).id);
+  const back = '#/app/' + aidQ + '/docs';
+  await page.evaluate(h => window.CVT.app.go(h), '#/app/' + aidQ + '/myqs'); await page.waitForSelector('#mq-form');
+  log('tabs:', JSON.stringify(await page.$$eval('.ws-tabs a', e => e.map(x => x.textContent.trim()).slice(-3))));
+  await page.fill('#mq-text', '1. How would you handle a supplier refusing Ariba Network?\n- Why are you leaving your current role?'); await page.click('#mq-form button[type=submit]'); await page.waitForTimeout(300);
+  await page.selectOption('#mq-kind', 'ask'); await page.fill('#mq-text', 'What does success look like in six months?'); await page.click('#mq-form button[type=submit]'); await page.waitForTimeout(300);
+  await page.click('#mq-import').catch(() => {}); await page.waitForTimeout(300);
+  const n = await page.locator('.myq-grid .dq').count();
+  await page.click('.myq-grid .dq summary >> nth=0'); await page.click('[data-mhelp] >> nth=0'); await page.waitForSelector('.my-help', { timeout: 20000 });
+  const helpTxt = (await page.textContent('.my-help')).replace(/\s+/g, ' ').slice(0, 160);
+  await page.click('[data-muse] >> nth=0'); await page.waitForTimeout(300);
+  await page.click('[data-mprac] >> nth=0'); await page.waitForTimeout(200);
+  await page.click('[data-mf="ask"]'); await page.waitForTimeout(200); const askN = await page.locator('.myq-grid .dq').count(); await page.click('[data-mf="all"]');
+  await page.click('#mq-prep'); await page.waitForTimeout(400);
+  const st = await page.evaluate(async () => { const a = (await window.CVT.store.listApps()).find(x => (x.myQs || []).length); return { n: a.myQs.length, notes: !!a.myQs[0].notes, practised: !!a.myQs[0].practised, kinds: a.myQs.map(q => q.kind).join(',') }; });
+  await page.click('[data-mdel] >> nth=-1'); await page.waitForTimeout(300);
+  log('my questions:', n, '| help:', helpTxt, '| ask filter:', askN, '| saved:', JSON.stringify(st), '| after delete:', await page.locator('.myq-grid .dq').count(), '| prompt had profile:', /CANDIDATE PROFILE/.test(calls.myAns || ''), '| had passages:', /\[D\d+-P\d+\]/.test(calls.myAns || ''));
+  await shot('07h-myqs');
+  await page.evaluate(h => window.CVT.app.go(h), back); await page.waitForSelector('#dq-go');
+}
 await page.fill('#dc-q', 'What connects Ariba to S/4HANA?'); await page.click('#dc-form button'); await page.waitForSelector('.chat-a', { timeout: 20000 });
-log('doc answer:', (await page.textContent('.chat-a')).replace(/\s+/g, ' ').slice(0, 160));
+log('doc answer:', (await page.textContent('.chat-a .ans')).replace(/\s+/g, ' ').slice(0, 160), '| confidence:', (await page.textContent('.chat-a .conf')).trim(), '| cites:', await page.locator('.chat-a sup.cite').count(), '| verified:', await page.locator('.cites li.ok').count(), '| flagged:', await page.locator('.cites li.unv').count(), '| retrieval sent:', (calls.docAsk.match(/\[D\d+-P\d+\]/g) || []).length, 'passages | advert in prompt:', /ADVERT/.test(calls.docAsk), '| suggestions:', await page.locator('[data-suggest]').count());
+await page.click('.cites summary'); await shot('07g-ask');
 await page.click('#mm-go'); await page.waitForSelector('.mm-svg', { timeout: 20000 });
 log('mind map nodes:', await page.locator('.mm-node').count(), '| branches:', await page.locator('.mm-node.d1').count(), '| prompt had docs:', /maverick spend 22 percent/.test(calls.map || ''), '| advert excluded:', !/ADVERT|JOB\n/.test(calls.map || ''), '| passages:', (calls.map.match(/\[D\d+-P\d+\]/g) || []).length);
 log('grounding note:', (await page.textContent('.docs-map .hint')).replace(/\s+/g, ' ').slice(0, 220));
@@ -518,7 +543,7 @@ await page.setViewportSize({ width: 400, height: 860 });
 const overflow = async () => page.evaluate(() => [...document.querySelectorAll('body *')].filter(e => e.getBoundingClientRect().right > window.innerWidth + 1 && !e.closest('.table-wrap,.preview-box,.board-wrap,.side,.ws-tabs')).slice(0, 6).map(e => e.tagName + '.' + e.className + ' ' + Math.round(e.getBoundingClientRect().right)));
 for (const h of ['#/dashboard', '#/jobs', '#/pipeline', '#/profile', '#/settings', '#/help', '#/prep/mock', '#/prep/stories', '#/prep/drills', '#/prep/offers', '#/autopilot']) { await page.goto('http://localhost:8765/' + h); await page.waitForTimeout(500); log('overflow', h, JSON.stringify(await overflow())); }
 const appId = await page.evaluate(async () => (await window.CVT.store.listApps())[0].id);
-for (const t of ['job', 'fit', 'cv', 'letter', 'outreach', 'interview', 'docs', 'apply']) { await page.goto(`http://localhost:8765/#/app/${appId}/${t}`); await page.waitForTimeout(600); log('overflow', t, JSON.stringify(await overflow())); }
+for (const t of ['job', 'fit', 'cv', 'letter', 'outreach', 'interview', 'docs', 'apply', 'myqs']) { await page.goto(`http://localhost:8765/#/app/${appId}/${t}`); await page.waitForTimeout(600); log('overflow', t, JSON.stringify(await overflow())); }
 await page.goto(`http://localhost:8765/#/app/${appId}/fit`); await page.waitForTimeout(600);
 await page.screenshot({ path: `${out}/12-mobile-fit.png`, fullPage: false });
 await page.goto('http://localhost:8765/#/dashboard'); await page.waitForTimeout(600);

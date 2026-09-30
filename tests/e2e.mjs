@@ -329,7 +329,7 @@ log('docs:', JSON.stringify(await page.$$eval('.doc', els => els.map(e => e.quer
 await page.waitForFunction(() => document.querySelectorAll('.doc-check.ok').length >= 2, null, { timeout: 20000 });
 log('reading checks:', await page.locator('.doc-check.ok').count(), '| not read:', await page.locator('.doc-check.warn').count(), '| per-file questions:', await page.locator('.dq-list.compact .dq').count(), '| first facts:', (await page.locator('.doc-check.ok ul').first().textContent()).replace(/\s+/g, ' ').slice(0, 80));
 await page.fill('[data-id] .doc-note >> nth=2', 'Slide shows the programme timeline: UK go-live Q3 2027.');
-await page.locator('.doc-list').click({ position: { x: 5, y: 5 } });
+await page.evaluate(() => document.activeElement && document.activeElement.blur());
 await page.click('[data-id] [data-digest]:not([disabled]) >> nth=2').catch(() => {});
 await page.waitForFunction(() => document.querySelectorAll('.doc-check.ok').length >= 3, null, { timeout: 20000 }).catch(() => {});
 log('after notes check:', await page.locator('.doc-check.ok').count());
@@ -551,7 +551,7 @@ if (PROVIDER === 'claude') {
   await page.waitForSelector('#dash-jobs .job, #dash-jobs .empty-state');
   log('dashboard jobs:', await page.locator('#dash-jobs .job').count(), '| badge', await page.textContent('#jobs-badge'), await page.isHidden('#jobs-badge'));
   await shot('10c-dashboard-jobs');
-  await page.click('.side-link'); await page.waitForSelector('.help-grid'); await shot('10d-help');
+  await page.click('.sf-links [data-go="#/help"]'); await page.waitForSelector('.help-grid'); await shot('10d-help');
 }
 
 // 10e. Interview prep (claude only)
@@ -663,6 +663,11 @@ log('pricing:', await page.locator('.plan-card').count(), 'plans |', (await page
 await page.click('[data-plan="pro"]'); await page.waitForTimeout(300); log('notify saved:', await page.evaluate(async () => !!((await window.CVT.store.getKV('planInterest', null)) || {}).pro));
 await shot('21-pricing');
 for (const [h, n] of [['#/dashboard', '22-dashboard'], ['#/pipeline', '23-pipeline'], ['#/jobs', '24-jobs'], ['#/settings', '25-settings']]) { await page.goto('http://localhost:8765/' + h); await page.waitForTimeout(900); await page.screenshot({ path: `${out}/${n}.png` }); }
+await page.goto('http://localhost:8765/#/dashboard'); await page.waitForTimeout(1200); await page.screenshot({ path: `${out}/26-dashboard-top.png` });
+await page.mouse.wheel(0, 600); await page.waitForTimeout(400); log('header shrinks on scroll:', await page.evaluate(() => document.body.classList.contains('scrolled')));
+await page.click('#tb-theme'); await page.waitForTimeout(500); log('theme now:', await page.evaluate(() => document.documentElement.dataset.theme)); await page.evaluate(() => window.scrollTo(0, 0)); await page.waitForTimeout(300); await page.screenshot({ path: `${out}/27-dashboard-dark.png` });
+await page.goto('http://localhost:8765/#/jobs'); await page.waitForTimeout(1200); await page.screenshot({ path: `${out}/28-jobs-dark.png` });
+await page.click('#tb-theme'); log('theme back:', await page.evaluate(() => document.documentElement.dataset.theme), '| saved:', await page.evaluate(() => localStorage.getItem('cvt.theme')));
 await page.click('#tb-tour'); await page.waitForSelector('.tour-card'); log('tour relaunch:', await page.textContent('.tour-card h2')); await page.keyboard.press('Escape'); log('tour closed:', !(await page.locator('.tour').count()));
 
 // 12. Mobile layout

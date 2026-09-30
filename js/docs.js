@@ -224,16 +224,37 @@
     const groups = items => { const m = new Map(); items.forEach(q => { const k = q.source || 'Your documents'; if (!m.has(k)) m.set(k, []); m.get(k).push(q); }); return [...m.entries()]; };
     const TYPE = { functional: 'Functional', ba: 'Business analysis', behavioural: 'Behavioural', motivation: 'Motivation', case: 'Case study' };
     const pnum = ref => (String(ref || '').split('-')[1] || '').replace('P', '');
-    /** One question card. del = data attribute for its delete button. */
-    const qCard = (q, n, del) => html`<li class="dq"><details>
-      <summary><span class="dq-n">${n}</span><span class="dq-body"><span class="dq-q">${q.q}</span><span class="dq-meta"><span class="chip muted">${TYPE[q.type] || q.type || 'Question'}</span>${q.ref ? html`<span>passage ${pnum(q.ref)}</span>` : ''}</span></span>${raw(`<button class="q-del" ${del} type="button" title="Delete this question" aria-label="Delete question">🗑</button>`)}</summary>
+    /** One question card. del = data attribute for its delete button; idx = index in a.docQuestions.items for the main list. */
+    const openQ = new Set(); let dqFilter = 'all';
+    const qCard = (q, n, del, idx) => { const k = idx == null ? del : 'q' + idx; return html`<li class="dq ${q.practised ? 'done' : ''}"><details data-k="${k}" ${openQ.has(k) ? raw('open') : ''}>
+      <summary><span class="dq-n">${q.practised ? '✓' : n}</span><span class="dq-body"><span class="dq-q">${q.q}</span><span class="dq-meta"><span class="chip muted">${TYPE[q.type] || q.type || 'Question'}</span>${q.ref ? html`<span>passage ${pnum(q.ref)}</span>` : ''}${(q.notes || '').trim() ? html`<span>· your notes</span>` : ''}${q.inPrep ? html`<span>· in Prep</span>` : ''}</span></span>${raw(`<button class="q-del" ${del} type="button" title="Delete this question" aria-label="Delete question">🗑</button>`)}</summary>
       <div class="dq-more">
         ${q.quote ? html`<blockquote class="mm-quote">“${q.quote}”</blockquote><p class="small ok-text">✓ Found in ${q.source || d0(q)}${q.ref ? ', passage ' + pnum(q.ref) : ''}</p>` : ''}
         ${q.why ? html`<p class="small"><strong>What it tests:</strong> ${q.why}</p>` : ''}
         ${(q.answer_outline || []).length ? html`<p class="small"><strong>How to answer</strong></p><ul class="tight small">${q.answer_outline.map(x => html`<li>${x}</li>`)}</ul>` : ''}
         ${q.story_hint && stories.find(s => s.id === q.story_hint) ? html`<p class="small">Story to use: <strong>${stories.find(s => s.id === q.story_hint).title}</strong></p>` : ''}
-      </div></details></li>`;
+        ${idx == null ? '' : html`<label class="small dq-notes-l">Your answer notes<textarea class="dq-notes" data-dqn="${idx}" rows="3" placeholder="Draft your answer in your own words: situation, what you did, the result.">${q.notes || ''}</textarea></label>
+        <div class="dq-acts"><button class="btn ${q.practised ? 'ghost' : 'primary'} small" data-dqp="${idx}" type="button">${q.practised ? 'Mark as not practised' : '✓ Mark practised'}</button><button class="btn ghost small" data-dqprep="${idx}" type="button" ${q.inPrep ? raw('disabled') : ''}>${q.inPrep ? 'Added to Prep cards' : '+ Add to Prep cards'}</button><button class="btn ghost small" data-dqcopy="${idx}" type="button">Copy</button></div>`}
+      </div></details></li>`; };
     const d0 = () => 'your document';
+    const dqTools = () => {
+      const all = a.docQuestions.items, done = all.filter(q => q.practised).length, pct = all.length ? Math.round(100 * done / all.length) : 0;
+      const types = [...new Set(all.map(q => q.type).filter(Boolean))];
+      const f = (k, label, n) => html`<button type="button" class="dq-f" data-dqf="${k}" aria-pressed="${dqFilter === k}">${label} <span>${n}</span></button>`;
+      return html`<div class="dq-tools">
+        <div class="dq-prog"><span class="small"><strong>${done}</strong> of ${all.length} practised</span><span class="dq-bar" aria-hidden="true"><i style="width:${pct}%"></i></span></div>
+        <div class="dq-filters" role="group" aria-label="Filter questions">${f('all', 'All', all.length)}${f('todo', 'Not practised', all.length - done)}${types.map(t => f(t, TYPE[t] || t, all.filter(q => q.type === t).length))}</div>
+      </div>`;
+    };
+    const qText = (q, i) => `${i + 1}. ${q.q}${q.source ? `\n   From ${q.source}${q.quote ? ': "' + q.quote + '"' : ''}` : ''}${(q.answer_outline || []).length ? '\n   How to answer:\n' + q.answer_outline.map(x => '   - ' + x).join('\n') : ''}${(q.notes || '').trim() ? '\n   My notes: ' + q.notes.trim() : ''}`;
+    async function toPrep(list) {
+      const cur = Object.assign({ p: {}, custom: [] }, (await S.getKV('drills', null)) || {});
+      const topic = [a.role, a.company].filter(Boolean).join(' at ') || 'This job';
+      const fresh = list.filter(q => !q.inPrep);
+      cur.custom = (cur.custom || []).concat(fresh.map(q => ({ id: 'c' + uid(), deck: 'custom', q: q.q, a: [(q.answer_outline || []).map(x => '• ' + x).join('\n'), (q.notes || '').trim() ? 'My notes: ' + q.notes.trim() : ''].filter(Boolean).join('\n\n') || 'Answer from your documents and experience.', topic })));
+      await S.setKV('drills', cur); fresh.forEach(q => { q.inPrep = true; }); await save(); draw();
+      toast(fresh.length ? `${fresh.length} question${fresh.length === 1 ? '' : 's'} added to Prep → Drill cards (My cards)` : 'Already in Prep');
+    }
     const mapSig = () => readable().map(d => d.id + ':' + sigOf(d)).join('|');
     let mmApi = null;
     const mountMap = () => { const root = $('#mm-root', body); if (!root || !a.docMap) return; mmApi = window.CVT.mindmap.mount(root, JSON.parse(JSON.stringify(a.docMap.tree)), { collapsed: a.docMap.collapsed || [], onChange: c => { a.docMap.collapsed = c; ctx.saveSoon ? ctx.saveSoon() : save(); } }); };
@@ -264,9 +285,16 @@
     }
     const draw = () => { drawBase(); mountMap(); };
     const drawBase = () => {
+      const nq = a.docQuestions ? a.docQuestions.items.length : 0, np = a.docQuestions ? a.docQuestions.items.filter(q => q.practised).length : 0;
       body.innerHTML = String(html`
+        <nav class="docs-jump" aria-label="Sections on this page">
+          <button type="button" data-jump="sec-docs">Documents <span>${a.docs.length}</span></button>
+          <button type="button" data-jump="sec-qs">Interview questions <span>${nq ? `${np}/${nq}` : '0'}</span></button>
+          <button type="button" data-jump="sec-map">Mind map <span>${a.docMap ? '✓' : '–'}</span></button>
+          <button type="button" data-jump="sec-ask">Ask <span>${(a.docChat || []).length}</span></button>
+        </nav>
         <div class="docs-grid">
-          <section class="panel">
+          <section class="panel" id="sec-docs">
             <div class="panel-head"><h2>Documents for this job</h2><span class="muted small">${a.docs.length} file${a.docs.length === 1 ? '' : 's'}</span></div>
             <p class="hint">Add anything that helps you prepare: the role pack, a client case study, company slides, a recorded briefing, screenshots or your own notes. PDF, Word, images, video, audio and text files. Large files are fine.</p>
             <label class="dropzone" id="dz">
@@ -296,25 +324,26 @@
             ${a.docs.length ? '' : html`<p class="empty-note">No documents yet.</p>`}
           </section>
 
-          <section class="panel">
-            <div class="panel-head"><h2>Likely interview questions</h2>${a.docQuestions ? html`<div class="row gap"><button class="btn ghost small" id="dq-copy" type="button">Copy all</button><button class="btn ghost small danger" id="dq-clear" data-label="Delete all" type="button" title="Delete all these questions">🗑 Delete all</button></div>` : ''}</div>
+          <section class="panel" id="sec-qs">
+            <div class="panel-head"><h2>Likely interview questions</h2>${a.docQuestions ? html`<div class="row gap"><button class="btn ghost small" id="dq-copy" type="button">Copy all</button><button class="btn ghost small" id="dq-dl" type="button">Download</button><button class="btn ghost small" id="dq-prep-all" type="button">+ All to Prep</button><button class="btn ghost small danger" id="dq-clear" data-label="Delete all" type="button" title="Delete all these questions">🗑 Delete all</button></div>` : ''}</div>
             <p class="hint" id="dq-hint">${dqHint()}</p>
             ${a.docQuestions && !a.docQuestions.grounded ? html`<p class="small"><span class="chip warn">These were made before document-only mode and may include advert questions. Press Prepare again.</span></p>` : ''}
             <button class="btn primary" id="dq-go" type="button" ${readable().length ? '' : raw('disabled')}>${a.docQuestions ? 'Prepare again' : 'Prepare questions'}</button>
             ${a.docQuestions ? html`
               ${a.docQuestions.grounded ? html`<p class="small muted mt-s">${a.docQuestions.items.length} question${a.docQuestions.items.length === 1 ? '' : 's'} from ${a.docQuestions.from}${a.docQuestions.coverage < 100 ? ` (${a.docQuestions.coverage}% of the text read)` : ''}${a.docQuestions.removed ? html` · <strong>${a.docQuestions.removed} dropped</strong> because their quote wasn't in your files` : ''}${a.docQuestions.sig !== mapSig() ? html` · <span class="chip warn">Documents changed since. Prepare again to include them</span>` : ''}</p>` : ''}
               ${(a.docQuestions.themes || []).length ? html`<p class="small mt-s dq-themes">Themes: ${a.docQuestions.themes.map(t => html`<span class="chip accent">${t}</span> `)}</p>` : ''}
-              ${(() => { let n = 0; return groups(a.docQuestions.items).map(([src, items]) => html`<h3 class="h-sub mt">From ${src} <span class="muted">· ${items.length}</span></h3><ol class="dq-list">${items.map(q => qCard(q, ++n, `data-qdel="${a.docQuestions.items.indexOf(q)}"`))}</ol>`); })()}` : ''}
+              ${dqTools()}
+              ${(() => { const all = a.docQuestions.items, shown = all.filter(q => dqFilter === 'all' || (dqFilter === 'todo' ? !q.practised : q.type === dqFilter)); if (!shown.length) return html`<p class="muted small">No questions match this filter.</p>`; return groups(shown).map(([src, items]) => html`<h3 class="h-sub mt dq-src">From ${src} <span class="muted">· ${items.length}</span></h3><ol class="dq-list">${items.map(q => { const i = all.indexOf(q); return qCard(q, i + 1, `data-qdel="${i}"`, i); })}</ol>`); })()}` : ''}
           </section>
 
-          <section class="panel docs-map">
+          <section class="panel docs-map" id="sec-map">
             <div class="panel-head"><h2>Mind map of your documents</h2>
               <div class="row gap wrap">${a.docMap ? html`<button class="btn ghost small" id="mm-dl" type="button">Download (SVG)</button><button class="btn ghost small danger" id="mm-del" data-label="Delete map" type="button">🗑 Delete map</button>` : ''}<button class="btn ${a.docMap ? 'ghost' : 'primary'} small" id="mm-go" type="button" ${readable().length ? '' : raw('disabled')}>${a.docMap ? 'Rebuild' : 'Build mind map'}</button></div></div>
             <p class="hint">${a.docMap && a.docMap.grounded ? html`Built only from your ${a.docMap.from} (${a.docMap.passages} passages${a.docMap.coverage < 100 ? `, ${a.docMap.coverage}% of the text` : ''}) on ${new Date(a.docMap.at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}. Every topic quotes the passage it came from: ${a.docMap.kept} checked against your files${a.docMap.removed ? html`, <strong>${a.docMap.removed} removed</strong> because the quote wasn't found` : ''}.${a.docMap.sig !== mapSig() ? html` <span class="chip warn">Documents changed since. Rebuild to include them</span>` : ''}` : a.docMap ? html`<span class="chip warn">This map was built before document-only mode. Rebuild it.</span>` : readable().length ? `Built only from your ${readable().length} readable document${readable().length === 1 ? '' : 's'}: nothing from the advert or outside knowledge. Every topic is checked against the exact words in your files.` : 'Add a readable document or notes first. The mind map uses only your documents.'}</p>
             <div id="mm-root">${a.docMap ? '' : ''}</div>
           </section>
 
-          <section class="panel docs-ask">
+          <section class="panel docs-ask" id="sec-ask">
             <div class="panel-head"><h2>Ask about these documents</h2>${(a.docChat || []).length ? html`<button class="btn ghost small danger" id="dc-clear" data-label="Delete all" type="button">🗑 Delete all</button>` : ''}</div>
             <p class="hint">Clarify anything: scope, systems, who's who, what the client wants. Answers come only from your documents and the advert.</p>
             <div class="chat">${(a.docChat || []).map((m, ci) => html`<div class="chat-q"><span>${m.q}</span><button class="q-del" data-cdel="${ci}" type="button" title="Delete this question and answer" aria-label="Delete question and answer">🗑</button></div><div class="chat-a">${m.a}${(m.sources || []).length ? html`<div class="muted small mt-s">Sources: ${m.sources.join(', ')}</div>` : ''}${m.ask ? html`<div class="small mt-s"><strong>Ask them:</strong> ${m.ask} <button class="linkish small" data-copyask="${m.ask}" type="button">Copy</button></div>` : ''}</div>`)}</div>
@@ -353,7 +382,8 @@
       if (e.target.id === 'dz-in') { await addFiles([...e.target.files]); e.target.value = ''; return; }
       const u = e.target.dataset.use; if (u) { const d = a.docs.find(x => x.id === u); d.use = e.target.checked; await save(); draw(); }
     });
-    body.addEventListener('input', e => { const id = e.target.dataset.note; if (!id) return; const d = a.docs.find(x => x.id === id); d.note = e.target.value; ctx.saveSoon ? ctx.saveSoon() : save(); });
+    body.addEventListener('toggle', e => { const k = e.target.dataset && e.target.dataset.k; if (!k) return; if (e.target.open) openQ.add(k); else openQ.delete(k); }, true);
+    body.addEventListener('input', e => { if (e.target.dataset.dqn != null) { a.docQuestions.items[+e.target.dataset.dqn].notes = e.target.value; ctx.saveSoon ? ctx.saveSoon() : save(); return; } const id = e.target.dataset.note; if (!id) return; const d = a.docs.find(x => x.id === id); d.note = e.target.value; ctx.saveSoon ? ctx.saveSoon() : save(); });
     // Refresh the file's status and the buttons without redrawing (a redraw here would swallow the next click).
     body.addEventListener('focusout', e => {
       const id = e.target.dataset.note; if (!id) return;
@@ -387,7 +417,7 @@
         a.docs = a.docs.filter(x => x !== d); await save(); draw(); toast('Removed'); return;
       }
       const qd = t.closest('[data-qdel]');
-      if (qd) { e.preventDefault(); a.docQuestions.items.splice(+qd.dataset.qdel, 1); if (!a.docQuestions.items.length) a.docQuestions = null; await save(); draw(); toast('Question deleted'); return; }
+      if (qd) { e.preventDefault(); openQ.clear(); a.docQuestions.items.splice(+qd.dataset.qdel, 1); if (!a.docQuestions.items.length) a.docQuestions = null; await save(); draw(); toast('Question deleted'); return; }
       const gq = t.closest('[data-gqdel]');
       if (gq) { e.preventDefault(); const [id, i] = gq.dataset.gqdel.split(':'); const d = a.docs.find(x => x.id === id); if (d && d.digest) { d.digest.questions.splice(+i, 1); await save(); draw(); toast('Question deleted'); } return; }
       const cd = t.closest('[data-cdel]');
@@ -398,6 +428,13 @@
       if (dg) { const d = a.docs.find(x => x.id === dg.dataset.digest); if (d) digest(d); return; }
       const retry = t.closest('[data-retry]');
       if (retry) { const d = a.docs.find(x => x.id === retry.dataset.retry); const b = await blobOf(d); if (!b) { toast('The file is not on this device.', 'warn'); return; } d.status = 'reading'; draw(); process(d, b); return; }
+      const j = t.closest('[data-jump]'); if (j) { const el = document.getElementById(j.dataset.jump); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+      const f = t.closest('[data-dqf]'); if (f) { dqFilter = f.dataset.dqf; draw(); return; }
+      const pr = t.closest('[data-dqp]'); if (pr) { const q = a.docQuestions.items[+pr.dataset.dqp]; q.practised = !q.practised; if (q.practised) openQ.delete('q' + pr.dataset.dqp); await save(); draw(); return; }
+      const tp = t.closest('[data-dqprep]'); if (tp) { await toPrep([a.docQuestions.items[+tp.dataset.dqprep]]); return; }
+      const qc = t.closest('[data-dqcopy]'); if (qc) { const i = +qc.dataset.dqcopy; copy(qText(a.docQuestions.items[i], i)); return; }
+      if (t.id === 'dq-prep-all') { await toPrep(a.docQuestions.items); return; }
+      if (t.id === 'dq-dl') { const head = `Likely interview questions: ${[a.role, a.company].filter(Boolean).join(' at ')}\nFrom your documents, ${new Date(a.docQuestions.at).toLocaleDateString('en-GB')}\n\n`; window.CVT.ui.download(new Blob([head + a.docQuestions.items.map(qText).join('\n\n')], { type: 'text/plain' }), `${(a.company || 'job').replace(/\W+/g, '_')}_interview_questions.txt`); return; }
       if (t.id === 'dq-go') {
         const docs = readable();
         if (!docs.length) { toast('Add a readable document (or notes) first: questions come only from your documents.', 'warn'); return; }
@@ -407,6 +444,8 @@
           const r = await A.docQuestions({ app: a, profile, stories, passages });
           const v = verifyQuestions(r && r.questions, passages, docs);
           if (!v.items.length) throw new Error('None of the questions could be matched to your documents. Press Prepare again, or add clearer documents.');
+          const prev = new Map(((a.docQuestions && a.docQuestions.items) || []).map(q => [q.q.trim().toLowerCase(), q]));
+          v.items.forEach(q => { const o = prev.get(q.q.trim().toLowerCase()); if (o) Object.assign(q, { notes: o.notes, practised: o.practised, inPrep: o.inPrep }); });
           a.docQuestions = { at: new Date().toISOString(), grounded: true, sig: mapSig(), from: `${docs.length} document${docs.length === 1 ? '' : 's'}`, coverage, removed: v.removed, items: v.items, themes: (r && r.themes) || [] };
           await save(); draw(); toast(`${v.items.length} questions ready`);
         } catch (err) { toast(err.message, 'bad'); t.disabled = false; t.textContent = a.docQuestions ? 'Prepare again' : 'Prepare questions'; }
@@ -427,7 +466,7 @@
         return;
       }
       if (t.id === 'mm-dl' && mmApi) { window.CVT.ui.download(new Blob([mmApi.svgText()], { type: 'image/svg+xml' }), `${(a.company || 'job').replace(/\W+/g, '_')}_mind_map.svg`); return; }
-      if (t.id === 'dq-copy') { copy(a.docQuestions.items.map((q, i) => `${i + 1}. ${q.q}${q.source ? `\n   (From ${q.source}${q.quote ? ': "' + q.quote + '"' : ''})` : ''}\n   ${(q.answer_outline || []).map(x => '- ' + x).join('\n   ')}`).join('\n\n')); return; }
+      if (t.id === 'dq-copy') { copy(a.docQuestions.items.map(qText).join('\n\n')); return; }
       if (t.id === 'dc-clear') { if (!confirmInline(t)) return; a.docChat = []; await save(); draw(); toast('Deleted'); return; }
       const ca = t.closest('[data-copyask]'); if (ca) { copy(ca.dataset.copyask); return; }
     });

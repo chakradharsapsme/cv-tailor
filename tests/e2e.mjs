@@ -85,10 +85,11 @@ function makeReply(sys, user) {
   } else if (/Prove you read it/.test(user)) {
     calls.digest = (calls.digest || 0) + 1;
     const name = (user.match(/=== DOCUMENT: ([^(]+) \(/) || [])[1] || 'file';
-    reply = { summary: `Summary of ${name.trim()}.`, facts: ['Maverick spend 22 percent', 'UK go-live Q3 2027'], relevance: 'high: same programme', questions: [{ q: `What stood out to you in ${name.trim()}?`, type: 'case', why: 'Checks preparation', answer_outline: ['Point 1', 'Point 2'] }] };
-  } else if (/most likely to ask, using what these documents reveal/.test(user)) {
+    const bodyWords = ((user.split(/=== DOCUMENT:[^\n]*\n/)[1] || '').replace('CANDIDATE NOTES / TRANSCRIPT: ', '').split(/\s+/).filter(Boolean));
+    reply = { summary: `Summary of ${name.trim()}.`, facts: ['Maverick spend 22 percent', 'UK go-live Q3 2027'], relevance: 'high: same programme', questions: [{ q: `What stood out to you in ${name.trim()}?`, type: 'case', quote: bodyWords.slice(0, 7).join(' '), why: 'Checks preparation', answer_outline: ['Point 1', 'Point 2'] }, { q: 'Invented question with no quote', type: 'ba', quote: 'nothing like this appears in any uploaded file at all', why: 'x', answer_outline: [] }] };
+  } else if (/interviewer would ask BECAUSE of what these passages say/.test(user)) {
     calls.docQ = user;
-    reply = { questions: [{ q: 'How would you phase SLP supplier onboarding before the UK go-live?', type: 'case', why: 'Tests planning against the role pack timeline', source: 'role-pack.pdf', answer_outline: ['Segment suppliers by spend', 'Registration questionnaires first', 'Use the utility rollout lessons'], story_hint: '' }, { q: 'Walk us through an approval flow for IT hardware over £5,000.', type: 'functional', why: 'Case study task', source: 'role-pack.pdf', answer_outline: ['Guided Buying policy', 'Approval chain', 'Budget check'], story_hint: '' }], themes: ['Supplier onboarding', 'Maverick spend'] };
+    reply = { questions: [{ q: 'How would you phase SLP supplier onboarding before the UK go-live?', type: 'case', ref: 'D1-P1', quote: 'phased, UK first in Q3 2027, then Ireland', why: 'Tests planning against the role pack timeline', answer_outline: ['Segment suppliers by spend', 'Registration questionnaires first', 'Use the utility rollout lessons'], story_hint: '' }, { q: 'Walk us through an approval flow for IT hardware over £5,000.', type: 'functional', ref: 'D1-P1', quote: 'design an approval flow for IT hardware over 5,000 GBP', why: 'Case study task', answer_outline: ['Guided Buying policy', 'Approval chain', 'Budget check'], story_hint: '' }, { q: 'Tell me about yourself (from the advert).', type: 'motivation', ref: 'D1-P1', quote: 'seeking a passionate architect to join our dynamic team', why: 'Generic', answer_outline: [] }], themes: ['Supplier onboarding', 'Maverick spend'] };
   } else if (/Answer ONLY from the documents/.test(sys)) {
     calls.docAsk = user;
     reply = { answer: 'SAP Integration Suite connects Ariba to S/4HANA Central Procurement.', sources: ['role-pack.pdf'], ask_them: 'Is the Integration Suite tenant already provisioned?' };
@@ -272,15 +273,16 @@ await page.setInputFiles('#dz-in', ['tests/fixtures/role-pack.pdf', 'tests/fixtu
 await page.waitForFunction(() => document.querySelectorAll('.doc').length === 4 && ![...document.querySelectorAll('.doc')].some(d => /Reading/.test(d.textContent)), null, { timeout: 30000 });
 log('docs:', JSON.stringify(await page.$$eval('.doc', els => els.map(e => e.querySelector('.doc-name').textContent + ' → ' + e.querySelector('.doc-main .muted.small').textContent.replace(/\s+/g, ' ').trim()))));
 await page.waitForFunction(() => document.querySelectorAll('.doc-check.ok').length >= 2, null, { timeout: 20000 });
-log('reading checks:', await page.locator('.doc-check.ok').count(), '| not read:', await page.locator('.doc-check.warn').count(), '| per-file questions:', await page.locator('.qs-doc details').count(), '| first facts:', (await page.locator('.doc-check.ok ul').first().textContent()).replace(/\s+/g, ' ').slice(0, 80));
+log('reading checks:', await page.locator('.doc-check.ok').count(), '| not read:', await page.locator('.doc-check.warn').count(), '| per-file questions:', await page.locator('.dq-list.compact .dq').count(), '| first facts:', (await page.locator('.doc-check.ok ul').first().textContent()).replace(/\s+/g, ' ').slice(0, 80));
 await page.fill('[data-id] .doc-note >> nth=2', 'Slide shows the programme timeline: UK go-live Q3 2027.');
 await page.locator('.doc-list').click({ position: { x: 5, y: 5 } });
 await page.click('[data-id] [data-digest]:not([disabled]) >> nth=2').catch(() => {});
 await page.waitForFunction(() => document.querySelectorAll('.doc-check.ok').length >= 3, null, { timeout: 20000 }).catch(() => {});
 log('after notes check:', await page.locator('.doc-check.ok').count());
-await page.click('#dq-go'); await page.waitForSelector('.qs details', { timeout: 20000 });
+await page.click('#dq-go'); await page.waitForSelector('.docs-grid > section:nth-child(2) .dq', { timeout: 20000 });
 log('grouped headings:', JSON.stringify(await page.$$eval('.docs-grid .panel:nth-child(2) h3', e => e.map(x => x.textContent))));
-log('doc questions:', await page.locator('.docs-grid .panel:nth-child(2) .qs details').count(), '| prompt had pdf text:', /maverick spend 22 percent/.test(calls.docQ || ''), '| had notes:', /UK go-live Q3 2027/.test(calls.docQ || ''), '| txt:', /650 outside IR35/.test(calls.docQ || ''));
+log('doc questions:', await page.locator('.docs-grid > section:nth-child(2) .dq').count(), '| fake dropped:', /1 dropped/.test(await page.textContent('.docs-grid > section:nth-child(2)')), '| advert in prompt:', /ADVERT/.test(calls.docQ || ''), '| prompt had pdf text:', /maverick spend 22 percent/.test(calls.docQ || ''), '| had notes:', /UK go-live Q3 2027/.test(calls.docQ || ''), '| txt:', /650 outside IR35/.test(calls.docQ || ''));
+await page.click('.docs-grid > section:nth-child(2) .dq summary >> nth=0'); log('question detail:', (await page.textContent('.docs-grid > section:nth-child(2) .dq-more')).replace(/\s+/g, ' ').slice(0, 140)); await shot('07e-questions');
 await page.fill('#dc-q', 'What connects Ariba to S/4HANA?'); await page.click('#dc-form button'); await page.waitForSelector('.chat-a', { timeout: 20000 });
 log('doc answer:', (await page.textContent('.chat-a')).replace(/\s+/g, ' ').slice(0, 160));
 await page.click('#mm-go'); await page.waitForSelector('.mm-svg', { timeout: 20000 });

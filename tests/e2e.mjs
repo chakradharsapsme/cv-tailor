@@ -23,6 +23,17 @@ const page = await ctx.newPage();
 await page.route('https://cdnjs.cloudflare.com/**', r => { const u = r.request().url(); const f = /pdf\.worker\.min\.js$/.test(u) ? NM + '/pdfjs-dist/build/pdf.worker.min.js' : /pdf\.min\.js$/.test(u) ? NM + '/pdfjs-dist/build/pdf.min.js' : NM + '/jszip/dist/jszip.min.js'; return r.fulfill({ path: f, contentType: 'text/javascript' }); });
 await page.route('https://cdn.jsdelivr.net/**', r => r.fulfill({ path: NM + '/docx-preview/dist/docx-preview.min.js', contentType: 'text/javascript' }));
 await page.route('https://fonts.googleapis.com/**', r => r.fulfill({ body: '', contentType: 'text/css' }));
+// Career portals and remote boards (browser APIs) — fixed fixtures, one relevant and one irrelevant job each.
+const today0 = new Date().toISOString();
+await page.route('https://boards-api.greenhouse.io/**', r => { (calls.web = calls.web || []).push('greenhouse'); const slug = r.request().url().split('/boards/')[1].split('/')[0]; return r.fulfill({ json: { jobs: slug === 'monzo' ? [
+  { title: 'Senior IT Business Analyst, Procurement Systems', location: { name: 'London, UK' }, absolute_url: 'https://boards.greenhouse.io/monzo/jobs/1', updated_at: today0, content: '&lt;p&gt;Business analysis for our S2P and Coupa procure-to-pay platform, SAP S/4HANA integration, UAT, stakeholder management.&lt;/p&gt;' },
+  { title: 'Head of Brand Marketing', location: { name: 'London, UK' }, absolute_url: 'https://boards.greenhouse.io/monzo/jobs/2', updated_at: today0, content: 'Marketing campaigns' },
+  { title: 'IT Business Analyst', location: { name: 'San Francisco, CA' }, absolute_url: 'https://boards.greenhouse.io/monzo/jobs/3', updated_at: today0, content: 'US only' } ] : [] } }); });
+await page.route('https://api.lever.co/**', r => { (calls.web = calls.web || []).push('lever'); return r.fulfill({ json: [] }); });
+await page.route('https://api.ashbyhq.com/**', r => r.fulfill({ json: { jobs: [] } }));
+await page.route('https://api.smartrecruiters.com/**', r => { (calls.web = calls.web || []).push('smartrecruiters'); return r.fulfill({ json: { content: [{ id: 'sr1', name: 'SAP Ariba Functional Consultant', location: { city: 'Manchester', remote: false }, releasedDate: today0, company: { name: 'Version 1' }, typeOfEmployment: { label: 'Full-time' }, function: { label: 'Information Technology' } }] } }); });
+await page.route('https://remotive.com/**', r => { (calls.web = calls.web || []).push('remotive:' + decodeURIComponent(r.request().url().split('search=')[1].split('&')[0])); return r.fulfill({ json: { jobs: [{ title: 'Content Reviewer', company_name: 'X', candidate_required_location: 'Worldwide', url: 'https://remotive.com/x', publication_date: today0, description: 'Review content' }] } }); });
+await page.route('https://jobicy.com/**', r => { (calls.web = calls.web || []).push('jobicy'); return r.fulfill({ json: { jobs: [{ jobTitle: 'Remote SAP S/4HANA Procurement Lead', companyName: 'Remote Co', jobGeo: 'UK', url: 'https://jobicy.com/1', pubDate: today0, jobExcerpt: 'Lead SAP S/4HANA procurement and Ariba rollout', annualSalaryMin: 90000, annualSalaryMax: 110000, salaryCurrency: 'GBP' }] } }); });
 // Daily collector output (fictional).
 const recentIso = n => new Date(Date.now() - n * 864e5).toISOString().slice(0, 10);
 await page.route('**/data/jobs.json*', r => r.fulfill({ json: { updated: new Date().toISOString(), sources: ['Reed', 'Adzuna'], errors: [], jobs: [
@@ -492,6 +503,16 @@ if (PROVIDER === 'claude') {
   await page.waitForTimeout(800);
   const jobRows = await page.$$eval('.job', els => els.map(e => [...e.querySelectorAll('.src-badge')].map(x => x.textContent.trim()).join('+') + ': ' + e.querySelector('.job-title').textContent.trim() + ' = ' + e.querySelector('.score-pill').textContent.trim() + ' [' + [...e.querySelectorAll('.job-chips .chip')].map(c => c.textContent.trim()).join(', ') + ']'));
   log('robot panel:', (await page.locator('.jobs-side .panel').first().textContent()).replace(/\s+/g, ' ').slice(0, 160));
+{ // Find jobs now: portals + remote boards, filtered by target titles and CV skills
+  const before = await page.evaluate(async () => Object.keys((await window.CVT.store.getKV('feed', {})).items || {}).length);
+  await page.click('#jb-refresh'); await page.waitForFunction(() => !document.querySelector('#jb-prog') || document.querySelector('#jb-prog').hidden, null, { timeout: 30000 }).catch(() => {});
+  await page.waitForTimeout(800);
+  const feed = await page.evaluate(async () => Object.values((await window.CVT.store.getKV('feed', {})).items || {}).map(j => j.source + ': ' + j.title));
+  log('web jobs kept:', JSON.stringify(feed.filter(x => /Careers|Remotive|Jobicy/.test(x))), '| before', before, 'after', feed.length);
+  log('web queries used:', JSON.stringify((calls.web || []).filter(x => x.startsWith('remotive')).slice(0, 6)));
+  log('jobs intro:', (await page.textContent('.callout')).replace(/\s+/g, ' ').slice(0, 260));
+  await shot('09z-jobs-web');
+}
   log('jobs (default 30d filter):', JSON.stringify(jobRows));
   log('source bar:', (await page.textContent('#f-src')).replace(/\s+/g, ' ').trim(), '| summary:', (await page.textContent('#jb-sum')).replace(/\s+/g, ' ').trim());
   const nAll = await page.locator('.job').count();

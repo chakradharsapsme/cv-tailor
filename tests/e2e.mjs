@@ -31,12 +31,26 @@ await page.route('**/data/jobs.json*', r => r.fulfill({ json: { updated: new Dat
 ] } }));
 const errors = [];
 page.on('pageerror', e => errors.push(e.message));
-page.on('console', m => m.type() === 'error' && errors.push(m.text()));
+page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); if (/auto-update/.test(m.text())) console.log('PAGE', m.text()); });
 
 const PROVIDER = process.env.PROVIDER || 'claude';
 const calls = {};
 function makeReply(sys, user) {
   let reply;
+  if (/Ireland phase adds 300 suppliers/.test(user) && !/Prove you read it/.test(user) && !/retrieval-augmented answering/.test(sys) && !/expects \(or was asked\)|wants to ASK/.test(user)) {
+    calls.extra = (calls.extra || 0) + 1; calls.extraUser = (calls.extraUser || '') + user.slice(0, 200);
+    const E1 = 'The Ireland phase adds 300 suppliers to SLP onboarding in 2028', E2 = 'The contract team uses Ariba Contracts for renewals';
+    const X = (o, q) => Object.assign(o, { ref: 'D1-P1', quote: q });
+    if (/Build a mind map of what these passages contain/.test(user)) return { center: 'Extra', branches: [X({ label: 'Ireland phase', detail: '300 suppliers in 2028.', children: [] }, E1), X({ label: 'Scope', detail: 'Contracts.', children: [X({ label: 'Contract renewals', detail: 'Ariba Contracts.' }, E2)] }, E2)] };
+    if (/interviewer would ask BECAUSE/.test(user)) return { questions: [X({ q: 'How would you onboard 300 Irish suppliers through SLP by 2028?', type: 'case', why: 'Scale', answer_outline: ['Wave plan'], story_hint: '' }, E1)], themes: ['Ireland rollout'] };
+    if (/BRIEFING DOC/.test(user)) return { title: 'x', summary: 'x', sections: [{ heading: 'Programme', points: [X({ text: 'Ireland adds 300 suppliers in 2028' }, E1)] }] };
+    if (/STUDY GUIDE/.test(user)) return { concepts: [X({ term: 'Ariba Contracts', explain: 'Used for renewals.' }, E2)], questions: [] };
+    if (/an FAQ/.test(user)) return { items: [X({ q: 'How many Irish suppliers?', a: '300.' }, E1)] };
+    if (/TIMELINE/.test(user)) return { events: [X({ when: '2028', what: 'Ireland supplier onboarding' }, E1)], cast: [X({ name: 'Contract team', role: 'Runs renewals' }, E2)] };
+    if (/FLASHCARDS/.test(user)) return { cards: [X({ front: 'Irish suppliers?', back: '300 in 2028' }, E1)] };
+    if (/multiple-choice QUIZ/.test(user)) return { questions: [X({ q: 'When does Ireland onboard?', options: ['2026', '2027', '2028', '2029'], answer: 2, explain: '2028.' }, E1)] };
+    if (/AUDIO OVERVIEW/.test(user)) return { title: 'x', lines: [X({ host: 'B', text: 'And Ireland brings 300 more suppliers.' }, E1)] };
+  }
   if (/assess a job/.test(sys)) {
     calls.analyse = user;
     const paras = JSON.parse(user.split('CV PARAGRAPHS')[1].split('\n').slice(1).join('\n').split('\n\nReturn this JSON')[0]);
@@ -339,8 +353,8 @@ await page.click('.docs-grid > section:nth-child(2) .dq summary >> nth=0'); log(
   await page.evaluate(h => window.CVT.app.go(h), back); await page.waitForSelector('#dq-go');
 }
 await page.fill('#dc-q', 'What connects Ariba to S/4HANA?'); await page.click('#dc-form button'); await page.waitForSelector('.chat-a', { timeout: 20000 });
-log('doc answer:', (await page.textContent('.chat-a .ans')).replace(/\s+/g, ' ').slice(0, 160), '| confidence:', (await page.textContent('.chat-a .conf')).trim(), '| cites:', await page.locator('.chat-a sup.cite').count(), '| verified:', await page.locator('.cites li.ok').count(), '| flagged:', await page.locator('.cites li.unv').count(), '| retrieval sent:', (calls.docAsk.match(/\[D\d+-P\d+\]/g) || []).length, 'passages | advert in prompt:', /ADVERT/.test(calls.docAsk), '| suggestions:', await page.locator('[data-suggest]').count());
-await page.click('.cites summary'); await shot('07g-ask');
+log('doc answer:', (await page.textContent('.chat-a .ans')).replace(/\s+/g, ' ').slice(0, 160), '| markers hidden:', !/D\d+-P\d+/.test(await page.textContent('.chat-a')), '| retrieval sent:', (calls.docAsk.match(/\[D\d+-P\d+\]/g) || []).length, 'passages | advert in prompt:', /ADVERT/.test(calls.docAsk), '| suggestions:', await page.locator('[data-suggest]').count());
+await shot('07g-ask');
 { // Studio
   await page.click('[data-jump="sec-studio"]'); await page.waitForSelector('#studio-root .st-tabs');
   const res = {};
@@ -349,7 +363,7 @@ await page.click('.cites summary'); await shot('07g-ask');
     res[k] = (await page.textContent('#studio-root .st-meta')).replace(/\s+/g, ' ').replace(/Built [^·]+· /, '').trim();
   }
   log('studio:', JSON.stringify(res), '| advert in prompt:', /ADVERT/.test(calls.studioUser || ''), '| fake shown:', /Oracle/.test(await page.textContent('#studio-root')));
-  await page.click('[data-sttab="briefing"]'); await page.click('[data-st="quotes"]'); log('briefing points:', await page.locator('.st-points li').count(), '| quotes shown:', await page.locator('.st-body .mm-quote').count());
+  await page.click('[data-sttab="briefing"]'); log('briefing points:', await page.locator('.st-points li').count(), '| quote boxes shown:', await page.locator('.st-body .mm-quote').count());
   await shot('07i-studio-briefing');
   await page.click('[data-sttab="flashcards"]'); const front = (await page.textContent('.fc-text')).trim(); await page.click('[data-st="flip"]'); const back = (await page.textContent('.fc-text')).trim(); await page.click('[data-st="known"]');
   log('flashcards:', front, '->', back, '|', (await page.textContent('.fc-bar')).replace(/\s+/g, ' ').trim());
@@ -374,6 +388,27 @@ await shot('07c-mindmap');
 await page.click('[data-mm-mode="outline"]'); log('outline items:', await page.locator('.mm-outline li').count()); await page.click('[data-mm-mode="map"]');
 dl = page.waitForEvent('download'); await page.click('#mm-dl'); d = await dl; await d.saveAs(`${out}/mindmap.svg`); log('mind map file:', d.suggestedFilename(), fs.readFileSync(`${out}/mindmap.svg`, 'utf8').includes('<svg'));
 await shot('07b-documents');
+{ // Auto-update: a new document is merged into the mind map, questions and every Studio output
+  const cnt = async () => page.evaluate(async () => { const a = (await window.CVT.store.listApps()).find(x => (x.docs || []).length); const st = a.studio || {}; const L = { briefing: d => d.sections.reduce((n, s) => n + s.points.length, 0), study: d => d.concepts.length + d.questions.length, faq: d => d.items.length, timeline: d => d.events.length + d.cast.length, flashcards: d => d.cards.length, quiz: d => d.questions.length, audio: d => d.lines.length };
+    const walk = n => 1 + (n.children || []).reduce((x, c) => x + walk(c), 0);
+    return { map: a.docMap ? a.docMap.tree.branches.reduce((x, b) => x + walk(b), 0) : 0, qs: a.docQuestions ? a.docQuestions.items.length : 0, studio: Object.fromEntries(Object.entries(st).map(([k, o]) => [k, L[k] ? L[k](o.data) : 0])) }; });
+  const b4 = await cnt();
+  await page.setInputFiles('#dz-in', ['tests/fixtures/extra-brief.txt']);
+  await page.waitForSelector('#docs-upd:not([hidden])', { timeout: 15000 }).catch(() => {});
+  const bannerTxt = (await page.textContent('#docs-upd').catch(() => '')).trim();
+  await page.waitForFunction(() => { const b = document.querySelector('#docs-upd'); return b && b.hidden; }, null, { timeout: 60000 });
+  await page.waitForTimeout(500);
+  const af = await cnt();
+  log('auto-update banner:', bannerTxt.slice(0, 120));
+  log('auto-update before:', JSON.stringify(b4)); log('auto-update after: ', JSON.stringify(af), '| extra calls:', calls.extra, '| old docs re-sent:', /maverick spend 22/.test(calls.extraUser || ''));
+  log('mind map has Ireland:', /Ireland phase/.test(await page.textContent('#mm-root')), '| question added:', /300 Irish suppliers/.test(await page.textContent('#sec-qs')));
+  // Deleting that file removes what came from it
+  await page.click('[data-id]:has-text("extra-brief.txt") [data-del]'); await page.click('[data-id]:has-text("extra-brief.txt") [data-del]'); await page.waitForTimeout(600);
+  log('after deleting it:', JSON.stringify(await cnt()));
+  await shot('07m-auto-update');
+  const words = (await page.textContent('.docs-grid')).match(/\b(quote[sd]?|passage[s]?|cited|citation[s]?|checked against|NotebookLM|dropped)\b/gi);
+  log('citation wording on page:', JSON.stringify(words));
+}
 const stored = await page.evaluate(async () => { const a = (await window.CVT.store.listApps()).find(x => (x.docs || []).length); return { n: a.docs.length, blob: !!(await window.CVT.store.getFile(a.docs[0].id)), synced: a.docs.filter(d => d.assetId).length }; });
 log('docs stored:', JSON.stringify(stored));
 { // Delete controls
@@ -385,7 +420,8 @@ log('docs stored:', JSON.stringify(stored));
   await page.click('#mm-del'); const armed = (await page.textContent('#mm-del')).trim(); await page.click('#mm-del'); await page.waitForTimeout(300);
   const nd = await page.locator('[data-del]').count(); await page.click('[data-del] >> nth=0'); await page.click('[data-del] >> nth=0'); await page.waitForTimeout(500);
   log('delete: questions', nq, '->', await page.locator('.docs-grid > section:nth-child(2) [data-qdel]').count(), '| file questions', gq, '->', await page.locator('[data-gqdel]').count(), '| chat', nc, '->', await page.locator('[data-cdel]').count(), '| map armed:', armed, 'gone:', !(await page.locator('.mm-svg').count()), '| files', nd, '->', await page.locator('[data-del]').count(), '| synced copy deleted:', await page.evaluate(() => window.__assetDeleted || 0));
-  await page.click('#dq-clear'); await page.click('#dq-clear'); await page.waitForTimeout(300);
+  log('questions left after deleting role-pack.pdf (they came from it):', await page.locator('[data-qdel]').count());
+  if (await page.locator('#dq-clear').count()) { await page.click('#dq-clear'); await page.click('#dq-clear'); await page.waitForTimeout(300); }
   log('delete all questions:', !(await page.locator('[data-qdel]').count()), '| button back to:', (await page.textContent('#dq-go')).trim());
   await shot('07d-deletes');
   const before = await page.evaluate(async () => { const a = (await window.CVT.store.listApps()).find(x => (x.docs || []).length); return { id: a.id, files: a.docs.map(d => d.id) }; });

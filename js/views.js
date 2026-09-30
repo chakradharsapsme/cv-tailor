@@ -468,8 +468,8 @@
           <div class="engines">
             ${inClaude ? html`<label class="engine-opt ${state.provider === 'claude-plan' ? 'on' : ''}">
               <input type="radio" name="provider" value="claude-plan" ${state.provider === 'claude-plan' ? raw('checked') : ''} ${inClaude ? '' : raw('disabled')}>
-              <span class="engine-name">Built-in AI <span class="chip ok">No extra cost</span></span>
-              <span class="engine-sub">Runs on the AI plan of the person using Applywise (via claude.ai), so each user pays nothing extra and never uses anyone else's account. No key needed.</span>
+              <span class="engine-name">Your Claude subscription <span class="chip ok">No extra cost</span></span>
+              <span class="engine-sub">Uses the Claude plan you already pay for monthly, with the standard model only. It counts toward your plan's normal usage limits; nothing is billed on top. No key needed.</span>
             </label>` : ''}
             <label class="engine-opt ${state.provider === 'gemini' ? 'on' : ''}">
               <input type="radio" name="provider" value="gemini" ${state.provider === 'gemini' ? raw('checked') : ''}>

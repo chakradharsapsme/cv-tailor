@@ -181,13 +181,15 @@ if (PROVIDER === 'claude') {
   await page.addInitScript(() => {
     window.claude = { use: async name => {
       if (name === 'sample') { const f = async () => { throw new Error('text mode unused'); }; f.json = input => window.__mockSample(input); return f; }
+      if (name === 'user') return { id: async () => 'u1', isOwner: async () => true, canEdit: async () => true, can: async () => true };
       if (name === 'db') {
         const M = window.__db || (window.__db = new Map());
         const robot = { updated: new Date().toISOString(), sources: ['Indeed', 'LinkedIn', 'Totaljobs'], errors: [], jobs: [
           { title: 'SAP S2P Solution Architect', company: 'Example Utilities plc', location: 'Manchester (hybrid)', pay: '£650 per day', url: 'https://example.com/li/1', posted: new Date(Date.now() - 864e5).toISOString().slice(0, 10), source: 'LinkedIn', sources: ['LinkedIn'], snippet: 'Lead SAP Ariba and S/4HANA Source-to-Pay design, Guided Buying, SLP, CIG integration and cutover.', type: 'Contract' }] };
         if (!M.has('robot/latest')) M.set('robot/latest', robot);
         const snap = (path, v) => ({ id: path.split('/').pop(), exists: v !== undefined, data: () => v });
-        const doc = path => ({ get: async () => snap(path, M.get(path)), set: async v => { M.set(path, JSON.parse(JSON.stringify(v))); } });
+        if (!window.__seeded) { window.__seeded = 1; M.set('sync/kv_mocks', { v: [{ id: 'legacy-mock', started: '2026-01-01T09:00:00.000Z', appId: '', kind: 'mixed', title: 'General interview', turns: [] }], updated: '2026-01-02T00:00:00.000Z' }); }
+        const doc = path => ({ get: async () => snap(path, M.get(path)), set: async v => { M.set(path, JSON.parse(JSON.stringify(v))); }, delete: async () => { M.delete(path); }, collection: c => col(path + '/' + c) });
         const col = c => { const q = { doc: id => doc(c + '/' + id), limit: () => q, get: async () => { const docs = [...M.entries()].filter(([k]) => k.startsWith(c + '/') && k.split('/').length === c.split('/').length + 1).map(([k, v]) => snap(k, v)); return { docs, size: docs.length, empty: !docs.length }; } }; return q; };
         return { doc, collection: col };
       }
@@ -217,6 +219,8 @@ await page.waitForSelector('.kpis');
   log('tour:', steps.join(' → '), '| saved done:', await page.evaluate(() => localStorage.getItem('cvt.tourDone')));
 }
 await shot('01-dashboard-empty');
+await page.waitForTimeout(2500);
+log('private sync:', JSON.stringify(await page.evaluate(async () => { if (!window.__db) return 'no db here'; const keys = [...window.__db.keys()]; return { shared: keys.filter(k => /^(sync|apps|masters)\//.test(k)), private: keys.filter(k => k.startsWith('data/users/u1/')).length, legacyMoved: JSON.stringify(await window.CVT.store.getKV('mocks', null)).includes('legacy-mock') }; })));
 log('coach notes (empty):', await page.locator('.note').count());
 
 // 2. Settings
@@ -624,6 +628,8 @@ log('panel:', (await form.textContent('#cvt-autofill-panel')).replace(/\s+/g, ' 
 await form.screenshot({ path: `${out}/11-autofill.png`, fullPage: true });
 
 // 11b. Top bar search, pricing, shots of the refreshed look
+log('private sync later:', JSON.stringify(await page.evaluate(() => { if (!window.__db) return 'no db here'; const keys = [...window.__db.keys()]; return { shared: keys.filter(k => !k.startsWith('data/users/') && k !== 'robot/latest'), privateApps: keys.filter(k => k.startsWith('data/users/u1/root/apps/')).length, privateOther: keys.filter(k => k.startsWith('data/users/u1/') && !k.includes('/root/')).length }; })));
+log('visible Claude mentions:', JSON.stringify(await page.evaluate(async () => { const out = []; for (const h of ['#/dashboard', '#/settings', '#/help', '#/pricing', '#/prep/mock', '#/jobs']) { await window.CVT.app.go(h); await new Promise(r => setTimeout(r, 400)); const t = document.body.innerText; const m = t.match(/[^\n]{0,40}\bClaude\b[^\n]{0,40}/g); if (m) out.push(h + ': ' + m.join(' | ')); } return out; })));
 await page.goto('http://localhost:8765/#/dashboard'); await page.waitForSelector('.kpis');
 await page.keyboard.press('/'); await page.keyboard.type('ariba');
 await page.waitForSelector('#tb-results .tb-hit', { timeout: 8000 });

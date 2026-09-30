@@ -6,7 +6,7 @@
  * application, then used to prepare likely interview questions and to answer your questions.
  */
 (function () {
-  const { html, raw, $, $$, toast, copy } = window.CVT.ui;
+  const { html, raw, esc, $, $$, toast, copy } = window.CVT.ui;
   const S = window.CVT.store, A = window.CVT.agent;
 
   const SYNC_MAX = 20 * 1024 * 1024;
@@ -145,7 +145,7 @@
   // Grounding: numbered passages in, every mind-map node must quote one
   // ---------------------------------------------------------------------
   const PASSAGE = 700, BUDGET = 42000;
-  function passagesOf(docs) {
+  function passagesOf(docs, budget = BUDGET) {
     const all = [];
     docs.forEach((d, i) => {
       const body = [(d.text || '').trim(), (d.note || '').trim() ? 'Notes: ' + d.note.trim() : ''].filter(Boolean).join('\n\n');
@@ -157,9 +157,9 @@
       parts.forEach((t, j) => all.push({ id: `D${i + 1}-P${j + 1}`, doc: d.name, text: t }));
     });
     const total = all.reduce((n, x) => n + x.text.length, 0);
-    if (total <= BUDGET) return { passages: all, coverage: 100 };
+    if (total <= budget) return { passages: all, coverage: 100 };
     // Too long for one request: keep an even spread from every document.
-    const keep = Math.max(1, Math.floor(all.length * BUDGET / total));
+    const keep = Math.max(1, Math.floor(all.length * budget / total));
     const step = all.length / keep, picked = [];
     for (let k = 0; k < keep; k++) picked.push(all[Math.floor(k * step)]);
     return { passages: picked, coverage: Math.round(100 * picked.reduce((n, x) => n + x.text.length, 0) / total) };
@@ -193,6 +193,28 @@
     return { tree: { center: raw.center || 'Your documents', branches }, removed, kept };
   }
 
+  // ---------------------------------------------------------------------
+  // Retrieval for "Ask": BM25 over every passage of every document
+  // ---------------------------------------------------------------------
+  const STOP = new Set('a an the and or of to in on for with by at from is are was were be been it its this that these those what which who whom how why when where do does did can could should would will shall may might about into as than then there their they them we our you your i me my he she his her not no yes if any all some more most other such only own same so too very just also per via vs'.split(' '));
+  const toks = t => norm(t).replace(/[.']/g, ' ').split(' ').filter(w => w.length > 1 && !STOP.has(w)).map(w => w.length > 4 ? w.replace(/(ing|ed|es|s)$/, '') : w);
+  function retrieve(passages, query, { k = 14, chars = 16000 } = {}) {
+    const q = [...new Set(toks(query))]; if (!q.length) return passages.slice(0, k);
+    const docs = passages.map(p => { const t = toks(p.doc + ' ' + p.text); const tf = new Map(); t.forEach(w => tf.set(w, (tf.get(w) || 0) + 1)); return { p, tf, len: t.length }; });
+    const N = docs.length, avg = docs.reduce((n, d) => n + d.len, 0) / Math.max(1, N);
+    const df = new Map(q.map(w => [w, docs.filter(d => d.tf.has(w)).length]));
+    const scored = docs.map((d, i) => {
+      let sc = 0; q.forEach(w => { const f = d.tf.get(w) || 0; if (!f) return; const idf = Math.log(1 + (N - df.get(w) + 0.5) / (df.get(w) + 0.5)); sc += idf * f * 2.2 / (f + 1.2 * (0.25 + 0.75 * d.len / avg)); });
+      return { p: d.p, sc, i };
+    }).sort((x, y) => y.sc - x.sc || x.i - y.i);
+    const out = []; let used = 0;
+    for (const x of scored) { if (out.length >= k || used + x.p.text.length > chars) break; if (x.sc > 0 || out.length < 4) { out.push(x); used += x.p.text.length; } }
+    // Add each hit's neighbour so answers keep their context.
+    const byId = new Map(passages.map((p, i) => [p.id, i]));
+    out.slice(0, 5).forEach(x => { const nb = passages[byId.get(x.p.id) + 1]; if (nb && nb.doc === x.p.doc && !out.some(o => o.p === nb) && used + nb.text.length <= chars) { out.push({ p: nb, sc: x.sc / 2 }); used += nb.text.length; } });
+    return out.map(x => x.p);
+  }
+
   /** Keep only questions whose quote is really in the uploaded documents; record where it came from. */
   function verifyQuestions(list, passages, docs) {
     const byId = new Map(passages.map(p => [p.id, p]));
@@ -223,6 +245,16 @@
 
     const groups = items => { const m = new Map(); items.forEach(q => { const k = q.source || 'Your documents'; if (!m.has(k)) m.set(k, []); m.get(k).push(q); }); return [...m.entries()]; };
     const TYPE = { functional: 'Functional', ba: 'Business analysis', behavioural: 'Behavioural', motivation: 'Motivation', case: 'Case study' };
+    const CONF = { high: '✓ Fully backed by your documents', partial: '◐ Partly backed: check the flagged source', none: '○ Not in your documents' };
+    const SUGGEST = ['What is in scope?', 'Which systems are mentioned?', 'What are the key dates?', 'Who are the stakeholders?', 'What problems are they trying to fix?', 'What will the interview or case study involve?'];
+    const engine = () => { const st = (window.CVT.ui && window.CVT.ui.state) || {}; return st.provider === 'claude-plan' ? 'Claude on your own plan (no extra cost)' : 'your free Gemini model'; };
+    /** Answer text with [D1-P3] markers turned into small source numbers. */
+    const cited = (text, cites) => {
+      const refs = (cites || []).map(c => c.ref), seen = {};
+      // The n-th marker for a passage points to the n-th source quoting that passage.
+      const pick = r => { const all = refs.map((x, i) => x === r ? i : -1).filter(i => i >= 0); if (!all.length) return []; const n = seen[r] = (seen[r] || 0) + 1; return [all[Math.min(n, all.length) - 1]]; };
+      return raw(esc(text).replace(/\[(D\d+-P\d+)(?:\s*[,;]\s*(D\d+-P\d+))*\]/g, m => m.slice(1, -1).split(/\s*[,;]\s*/).map(r => pick(r).map(i => { const c = cites[i]; return `<sup class="cite ${c.ok ? '' : 'unv'}" title="${esc(c.doc)}, passage ${pnum(r)}${c.ok ? '' : ' (quote not found)'}">${i + 1}</sup>`; }).join('')).join('')));
+    };
     const pnum = ref => (String(ref || '').split('-')[1] || '').replace('P', '');
     /** One question card. del = data attribute for its delete button; idx = index in a.docQuestions.items for the main list. */
     const openQ = new Set(); let dqFilter = 'all';
@@ -345,8 +377,9 @@
 
           <section class="panel docs-ask" id="sec-ask">
             <div class="panel-head"><h2>Ask about these documents</h2>${(a.docChat || []).length ? html`<button class="btn ghost small danger" id="dc-clear" data-label="Delete all" type="button">🗑 Delete all</button>` : ''}</div>
-            <p class="hint">Clarify anything: scope, systems, who's who, what the client wants. Answers come only from your documents and the advert.</p>
-            <div class="chat">${(a.docChat || []).map((m, ci) => html`<div class="chat-q"><span>${m.q}</span><button class="q-del" data-cdel="${ci}" type="button" title="Delete this question and answer" aria-label="Delete question and answer">🗑</button></div><div class="chat-a">${m.a}${(m.sources || []).length ? html`<div class="muted small mt-s">Sources: ${m.sources.join(', ')}</div>` : ''}${m.ask ? html`<div class="small mt-s"><strong>Ask them:</strong> ${m.ask} <button class="linkish small" data-copyask="${m.ask}" type="button">Copy</button></div>` : ''}</div>`)}</div>
+            <p class="hint">Answers come only from your documents. Applywise first finds the passages that match your question, then ${engine()} writes the answer citing each passage, and every quote is checked against your files.</p>
+            <div class="chat">${(a.docChat || []).map((m, ci) => html`<div class="chat-q"><span>${m.q}</span><button class="q-del" data-cdel="${ci}" type="button" title="Delete this question and answer" aria-label="Delete question and answer">🗑</button></div><div class="chat-a">${m.conf ? html`<span class="conf conf-${m.conf}">${CONF[m.conf]}</span>` : ''}<div class="ans">${cited(m.a, m.cites)}</div>${(m.cites || []).length ? html`<details class="cites"><summary class="small">Sources · ${m.cites.length} passage${m.cites.length === 1 ? '' : 's'}${m.searched ? ` (searched ${m.searched} of ${m.total})` : ''}</summary><ol>${m.cites.map((c, i) => html`<li id="${'cite-' + ci + '-' + i}" class="${c.ok ? 'ok' : 'unv'}"><span class="small"><strong>${c.doc}</strong>${c.ref ? ', passage ' + pnum(c.ref) : ''} ${c.ok ? html`<span class="ok-text">✓ quote found</span>` : html`<span class="warn-text">⚠ quote not found: treat with care</span>`}</span><blockquote class="mm-quote">“${c.quote}”</blockquote></li>`)}</ol></details>` : (m.sources || []).length ? html`<div class="muted small mt-s">Sources: ${m.sources.join(', ')}</div>` : ''}${m.ask ? html`<div class="small mt-s"><strong>Ask them:</strong> ${m.ask} <button class="linkish small" data-copyask="${m.ask}" type="button">Copy</button></div>` : ''}</div>`)}</div>
+            ${readable().length ? html`<div class="dc-suggest">${SUGGEST.map(x => html`<button type="button" class="dq-f" data-suggest="${x}">${x}</button>`)}</div>` : ''}
             <form id="dc-form" class="row gap"><input id="dc-q" type="text" placeholder="e.g. Which S/4HANA modules are in scope?" ${readable().length ? '' : raw('disabled')} autocomplete="off" title="${readable().length ? '' : 'Add a readable file or notes first'}"><button class="btn primary" type="submit" ${readable().length ? '' : raw('disabled')}>Ask</button></form>
           </section>
         </div>`);
@@ -468,6 +501,7 @@
       if (t.id === 'mm-dl' && mmApi) { window.CVT.ui.download(new Blob([mmApi.svgText()], { type: 'image/svg+xml' }), `${(a.company || 'job').replace(/\W+/g, '_')}_mind_map.svg`); return; }
       if (t.id === 'dq-copy') { copy(a.docQuestions.items.map(qText).join('\n\n')); return; }
       if (t.id === 'dc-clear') { if (!confirmInline(t)) return; a.docChat = []; await save(); draw(); toast('Deleted'); return; }
+      const sg = t.closest('[data-suggest]'); if (sg) { const i = $('#dc-q', body); i.value = sg.dataset.suggest; $('#dc-form', body).requestSubmit(); return; }
       const ca = t.closest('[data-copyask]'); if (ca) { copy(ca.dataset.copyask); return; }
     });
     // Two-step delete without browser dialogs.
@@ -478,12 +512,25 @@
       const inp = $('#dc-q', body), q = inp.value.trim(); if (q.length < 3) return;
       const btn = e.target.querySelector('button'); btn.disabled = true; inp.disabled = true; btn.textContent = 'Thinking…';
       try {
-        const r = await A.docAsk({ app: a, docs: a.docs, question: q, history: a.docChat || [] });
-        a.docChat = (a.docChat || []).concat({ q, a: r.answer || '', sources: r.sources || [], ask: r.ask_them || '', at: new Date().toISOString() }).slice(-30);
+        const docs = readable();
+        const { passages: all } = passagesOf(docs, Infinity);
+        const hits = retrieve(all, q + ' ' + ((a.docChat || []).slice(-1)[0] || {}).q);
+        const r = await A.docAsk({ app: a, passages: hits, question: q, history: a.docChat || [] });
+        const byId = new Map(all.map(p => [p.id, p]));
+        const seen = new Set();
+        const cites = (r.claims || []).filter(c => c && c.quote).map(c => {
+          const p = byId.get(String(c.ref || '').trim());
+          const ok = !!(p && found(c.quote, p.text)) || docs.some(d => found(c.quote, (d.text || '') + '\n' + (d.note || '')));
+          return { ref: p ? p.id : String(c.ref || ''), doc: p ? p.doc : 'your documents', quote: c.quote, ok };
+        }).filter(c => { const k = c.ref + c.quote; if (seen.has(k)) return false; seen.add(k); return true; });
+        // Make sure every [ref] in the answer has a numbered source.
+        (String(r.answer || '').match(/D\d+-P\d+/g) || []).forEach(ref => { if (!cites.some(c => c.ref === ref) && byId.get(ref)) cites.push({ ref, doc: byId.get(ref).doc, quote: byId.get(ref).text.slice(0, 160) + (byId.get(ref).text.length > 160 ? '…' : ''), ok: true }); });
+        const conf = r.found === false || !cites.length ? 'none' : cites.every(c => c.ok) ? 'high' : 'partial';
+        a.docChat = (a.docChat || []).concat({ q, a: r.answer || '', cites, conf, searched: hits.length, total: all.length, ask: r.ask_them || '', at: new Date().toISOString() }).slice(-30);
         await save(); draw(); const c = $('.chat', body); if (c) c.scrollTop = c.scrollHeight; $('#dc-q', body).focus();
       } catch (err) { toast(err.message, 'bad'); btn.disabled = false; inp.disabled = false; btn.textContent = 'Ask'; }
     });
   }
 
-  window.CVT.docs = { tab, kindOf, extract };
+  window.CVT.docs = { tab, kindOf, extract, passagesOf, retrieve, found };
 })();

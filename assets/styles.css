@@ -719,3 +719,4 @@ p.grow { flex: 1 1 auto; }
 .mm-outline ul { border-left: 1px dashed var(--line); margin-left: 4px; }
 @media (max-width: 700px) { .mm-svg { min-width: 680px; } }
 .mm-t { paint-order: stroke; stroke: var(--bg); stroke-width: 4px; stroke-linejoin: round; }
+.mm-quote { margin: 6px 0 4px; padding: 6px 10px; border-left: 3px solid var(--line); background: var(--surface); font-size: .88rem; font-style: italic; border-radius: 0 6px 6px 0; }

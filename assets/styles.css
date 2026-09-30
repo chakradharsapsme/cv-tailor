@@ -738,7 +738,7 @@ p.grow { flex: 1 1 auto; }
 .dq-n { flex: none; width: 24px; height: 24px; border-radius: 50%; background: var(--surface-2); color: var(--muted); font: 600 .75rem/24px var(--mono); text-align: center; }
 .dq details[open] .dq-n { background: var(--accent); color: var(--accent-ink, #fff); }
 .dq-body { display: grid; gap: 4px; min-width: 0; }
-.dq-q { font-weight: 500; line-height: 1.4; overflow-wrap: anywhere; }
+.dq-q { font-weight: 500; line-height: 1.4; overflow-wrap: break-word; }
 .dq-meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: .75rem; color: var(--muted); }
 .dq summary .q-del { margin: 0; }
 .dq-more { padding: 0 14px 12px 46px; display: grid; gap: 6px; }
@@ -750,3 +750,39 @@ p.grow { flex: 1 1 auto; }
 .dq-themes .chip { margin-bottom: 4px; }
 @media (max-width: 600px) { .dq-more { padding-left: 14px; } }
 .dq-q { color: var(--ink); }
+
+/* v14 documents: keep everything inside the panels + question tools */
+.docs-grid .panel { overflow-wrap: break-word; word-break: normal; }
+.docs-grid .chip { white-space: normal; max-width: 100%; }
+.docs-grid .btn { white-space: normal; text-align: center; }
+.docs-grid #dc-form .btn, .docs-grid .q-del, .docs-grid .dq-f { white-space: nowrap; }
+.docs-grid .panel-head h2 { min-width: 0; }
+.docs-grid .panel-head > .row { flex-wrap: wrap; }
+.docs-grid .hint { max-width: none; }
+.docs-grid .doc-text, .docs-grid .pre { white-space: pre-wrap; word-break: break-word; max-width: 100%; overflow-x: auto; }
+.docs-grid .mm-quote { overflow-wrap: break-word; }
+.dq-tools { display: grid; gap: 8px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2); }
+.dq-prog { display: flex; align-items: center; gap: 10px; }
+.dq-bar { flex: 1; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.dq-bar i { display: block; height: 100%; background: var(--ok); border-radius: 3px; transition: width .3s; }
+.dq-filters { display: flex; flex-wrap: wrap; gap: 6px; }
+.dq-f { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 3px 10px; font: 500 .78rem var(--sans); cursor: pointer; }
+.dq-f span { color: var(--muted); font-family: var(--mono); margin-left: 2px; }
+.dq-f[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink, #fff); }
+.dq-f[aria-pressed="true"] span { color: inherit; opacity: .8; }
+.dq.done .dq-n { background: var(--ok-soft); color: var(--ok); }
+.dq.done .dq-q { color: var(--muted); }
+.dq-notes-l { display: grid; gap: 4px; font-weight: 600; margin-top: 4px; }
+.dq-notes { width: 100%; font: 400 .88rem/1.45 var(--sans); resize: vertical; }
+.dq-acts { display: flex; flex-wrap: wrap; gap: 6px; }
+.dq-src { overflow-wrap: break-word; }
+
+/* Two columns only when there is real room; otherwise stack (the claude.ai viewer is often ~1000-1250px wide). */
+@media (max-width: 1280px) { .docs-grid { grid-template-columns: minmax(0, 1fr); } .docs-grid > .panel:first-child { grid-row: auto; } }
+.doc-main { min-width: 0; }
+.doc-check { min-width: 0; }
+.docs-jump { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; position: sticky; top: 0; z-index: 5; background: var(--bg); padding: 6px 0; }
+.docs-jump button { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 4px 12px; font: 500 .82rem var(--sans); cursor: pointer; }
+.docs-jump button:hover { border-color: var(--accent); color: var(--accent); }
+.docs-jump span { font-family: var(--mono); color: var(--muted); margin-left: 4px; font-size: .75rem; }
+.docs-grid > .panel { scroll-margin-top: 52px; }

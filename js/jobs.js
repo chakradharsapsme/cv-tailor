@@ -350,8 +350,9 @@
           const titleRel = Math.max(0, ...qt.map(q => frac(q, tt))), bodyRel = Math.max(0, ...qt.map(q => frac(q, bt)));
           const skills = termsIn(j.title + ' ' + (j.jd || '')).filter(t => ev.terms.has(t)).length;
           // The title must fit what you're looking for; the advert body alone is only enough for analyst/consultant-type titles that ask for your skills.
-          const titleSkill = termsIn(j.title).some(t => ev.terms.has(t));
-          return titleRel >= 0.5 || (titleSkill && skills >= 3) || (bodyRel >= 0.67 && skills >= 3 && IT_GENERIC.test(j.title) && !/\b(engineer|developer|designer|scientist)\b/i.test(j.title));
+          const offTrack = /\b(engineer|engineering|developer|designer|scientist|marketing|sales)\b/i.test(j.title);
+          const titleSkill = termsIn(j.title).some(t => ev.terms.has(t) && !GENERIC_TERMS.has(t));
+          return titleRel >= 0.5 || (!offTrack && titleSkill && skills >= 3) || (!offTrack && bodyRel >= 0.67 && skills >= 3 && IT_GENERIC.test(j.title));
         };
         const W = window.CVT.websources;
         const r = await W.search({ queries: cfg.queries, portals: cfg.portals, relevant, onStep: t => onStep && onStep(-1, 0, t) });

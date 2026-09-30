@@ -283,6 +283,26 @@ await page.click('#dq-go'); await page.waitForSelector('.docs-grid > section:nth
 log('grouped headings:', JSON.stringify(await page.$$eval('.docs-grid .panel:nth-child(2) h3', e => e.map(x => x.textContent))));
 log('doc questions:', await page.locator('.docs-grid > section:nth-child(2) .dq').count(), '| fake dropped:', /1 dropped/.test(await page.textContent('.docs-grid > section:nth-child(2)')), '| advert in prompt:', /ADVERT/.test(calls.docQ || ''), '| prompt had pdf text:', /maverick spend 22 percent/.test(calls.docQ || ''), '| had notes:', /UK go-live Q3 2027/.test(calls.docQ || ''), '| txt:', /650 outside IR35/.test(calls.docQ || ''));
 await page.click('.docs-grid > section:nth-child(2) .dq summary >> nth=0'); log('question detail:', (await page.textContent('.docs-grid > section:nth-child(2) .dq-more')).replace(/\s+/g, ' ').slice(0, 140)); await shot('07e-questions');
+{ // question tools + nothing spills out of the panels
+  const P = '.docs-grid > section:nth-child(2)';
+  await page.fill(`${P} [data-dqn] >> nth=0`, 'At the utility I phased onboarding by spend tier.'); await page.waitForTimeout(700);
+  await page.click(`${P} [data-dqp] >> nth=0`); await page.waitForTimeout(300);
+  const prog = (await page.textContent(`${P} .dq-prog`)).replace(/\s+/g, ' ').trim();
+  await page.click(`${P} [data-dqf="todo"]`); await page.waitForTimeout(200); const todo = await page.locator(`${P} .dq`).count();
+  await page.click(`${P} [data-dqf="all"]`); await page.waitForTimeout(200);
+  await page.click('#dq-prep-all'); await page.waitForTimeout(400);
+  const drills = await page.evaluate(async () => ((await window.CVT.store.getKV('drills', null)) || {}).custom || []);
+  const saved = await page.evaluate(async () => { const a = (await window.CVT.store.listApps()).find(x => x.docQuestions); return a.docQuestions.items[0]; });
+  log('question tools:', prog, '| not-practised filter shows:', todo, '| prep cards:', drills.length, drills[0] && /My notes: At the utility/.test(drills[0].a), '| notes saved:', !!saved.notes, '| practised saved:', !!saved.practised);
+  for (const w of [1440, 1000, 760, 390]) {
+    await page.setViewportSize({ width: w, height: 900 }); await page.waitForTimeout(250);
+    const bad = await page.evaluate(() => { const out = []; document.querySelectorAll('.docs-grid .panel').forEach(p => { const r = p.getBoundingClientRect(); p.querySelectorAll('*').forEach(el => { const b = el.getBoundingClientRect(); if (b.width && b.right > r.right + 1 && !el.closest('.mm-wrap')) out.push((el.className || el.tagName) + ':' + Math.round(b.right - r.right)); }); }); return out.slice(0, 5); });
+    const pageW = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    log(`overflow at ${w}px:`, bad.length ? bad.join(', ') : 'none', '| page scroll:', pageW);
+    if (w !== 760) await shot('07f-questions-' + w);
+  }
+  await page.setViewportSize({ width: 1360, height: 900 });
+}
 await page.fill('#dc-q', 'What connects Ariba to S/4HANA?'); await page.click('#dc-form button'); await page.waitForSelector('.chat-a', { timeout: 20000 });
 log('doc answer:', (await page.textContent('.chat-a')).replace(/\s+/g, ' ').slice(0, 160));
 await page.click('#mm-go'); await page.waitForSelector('.mm-svg', { timeout: 20000 });

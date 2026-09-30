@@ -1,5 +1,5 @@
 /*
- * studio.js — NotebookLM-style "Studio" for the Documents page.
+ * studio.js — "Studio" for the Documents page.
  * Briefing doc, study guide, FAQ, timeline + cast, flashcards, quiz, audio overview (free browser voices) and notes.
  * Everything is generated only from the uploaded documents; every item must quote its passage and is checked here.
  */
@@ -51,7 +51,7 @@
 
   /** Plain-text version for Copy / Download. */
   function asText(kind, d) {
-    const src = it => it.source ? ` [${it.source}${it.ref ? ', passage ' + pnum(it.ref) : ''}]` : '';
+    const src = it => it.source ? ` [${it.source}]` : '';
     if (kind === 'briefing') return `${d.title || 'Briefing'}\n\n${d.summary || ''}\n\n` + (d.sections || []).map(s => `${s.heading}\n` + s.points.map(p => `- ${p.text}${src(p)}`).join('\n')).join('\n\n');
     if (kind === 'study') return 'KEY TERMS\n' + d.concepts.map(c => `- ${c.term}: ${c.explain}${src(c)}`).join('\n') + '\n\nQUESTIONS\n' + d.questions.map((q, i) => `${i + 1}. ${q.q}\n   ${q.answer}${src(q)}`).join('\n');
     if (kind === 'faq') return d.items.map(x => `Q: ${x.q}\nA: ${x.a}${src(x)}`).join('\n\n');
@@ -99,7 +99,8 @@
     const st = ui.get(a.id);
     const n = readable().length;
 
-    const srcChip = it => it && it.source ? html`<span class="src-chip" title="“${it.quote}” (${it.source}${it.ref ? ', passage ' + pnum(it.ref) : ''})">${it.source}${it.ref ? ' · p' + pnum(it.ref) : ''}</span>${st.quotes ? html`<blockquote class="mm-quote">“${it.quote}”</blockquote>` : ''}` : '';
+    const srcChip = () => '';
+    const _srcChipOld = it => it && it.source ? html`<span class="src-chip" title="“${it.quote}” (${it.source}${it.ref ? ', passage ' + pnum(it.ref) : ''})">${it.source}${it.ref ? ' · p' + pnum(it.ref) : ''}</span>${st.quotes ? html`<blockquote class="mm-quote">“${it.quote}”</blockquote>` : ''}` : '';
     const body = (kind, d) => {
       if (kind === 'briefing') return html`<h3 class="st-title">${d.title || 'Briefing'}</h3>${d.summary ? html`<p class="st-lead">${d.summary}</p>` : ''}${(d.sections || []).map(s => html`<h4 class="st-h">${s.heading}</h4><ul class="st-points">${s.points.map(p => html`<li>${p.text} ${srcChip(p)}</li>`)}</ul>`)}`;
       if (kind === 'study') return html`<h4 class="st-h">Key terms</h4><dl class="st-terms">${d.concepts.map(c => html`<div><dt>${c.term}</dt><dd>${c.explain} ${srcChip(c)}</dd></div>`)}</dl>
@@ -124,7 +125,7 @@
           <label class="small">Speed <select data-au="rate">${[0.85, 1, 1.15, 1.3].map(r => html`<option value="${r}" ${speech.rate === r ? raw('selected') : ''}>${r}×</option>`)}</select></label>
           <span class="muted small">${has ? 'Uses your browser’s free built-in voices. Click any line to start there.' : 'This browser has no built-in voices; read the transcript below.'}</span></div>
           <h3 class="st-title">${d.title || 'Audio overview'}</h3>
-          <div class="au-lines">${d.lines.map((l, i) => html`<p class="au-line h${l.host}" data-line="${i}" tabindex="0"><b>${l.host === 'A' ? 'Host A' : 'Host B'}</b> ${l.text}${l.ok ? html` <span class="src-chip" title="“${l.quote}” (${l.source})">✓ ${l.source}</span>` : ''}</p>`)}</div>`;
+          <div class="au-lines">${d.lines.map((l, i) => html`<p class="au-line h${l.host}" data-line="${i}" tabindex="0"><b>${l.host === 'A' ? 'Host A' : 'Host B'}</b> ${l.text}</p>`)}</div>`;
       }
       return '';
     };
@@ -135,13 +136,13 @@
     const render = () => {
       const kind = st.tab, meta = KINDS.find(k => k[0] === kind), out = a.studio[kind];
       el.innerHTML = String(html`
-        <div class="panel-head"><h2>Studio</h2><span class="muted small">Like NotebookLM, built only from your documents</span></div>
+        <div class="panel-head"><h2>Studio</h2><span class="muted small">Built only from your documents</span></div>
         <div class="st-tabs" role="tablist">${KINDS.map(([k, label]) => html`<button type="button" role="tab" data-sttab="${k}" aria-selected="${k === kind}">${label}${k === 'notes' ? html` <span>${a.docNotes.length}</span>` : a.studio[k] ? html` <span>✓</span>` : ''}</button>`)}</div>
         <div class="st-pane">
-          <p class="hint">${meta[2]}${kind !== 'notes' ? ' Every point quotes the passage it came from and is checked against your files; anything that can’t be matched is dropped.' : ''}</p>
+          <p class="hint">${meta[2]}</p>
           ${kind === 'notes' ? notesPane() : st.busy === kind ? html`<p><span class="spinner" aria-hidden="true"></span> Reading your documents and building the ${meta[1].toLowerCase()}… (30–90 s)</p>` : out ? html`
-            <div class="st-meta small muted">Built ${new Date(out.at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} from ${out.from}${kind === 'audio' ? ` · ${out.kept} factual lines checked` : ` · ${out.kept} checked`}${out.removed ? html` · <strong>${out.removed} dropped</strong> (quote not found)` : ''}${out.sig !== sig() ? html` · <span class="chip warn">Documents changed since</span>` : ''}</div>
-            <div class="st-actions">${kind !== 'audio' && kind !== 'flashcards' && kind !== 'quiz' ? html`<label class="check-line small"><input type="checkbox" data-st="quotes" ${st.quotes ? raw('checked') : ''}> Show quotes</label>` : ''}<button class="btn ghost small" data-st="copy" type="button">Copy</button><button class="btn ghost small" data-st="dl" type="button">Download</button><button class="btn ghost small" data-st="gen" type="button" ${n ? '' : raw('disabled')}>Regenerate</button><button class="btn ghost small danger" data-st="del" type="button">🗑 Delete</button></div>
+            <div class="st-meta small muted">Built ${new Date(out.at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} from ${out.from}</div>
+            <div class="st-actions"><button class="btn ghost small" data-st="copy" type="button">Copy</button><button class="btn ghost small" data-st="dl" type="button">Download</button><button class="btn ghost small" data-st="gen" type="button" ${n ? '' : raw('disabled')}>Regenerate</button><button class="btn ghost small danger" data-st="del" type="button">🗑 Delete</button></div>
             <div class="st-body st-${kind}">${body(kind, out.data)}</div>` : html`<button class="btn primary" data-st="gen" type="button" ${n ? '' : raw('disabled')}>Create ${meta[1].toLowerCase()}</button>${n ? '' : html`<p class="muted small">Add a readable document or notes first.</p>`}`}
         </div>`);
       if (kind === 'audio' && speech.appId === a.id) mark(el);
@@ -158,7 +159,7 @@
         if (kind === 'flashcards') { st.card = 0; st.flip = false; st.known = new Set(); }
         if (kind === 'quiz') st.picks = {};
         if (kind === 'audio') stopSpeech();
-        a.studio[kind] = { at: new Date().toISOString(), sig: sig(), from: `${docs.length} document${docs.length === 1 ? '' : 's'}${coverage < 100 ? ` (${coverage}% of the text)` : ''}`, kept: v.kept, removed: v.removed, data: v.data };
+        a.studio[kind] = { at: new Date().toISOString(), sig: sig(), ids: docs.map(x => x.id), from: `${docs.length} document${docs.length === 1 ? '' : 's'}${coverage < 100 ? ` (${coverage}% of the text)` : ''}`, kept: v.kept, removed: v.removed, data: v.data };
         await save(); toast(`${KINDS.find(k => k[0] === kind)[1]} ready`);
       } catch (e) { toast(e.message, 'bad'); }
       st.busy = null; if (el.isConnected) render(); else if (env.redraw) env.redraw();
@@ -212,9 +213,45 @@
     render();
   }
 
+  /** Add content from newly added documents to an existing Studio output (merged, no duplicates). Returns how many items were added. */
+  async function extend(a, kind, newDocs, env) {
+    const out = a.studio && a.studio[kind]; if (!out || kind === 'notes') return 0;
+    const { passages } = env.passagesOf(newDocs);
+    const r = await A.docStudio({ kind, app: a, passages });
+    const v = verify(kind, r, passages, newDocs, env.found);
+    if (v.empty) return 0;
+    const d = out.data, n = v.data, k = x => String(x || '').trim().toLowerCase();
+    let added = 0;
+    const addU = (arr, items, f) => { const have = new Set(arr.map(f)); (items || []).forEach(i => { if (!have.has(f(i))) { arr.push(i); have.add(f(i)); added++; } }); return arr; };
+    if (kind === 'briefing') (n.sections || []).forEach(s => { const m = (d.sections = d.sections || []).find(x => k(x.heading) === k(s.heading)); if (m) addU(m.points, s.points, p => k(p.text)); else { d.sections.push(s); added += s.points.length; } });
+    if (kind === 'study') { addU(d.concepts = d.concepts || [], n.concepts, c => k(c.term)); addU(d.questions = d.questions || [], n.questions, q => k(q.q)); }
+    if (kind === 'faq') addU(d.items = d.items || [], n.items, x => k(x.q));
+    if (kind === 'timeline') { addU(d.events = d.events || [], n.events, e => k(e.when + e.what)); addU(d.cast = d.cast || [], n.cast, c => k(c.name)); }
+    if (kind === 'flashcards') addU(d.cards = d.cards || [], n.cards, c => k(c.front));
+    if (kind === 'quiz') addU(d.questions = d.questions || [], n.questions, q => k(q.q));
+    if (kind === 'audio' && n.lines.length) { d.lines = (d.lines || []).concat([{ host: 'A', text: `Now for something new: ${newDocs.map(x => x.name).join(' and ')}.`, source: newDocs.length === 1 ? newDocs[0].name : '' }], n.lines); added += n.lines.length; }
+    out.kept = (out.kept || 0) + v.kept; out.removed = (out.removed || 0) + v.removed; out.at = new Date().toISOString();
+    return added;
+  }
+  /** Remove everything that came from a deleted document. */
+  function prune(a, docName) {
+    Object.entries(a.studio || {}).forEach(([kind, out]) => {
+      const d = out.data, keep = x => x.source !== docName;
+      if (kind === 'briefing') d.sections = (d.sections || []).map(s => Object.assign(s, { points: s.points.filter(keep) })).filter(s => s.points.length);
+      if (kind === 'study') { d.concepts = (d.concepts || []).filter(keep); d.questions = (d.questions || []).filter(keep); }
+      if (kind === 'faq') d.items = (d.items || []).filter(keep);
+      if (kind === 'timeline') { d.events = (d.events || []).filter(keep); d.cast = (d.cast || []).filter(keep); }
+      if (kind === 'flashcards') d.cards = (d.cards || []).filter(keep);
+      if (kind === 'quiz') d.questions = (d.questions || []).filter(keep);
+      if (kind === 'audio') d.lines = (d.lines || []).filter(l => !l.source || l.source !== docName);
+      const empty = kind === 'audio' ? !(d.lines || []).length : LISTS[kind](d).every(x => !x.length);
+      if (empty) delete a.studio[kind];
+    });
+  }
+
   /** Pin an Ask answer into Notes. */
   function pin(a, q, text) { a.docNotes = a.docNotes || []; a.docNotes.push({ id: uid(), from: q, text, at: new Date().toISOString() }); }
   function open(appId, tab) { const s = ui.get(appId); if (s) s.tab = tab; else ui.set(appId, { tab, card: 0, flip: false, known: new Set(), picks: {}, quotes: false, busy: null }); }
 
-  window.CVT.studio = { mount, pin, open, verify, asText, stop: stopSpeech };
+  window.CVT.studio = { mount, pin, open, verify, asText, extend, prune, KINDS, stop: stopSpeech };
 })();

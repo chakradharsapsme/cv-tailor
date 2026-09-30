@@ -187,7 +187,7 @@
       const kids = (n.children || []).map(check).filter(Boolean);
       if (ok) { kept++; return { label: n.label, detail: n.detail, quote: n.quote, ref: p ? p.id : '', source: src || 'your documents', children: kids }; }
       removed++;
-      return kids.length ? { label: n.label, detail: 'Heading grouping the topics below (not quoted directly).', grouping: true, source: 'your documents', children: kids } : null;
+      return kids.length ? { label: n.label, detail: '', grouping: true, source: 'your documents', children: kids } : null;
     };
     const branches = (raw.branches || []).map(check).filter(Boolean);
     return { tree: { center: raw.center || 'Your documents', branches }, removed, kept };
@@ -239,7 +239,7 @@
     const dqHint = () => {
       const n = readable().length, waiting = a.docs.filter(d => d.use !== false && !hasContent(d));
       const skip = waiting.length ? ` ${waiting.length} file${waiting.length > 1 ? 's have' : ' has'} no readable text yet and will be skipped${waiting.some(d => d.kind === 'video' || d.kind === 'audio') ? ' (add a transcript or notes to a video to include it)' : ''}.` : '';
-      if (n) return `Questions come only from your ${n} document${n === 1 ? '' : 's'}, never from the job advert. Each one quotes the words it came from, checked against your files. Answer outlines use only your real experience.${skip}`;
+      if (n) return `Questions come only from your ${n} document${n === 1 ? '' : 's'}, never from the job advert. New documents add their questions automatically. Answer outlines use only your real experience.${skip}`;
       return a.docs.length ? `None of your files has readable text yet.${skip} Add notes or a transcript to a file, then prepare questions.` : 'Upload the documents for this job (role pack, client deck, case study, notes). Questions are drawn only from them.';
     };
 
@@ -255,13 +255,13 @@
       const pick = r => { const all = refs.map((x, i) => x === r ? i : -1).filter(i => i >= 0); if (!all.length) return []; const n = seen[r] = (seen[r] || 0) + 1; return [all[Math.min(n, all.length) - 1]]; };
       return raw(esc(text).replace(/\[(D\d+-P\d+)(?:\s*[,;]\s*(D\d+-P\d+))*\]/g, m => m.slice(1, -1).split(/\s*[,;]\s*/).map(r => pick(r).map(i => { const c = cites[i]; return `<sup class="cite ${c.ok ? '' : 'unv'}" title="${esc(c.doc)}, passage ${pnum(r)}${c.ok ? '' : ' (quote not found)'}">${i + 1}</sup>`; }).join('')).join('')));
     };
+    const plain = t => String(t || '').replace(/\s*\[D\d+-P\d+(?:\s*[,;]\s*D\d+-P\d+)*\]/g, '');
     const pnum = ref => (String(ref || '').split('-')[1] || '').replace('P', '');
     /** One question card. del = data attribute for its delete button; idx = index in a.docQuestions.items for the main list. */
     const openQ = new Set(); let dqFilter = 'all';
     const qCard = (q, n, del, idx) => { const k = idx == null ? del : 'q' + idx; return html`<li class="dq ${q.practised ? 'done' : ''}"><details data-k="${k}" ${openQ.has(k) ? raw('open') : ''}>
-      <summary><span class="dq-n">${q.practised ? '✓' : n}</span><span class="dq-body"><span class="dq-q">${q.q}</span><span class="dq-meta"><span class="chip muted">${TYPE[q.type] || q.type || 'Question'}</span>${q.ref ? html`<span>passage ${pnum(q.ref)}</span>` : ''}${(q.notes || '').trim() ? html`<span>· your notes</span>` : ''}${q.inPrep ? html`<span>· in Prep</span>` : ''}</span></span>${raw(`<button class="q-del" ${del} type="button" title="Delete this question" aria-label="Delete question">🗑</button>`)}</summary>
+      <summary><span class="dq-n">${q.practised ? '✓' : n}</span><span class="dq-body"><span class="dq-q">${q.q}</span><span class="dq-meta"><span class="chip muted">${TYPE[q.type] || q.type || 'Question'}</span>${(q.notes || '').trim() ? html`<span>· your notes</span>` : ''}${q.inPrep ? html`<span>· in Prep</span>` : ''}</span></span>${raw(`<button class="q-del" ${del} type="button" title="Delete this question" aria-label="Delete question">🗑</button>`)}</summary>
       <div class="dq-more">
-        ${q.quote ? html`<blockquote class="mm-quote">“${q.quote}”</blockquote><p class="small ok-text">✓ Found in ${q.source || d0(q)}${q.ref ? ', passage ' + pnum(q.ref) : ''}</p>` : ''}
         ${q.why ? html`<p class="small"><strong>What it tests:</strong> ${q.why}</p>` : ''}
         ${(q.answer_outline || []).length ? html`<p class="small"><strong>How to answer</strong></p><ul class="tight small">${q.answer_outline.map(x => html`<li>${x}</li>`)}</ul>` : ''}
         ${q.story_hint && stories.find(s => s.id === q.story_hint) ? html`<p class="small">Story to use: <strong>${stories.find(s => s.id === q.story_hint).title}</strong></p>` : ''}
@@ -278,7 +278,7 @@
         <div class="dq-filters" role="group" aria-label="Filter questions">${f('all', 'All', all.length)}${f('todo', 'Not practised', all.length - done)}${types.map(t => f(t, TYPE[t] || t, all.filter(q => q.type === t).length))}</div>
       </div>`;
     };
-    const qText = (q, i) => `${i + 1}. ${q.q}${q.source ? `\n   From ${q.source}${q.quote ? ': "' + q.quote + '"' : ''}` : ''}${(q.answer_outline || []).length ? '\n   How to answer:\n' + q.answer_outline.map(x => '   - ' + x).join('\n') : ''}${(q.notes || '').trim() ? '\n   My notes: ' + q.notes.trim() : ''}`;
+    const qText = (q, i) => `${i + 1}. ${q.q}${q.source ? `\n   From ${q.source}` : ''}${(q.answer_outline || []).length ? '\n   How to answer:\n' + q.answer_outline.map(x => '   - ' + x).join('\n') : ''}${(q.notes || '').trim() ? '\n   My notes: ' + q.notes.trim() : ''}`;
     async function toPrep(list) {
       const cur = Object.assign({ p: {}, custom: [] }, (await S.getKV('drills', null)) || {});
       const topic = [a.role, a.company].filter(Boolean).join(' at ') || 'This job';
@@ -328,6 +328,7 @@
           <button type="button" data-jump="sec-studio">Studio <span>${Object.keys(a.studio || {}).length + ((a.docNotes || []).length ? '+' + a.docNotes.length : '')}</span></button>
           ${a.docs.length || a.docQuestions || a.docMap || (a.docChat || []).length || Object.keys(a.studio || {}).length || (a.docNotes || []).length ? html`<span class="grow-s"></span><button type="button" class="btn ghost small danger" id="docs-wipe" title="Delete every file, question, the mind map, the Q&A, Studio outputs and notes on this page">🗑 Delete everything &amp; start again</button>` : ''}
         </nav>
+        <div class="docs-upd" id="docs-upd" ${body.dataset.upd ? '' : raw('hidden')} role="status"><span class="spinner" aria-hidden="true"></span><span>${body.dataset.upd || ''}</span></div>
         <div class="docs-grid">
           <section class="panel" id="sec-docs">
             <div class="panel-head"><h2>Documents for this job</h2><span class="muted small">${a.docs.length} file${a.docs.length === 1 ? '' : 's'}</span></div>
@@ -365,7 +366,7 @@
             ${a.docQuestions && !a.docQuestions.grounded ? html`<p class="small"><span class="chip warn">These were made before document-only mode and may include advert questions. Press Prepare again.</span></p>` : ''}
             <button class="btn primary" id="dq-go" type="button" ${readable().length ? '' : raw('disabled')}>${a.docQuestions ? 'Prepare again' : 'Prepare questions'}</button>
             ${a.docQuestions ? html`
-              ${a.docQuestions.grounded ? html`<p class="small muted mt-s">${a.docQuestions.items.length} question${a.docQuestions.items.length === 1 ? '' : 's'} from ${a.docQuestions.from}${a.docQuestions.coverage < 100 ? ` (${a.docQuestions.coverage}% of the text read)` : ''}${a.docQuestions.removed ? html` · <strong>${a.docQuestions.removed} dropped</strong> because their quote wasn't in your files` : ''}${a.docQuestions.sig !== mapSig() ? html` · <span class="chip warn">Documents changed since. Prepare again to include them</span>` : ''}</p>` : ''}
+              ${a.docQuestions.grounded ? html`<p class="small muted mt-s">${a.docQuestions.items.length} question${a.docQuestions.items.length === 1 ? '' : 's'} from ${a.docQuestions.from}</p>` : ''}
               ${(a.docQuestions.themes || []).length ? html`<p class="small mt-s dq-themes">Themes: ${a.docQuestions.themes.map(t => html`<span class="chip accent">${t}</span> `)}</p>` : ''}
               ${dqTools()}
               ${(() => { const all = a.docQuestions.items, shown = all.filter(q => dqFilter === 'all' || (dqFilter === 'todo' ? !q.practised : q.type === dqFilter)); if (!shown.length) return html`<p class="muted small">No questions match this filter.</p>`; return groups(shown).map(([src, items]) => html`<h3 class="h-sub mt dq-src">From ${src} <span class="muted">· ${items.length}</span></h3><ol class="dq-list">${items.map(q => { const i = all.indexOf(q); return qCard(q, i + 1, `data-qdel="${i}"`, i); })}</ol>`); })()}` : ''}
@@ -374,7 +375,7 @@
           <section class="panel docs-map" id="sec-map">
             <div class="panel-head"><h2>Mind map of your documents</h2>
               <div class="row gap wrap">${a.docMap ? html`<button class="btn ghost small" id="mm-dl" type="button">Download (SVG)</button><button class="btn ghost small danger" id="mm-del" data-label="Delete map" type="button">🗑 Delete map</button>` : ''}<button class="btn ${a.docMap ? 'ghost' : 'primary'} small" id="mm-go" type="button" ${readable().length ? '' : raw('disabled')}>${a.docMap ? 'Rebuild' : 'Build mind map'}</button></div></div>
-            <p class="hint">${a.docMap && a.docMap.grounded ? html`Built only from your ${a.docMap.from} (${a.docMap.passages} passages${a.docMap.coverage < 100 ? `, ${a.docMap.coverage}% of the text` : ''}) on ${new Date(a.docMap.at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}. Every topic quotes the passage it came from: ${a.docMap.kept} checked against your files${a.docMap.removed ? html`, <strong>${a.docMap.removed} removed</strong> because the quote wasn't found` : ''}.${a.docMap.sig !== mapSig() ? html` <span class="chip warn">Documents changed since. Rebuild to include them</span>` : ''}` : a.docMap ? html`<span class="chip warn">This map was built before document-only mode. Rebuild it.</span>` : readable().length ? `Built only from your ${readable().length} readable document${readable().length === 1 ? '' : 's'}: nothing from the advert or outside knowledge. Every topic is checked against the exact words in your files.` : 'Add a readable document or notes first. The mind map uses only your documents.'}</p>
+            <p class="hint">${a.docMap && a.docMap.grounded ? html`Built only from your ${a.docMap.from}, updated ${new Date(a.docMap.at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}. New documents you add are merged in automatically.` : a.docMap ? html`<span class="chip warn">This map was built before document-only mode. Rebuild it.</span>` : readable().length ? `Built only from your ${readable().length} readable document${readable().length === 1 ? '' : 's'}: nothing from the advert or outside knowledge.` : 'Add a readable document or notes first. The mind map uses only your documents.'}</p>
             <div id="mm-root">${a.docMap ? '' : ''}</div>
           </section>
 
@@ -382,8 +383,8 @@
 
           <section class="panel docs-ask" id="sec-ask">
             <div class="panel-head"><h2>Ask about these documents</h2>${(a.docChat || []).length ? html`<button class="btn ghost small danger" id="dc-clear" data-label="Delete all" type="button">🗑 Delete all</button>` : ''}</div>
-            <p class="hint">Answers come only from your documents. Applywise first finds the passages that match your question, then ${engine()} writes the answer citing each passage, and every quote is checked against your files.</p>
-            <div class="chat">${(a.docChat || []).map((m, ci) => html`<div class="chat-q"><span>${m.q}</span><button class="q-del" data-cdel="${ci}" type="button" title="Delete this question and answer" aria-label="Delete question and answer">🗑</button></div><div class="chat-a">${m.conf ? html`<span class="conf conf-${m.conf}">${CONF[m.conf]}</span>` : ''}<div class="ans">${cited(m.a, m.cites)}</div>${(m.cites || []).length ? html`<details class="cites"><summary class="small">Sources · ${m.cites.length} passage${m.cites.length === 1 ? '' : 's'}${m.searched ? ` (searched ${m.searched} of ${m.total})` : ''}</summary><ol>${m.cites.map((c, i) => html`<li id="${'cite-' + ci + '-' + i}" class="${c.ok ? 'ok' : 'unv'}"><span class="small"><strong>${c.doc}</strong>${c.ref ? ', passage ' + pnum(c.ref) : ''} ${c.ok ? html`<span class="ok-text">✓ quote found</span>` : html`<span class="warn-text">⚠ quote not found: treat with care</span>`}</span><blockquote class="mm-quote">“${c.quote}”</blockquote></li>`)}</ol></details>` : (m.sources || []).length ? html`<div class="muted small mt-s">Sources: ${m.sources.join(', ')}</div>` : ''}${m.ask ? html`<div class="small mt-s"><strong>Ask them:</strong> ${m.ask} <button class="linkish small" data-copyask="${m.ask}" type="button">Copy</button></div>` : ''}<div class="mt-s"><button class="linkish small" data-pin="${ci}" type="button">${m.pinned ? '📌 Saved to notes' : '📌 Save to notes'}</button></div></div>`)}</div>
+            <p class="hint">Answers come only from your documents, using ${engine()}.</p>
+            <div class="chat">${(a.docChat || []).map((m, ci) => html`<div class="chat-q"><span>${m.q}</span><button class="q-del" data-cdel="${ci}" type="button" title="Delete this question and answer" aria-label="Delete question and answer">🗑</button></div><div class="chat-a"><div class="ans">${plain(m.a)}</div>${m.conf === 'none' ? html`<p class="small muted">Your documents don't cover this.</p>` : ''}${m.ask ? html`<div class="small mt-s"><strong>Ask them:</strong> ${m.ask} <button class="linkish small" data-copyask="${m.ask}" type="button">Copy</button></div>` : ''}<div class="mt-s"><button class="linkish small" data-pin="${ci}" type="button">${m.pinned ? '📌 Saved to notes' : '📌 Save to notes'}</button></div></div>`)}</div>
             ${readable().length ? html`<div class="dc-suggest">${SUGGEST.map(x => html`<button type="button" class="dq-f" data-suggest="${x}">${x}</button>`)}</div>` : ''}
             <form id="dc-form" class="row gap"><input id="dc-q" type="text" placeholder="e.g. Which S/4HANA modules are in scope?" ${readable().length ? '' : raw('disabled')} autocomplete="off" title="${readable().length ? '' : 'Add a readable file or notes first'}"><button class="btn primary" type="submit" ${readable().length ? '' : raw('disabled')}>Ask</button></form>
           </section>
@@ -414,11 +415,75 @@
       }
       await save(); draw();
       if (hasContent(d)) digest(d);
+      scheduleUpdate();
+    }
+
+    // ---------------------------------------------------------------
+    // Auto-update: when new documents become readable, merge their content
+    // into every section that already exists (mind map, questions, Studio).
+    // ---------------------------------------------------------------
+    const idsOf = o => o.ids || a.docs.filter(d => hasContent(d) && (!d.added || !o.at || d.added <= o.at)).map(d => d.id);
+    let updTimer = null, updating = false, again = false;
+    function scheduleUpdate() { clearTimeout(updTimer); updTimer = setTimeout(autoUpdate, 600); }
+    function mergeTree(tree, add) {
+      const k = x => String(x || '').trim().toLowerCase();
+      (add.branches || []).forEach(b => {
+        const m = (tree.branches = tree.branches || []).find(x => k(x.label) === k(b.label));
+        if (!m) { tree.branches.push(b); return; }
+        (b.children || []).forEach(c => { if (!(m.children = m.children || []).some(x => k(x.label) === k(c.label))) m.children.push(c); });
+      });
+    }
+    async function autoUpdate() {
+      if (a.docs.some(d => d.status === 'reading')) return; // wait until every new file is read
+      if (updating) { again = true; return; }
+      const docsR = readable();
+      const targets = [];
+      if (a.docMap && a.docMap.grounded) targets.push(['Mind map', a.docMap, async nd => { const { passages } = passagesOf(nd); const v = verifyTree((await A.docMindmap({ passages })) || {}, passages, nd); const before = JSON.stringify(a.docMap.tree).length; mergeTree(a.docMap.tree, v.tree); a.docMap.kept = (a.docMap.kept || 0) + v.kept; return JSON.stringify(a.docMap.tree).length > before ? v.kept : 0; }]);
+      if (a.docQuestions && a.docQuestions.grounded) targets.push(['Interview questions', a.docQuestions, async nd => {
+        const { passages } = passagesOf(nd);
+        const r = await A.docQuestions({ app: a, profile, stories, passages });
+        const v = verifyQuestions(r && r.questions, passages, nd);
+        const have = new Set(a.docQuestions.items.map(q => q.q.trim().toLowerCase()));
+        const fresh = v.items.filter(q => !have.has(q.q.trim().toLowerCase()));
+        a.docQuestions.items = a.docQuestions.items.concat(fresh);
+        a.docQuestions.themes = [...new Set((a.docQuestions.themes || []).concat((r && r.themes) || []))].slice(0, 8);
+        return fresh.length;
+      }]);
+      const ST = window.CVT.studio;
+      if (ST) Object.keys(a.studio || {}).forEach(kind => { const label = (ST.KINDS.find(x => x[0] === kind) || [])[1] || kind; targets.push([label, a.studio[kind], nd => ST.extend(a, kind, nd, { passagesOf, found })]); });
+      const work = targets.map(([label, o, run]) => [label, o, run, docsR.filter(d => !idsOf(o).includes(d.id))]).filter(x => x[3].length);
+      if (!work.length) return;
+      updating = true;
+      const names = [...new Set(work.flatMap(x => x[3].map(d => d.name)))];
+      banner(`Adding ${names.join(', ')} to ${work.map(x => x[0]).join(', ')}…`);
+      const done = [];
+      for (const [label, o, run, nd] of work) {
+        banner(`Adding ${names.join(', ')} to ${label}…`);
+        try { const n = await run(nd); o.ids = [...new Set(idsOf(o).concat(nd.map(d => d.id)))]; o.sig = mapSig(); o.from = `${o.ids.length} document${o.ids.length === 1 ? '' : 's'}`; o.at = new Date().toISOString(); if (n) done.push(`${label} (+${n})`); await save(); }
+        catch (e) { console.warn('auto-update', label, e && e.message); }
+      }
+      updating = false; banner('');
+      draw();
+      if (done.length) toast(`Updated with ${names.join(', ')}: ${done.join(', ')}`);
+      if (again) { again = false; scheduleUpdate(); }
+    }
+    function banner(text) { body.dataset.upd = text; const b = $('#docs-upd', body); if (!b) return; b.hidden = !text; b.querySelector('span:last-child').textContent = text; }
+    /** Remove content that came from a deleted document. */
+    function pruneDoc(d) {
+      const gone = x => x.source === d.name;
+      if (a.docQuestions) { a.docQuestions.items = a.docQuestions.items.filter(q => !gone(q)); if (!a.docQuestions.items.length) a.docQuestions = null; }
+      if (a.docMap) {
+        const walk = n => { const kids = (n.children || []).map(walk).filter(Boolean); if (gone(n) && !kids.length) return null; return Object.assign(n, { children: kids }); };
+        a.docMap.tree.branches = (a.docMap.tree.branches || []).map(walk).filter(Boolean);
+        if (!a.docMap.tree.branches.length) a.docMap = null;
+      }
+      if (window.CVT.studio) window.CVT.studio.prune(a, d.name);
+      [a.docMap, a.docQuestions, ...Object.values(a.studio || {})].forEach(o => { if (!o) return; o.ids = idsOf(o).filter(i => i !== d.id); o.from = `${o.ids.length} document${o.ids.length === 1 ? '' : 's'}`; });
     }
 
     body.addEventListener('change', async e => {
       if (e.target.id === 'dz-in') { await addFiles([...e.target.files]); e.target.value = ''; return; }
-      const u = e.target.dataset.use; if (u) { const d = a.docs.find(x => x.id === u); d.use = e.target.checked; await save(); draw(); }
+      const u = e.target.dataset.use; if (u) { const d = a.docs.find(x => x.id === u); d.use = e.target.checked; await save(); draw(); if (d.use) scheduleUpdate(); }
     });
     body.addEventListener('toggle', e => { const k = e.target.dataset && e.target.dataset.k; if (!k) return; if (e.target.open) openQ.add(k); else openQ.delete(k); }, true);
     body.addEventListener('input', e => { if (e.target.dataset.dqn != null) { a.docQuestions.items[+e.target.dataset.dqn].notes = e.target.value; ctx.saveSoon ? ctx.saveSoon() : save(); return; } const id = e.target.dataset.note; if (!id) return; const d = a.docs.find(x => x.id === id); d.note = e.target.value; ctx.saveSoon ? ctx.saveSoon() : save(); });
@@ -431,6 +496,7 @@
       const h = $('#dq-hint', body); if (h) h.textContent = dqHint();
       const cb = row && $('[data-digest]', row); if (cb) cb.disabled = !hasContent(d);
       if (q) q.disabled = !n; if (qb) qb.disabled = !n; if (go) go.disabled = !n;
+      if (hasContent(d)) scheduleUpdate();
     });
     const dz = () => $('#dz', body);
     body.addEventListener('dragover', e => { if (e.target.closest('#dz')) { e.preventDefault(); dz().classList.add('over'); } });
@@ -452,7 +518,7 @@
         if (!confirmInline(del)) return;
         await S.delFile(d.id).catch(() => {});
         if (d.assetId) { const as = await assets(); try { if (as && as.delete) await as.delete(d.assetId); } catch (_) { /* the local copy is gone either way */ } }
-        a.docs = a.docs.filter(x => x !== d); await save(); draw(); toast('Removed'); return;
+        pruneDoc(d); a.docs = a.docs.filter(x => x !== d); await save(); draw(); toast('Removed, along with anything built from it'); return;
       }
       const qd = t.closest('[data-qdel]');
       if (qd) { e.preventDefault(); openQ.clear(); a.docQuestions.items.splice(+qd.dataset.qdel, 1); if (!a.docQuestions.items.length) a.docQuestions = null; await save(); draw(); toast('Question deleted'); return; }
@@ -484,7 +550,7 @@
           if (!v.items.length) throw new Error('None of the questions could be matched to your documents. Press Prepare again, or add clearer documents.');
           const prev = new Map(((a.docQuestions && a.docQuestions.items) || []).map(q => [q.q.trim().toLowerCase(), q]));
           v.items.forEach(q => { const o = prev.get(q.q.trim().toLowerCase()); if (o) Object.assign(q, { notes: o.notes, practised: o.practised, inPrep: o.inPrep }); });
-          a.docQuestions = { at: new Date().toISOString(), grounded: true, sig: mapSig(), from: `${docs.length} document${docs.length === 1 ? '' : 's'}`, coverage, removed: v.removed, items: v.items, themes: (r && r.themes) || [] };
+          a.docQuestions = { at: new Date().toISOString(), grounded: true, ids: docs.map(x => x.id), sig: mapSig(), from: `${docs.length} document${docs.length === 1 ? '' : 's'}`, coverage, removed: v.removed, items: v.items, themes: (r && r.themes) || [] };
           await save(); draw(); toast(`${v.items.length} questions ready`);
         } catch (err) { toast(err.message, 'bad'); t.disabled = false; t.textContent = a.docQuestions ? 'Prepare again' : 'Prepare questions'; }
         return;
@@ -498,7 +564,7 @@
           const r = await A.docMindmap({ passages });
           const v = verifyTree(r || {}, passages, docs);
           if (!v.tree.branches.length) throw new Error('Nothing in the mind map could be matched to your documents. Try Rebuild, or add clearer documents.');
-          a.docMap = { at: new Date().toISOString(), sig: mapSig(), from: `${docs.length} document${docs.length === 1 ? '' : 's'}`, grounded: true, passages: passages.length, coverage, kept: v.kept, removed: v.removed, tree: v.tree, collapsed: [] };
+          a.docMap = { at: new Date().toISOString(), sig: mapSig(), ids: docs.map(x => x.id), from: `${docs.length} document${docs.length === 1 ? '' : 's'}`, grounded: true, passages: passages.length, coverage, kept: v.kept, removed: v.removed, tree: v.tree, collapsed: [] };
           await save(); draw(); toast('Mind map ready');
         } catch (err) { toast(err.message, 'bad'); t.disabled = false; t.textContent = a.docMap ? 'Rebuild' : 'Build mind map'; }
         return;
@@ -545,6 +611,12 @@
         }).filter(c => { const k = c.ref + c.quote; if (seen.has(k)) return false; seen.add(k); return true; });
         // Make sure every [ref] in the answer has a numbered source.
         (String(r.answer || '').match(/D\d+-P\d+/g) || []).forEach(ref => { if (!cites.some(c => c.ref === ref) && byId.get(ref)) cites.push({ ref, doc: byId.get(ref).doc, quote: byId.get(ref).text.slice(0, 160) + (byId.get(ref).text.length > 160 ? '…' : ''), ok: true }); });
+        // Quietly drop any sentence whose support couldn't be found in the documents.
+        const seenRef = {};
+        const pickOk = ref => { const idx = cites.map((c, i) => c.ref === ref ? i : -1).filter(i => i >= 0); if (!idx.length) return true; const n = seenRef[ref] = (seenRef[ref] || 0) + 1; return cites[idx[Math.min(n, idx.length) - 1]].ok; };
+        let answer = String(r.answer || '').split(/\n/).map(line => line.split(/(?<=[.!?])\s+/).filter(sen => { const refs = sen.match(/D\d+-P\d+/g) || []; return !refs.length || refs.map(pickOk).some(Boolean); }).join(' ')).filter(l => l.trim()).join('\n');
+        if (!answer.trim()) { answer = "Your documents don't cover this."; r.found = false; }
+        r.answer = answer;
         const conf = r.found === false || !cites.length ? 'none' : cites.every(c => c.ok) ? 'high' : 'partial';
         a.docChat = (a.docChat || []).concat({ q, a: r.answer || '', cites, conf, searched: hits.length, total: all.length, ask: r.ask_them || '', at: new Date().toISOString() }).slice(-30);
         await save(); draw(); const c = $('.chat', body); if (c) c.scrollTop = c.scrollHeight; $('#dc-q', body).focus();

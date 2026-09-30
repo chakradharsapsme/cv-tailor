@@ -80,7 +80,7 @@
     let mode = opts.mode || 'map', selected = null;
     const detail = id => {
       const n = nodes[id]; if (!n) return '';
-      return `<div class="mm-detail" style="border-left-color:${n._color}"><strong>${esc(n.label)}</strong>${n.detail ? `<p class="small">${esc(n.detail)}</p>` : ''}${n.quote ? `<blockquote class="mm-quote">“${esc(n.quote)}”</blockquote><p class="small ok-text">✓ Found in ${esc(n.source)}${n.ref ? ', passage ' + esc(n.ref.split('-')[1] || n.ref) : ''}</p>` : `<p class="muted small">${n.grouping ? 'Heading only' : 'Source: ' + esc(n.source || 'your documents')}</p>`}${(n.children || []).length ? `<button type="button" class="btn ghost small" data-mm-toggle="${n._id}">${collapsed.has(n._id) ? 'Expand' : 'Collapse'} this branch</button>` : ''}</div>`;
+      return `<div class="mm-detail" style="border-left-color:${n._color}"><strong>${esc(n.label)}</strong>${n.detail ? `<p class="small">${esc(n.detail)}</p>` : ''}${(n.children || []).length ? `<button type="button" class="btn ghost small" data-mm-toggle="${n._id}">${collapsed.has(n._id) ? 'Expand' : 'Collapse'} this branch</button>` : ''}</div>`;
     };
     const render = () => {
       el.innerHTML = `<div class="mm-bar"><div class="seg-mini" role="tablist"><button type="button" data-mm-mode="map" aria-selected="${mode === 'map'}">Map</button><button type="button" data-mm-mode="outline" aria-selected="${mode === 'outline'}">Outline</button></div>

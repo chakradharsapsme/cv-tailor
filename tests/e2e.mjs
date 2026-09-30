@@ -72,6 +72,16 @@ function makeReply(sys, user) {
     calls.outreach = user;
     const m = (s, b) => ({ subject: s, body: b });
     reply = { linkedin_note: 'Hi Sarah, I led Guided Buying for a UK utility on Ariba + S/4HANA and have applied for your S2P Architect role. Would value connecting.', hiring_manager: m('S2P Architect', 'Hello...'), recruiter: m('SAP Ariba Architect – Alex Morgan', 'Hi...'), follow_up: m('Following up', 'Hi...'), thank_you: m('Thank you', 'Thanks for [topic]...') };
+  } else if (/Build a mind map with the job\/programme at the centre/.test(user)) {
+    calls.map = user;
+    const leaf = (l, d) => ({ label: l, detail: d, source: 'role-pack.pdf' });
+    reply = { center: 'Northgate S2P programme', branches: [
+      { label: 'Client & programme', detail: 'Legacy procurement replaced by Ariba + S/4HANA', source: 'role-pack.pdf', children: [leaf('SAP Ariba + S/4HANA 2023', 'Target platform'), leaf('Phased UK then Ireland', 'Go-live plan')] },
+      { label: 'Scope & processes', detail: 'What is in scope', source: 'role-pack.pdf', children: [leaf('Guided Buying', 'Catalogue-first buying'), leaf('Contracts', 'Contract workspaces'), { label: 'SLP onboarding', detail: 'Supplier lifecycle', source: 'role-pack.pdf', children: [leaf('Registration', 'Questionnaires'), leaf('Qualification', 'Risk checks')] }] },
+      { label: 'Systems & integration', detail: 'How it connects', source: 'role-pack.pdf', children: [leaf('Integration Suite', 'CIG successor'), leaf('Central Procurement', 'S/4HANA hub')] },
+      { label: 'Pain points', detail: 'Why they are changing', source: 'role-pack.pdf', children: [leaf('Maverick spend 22%', 'Off-contract buying'), leaf('Invoice exceptions', 'AP workload')] },
+      { label: 'People', detail: 'Who you will work with', source: 'recruiter-notes.txt', children: [leaf('Head of Procurement Transformation', 'Hiring manager'), leaf('Offshore build team', 'Pune')] }
+    ] };
   } else if (/Prove you read it/.test(user)) {
     calls.digest = (calls.digest || 0) + 1;
     const name = (user.match(/=== DOCUMENT: ([^(]+) \(/) || [])[1] || 'file';
@@ -273,6 +283,15 @@ log('grouped headings:', JSON.stringify(await page.$$eval('.docs-grid .panel:nth
 log('doc questions:', await page.locator('.docs-grid .panel:nth-child(2) .qs details').count(), '| prompt had pdf text:', /maverick spend 22 percent/.test(calls.docQ || ''), '| had notes:', /UK go-live Q3 2027/.test(calls.docQ || ''), '| txt:', /650 outside IR35/.test(calls.docQ || ''));
 await page.fill('#dc-q', 'What connects Ariba to S/4HANA?'); await page.click('#dc-form button'); await page.waitForSelector('.chat-a', { timeout: 20000 });
 log('doc answer:', (await page.textContent('.chat-a')).replace(/\s+/g, ' ').slice(0, 160));
+await page.click('#mm-go'); await page.waitForSelector('.mm-svg', { timeout: 20000 });
+log('mind map nodes:', await page.locator('.mm-node').count(), '| branches:', await page.locator('.mm-node.d1').count(), '| prompt had docs:', /maverick spend 22 percent/.test(calls.map || ''));
+await page.click('.mm-node.d1 >> nth=1'); await page.waitForSelector('.mm-detail');
+log('node detail:', (await page.textContent('.mm-detail')).replace(/\s+/g, ' ').slice(0, 100));
+await page.click('[data-mm-toggle]'); await page.waitForTimeout(200);
+log('after collapse nodes:', await page.locator('.mm-node').count());
+await shot('07c-mindmap');
+await page.click('[data-mm-mode="outline"]'); log('outline items:', await page.locator('.mm-outline li').count()); await page.click('[data-mm-mode="map"]');
+dl = page.waitForEvent('download'); await page.click('#mm-dl'); d = await dl; await d.saveAs(`${out}/mindmap.svg`); log('mind map file:', d.suggestedFilename(), fs.readFileSync(`${out}/mindmap.svg`, 'utf8').includes('<svg'));
 await shot('07b-documents');
 const stored = await page.evaluate(async () => { const a = (await window.CVT.store.listApps()).find(x => (x.docs || []).length); return { n: a.docs.length, blob: !!(await window.CVT.store.getFile(a.docs[0].id)), synced: a.docs.filter(d => d.assetId).length }; });
 log('docs stored:', JSON.stringify(stored));

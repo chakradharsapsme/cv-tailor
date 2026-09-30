@@ -11,7 +11,7 @@
  */
 (function () {
   const S = window.CVT.store;
-  const KV_SYNCED = ['stories', 'offers', 'drills', 'mocks', 'autopilot', 'autopilotLast'];
+  const KV_SYNCED = ['stories', 'offers', 'drills', 'mocks', 'autopilot', 'autopilotLast', 'dashLayout'];
   const META_KEY = 'cvt.syncMeta';
   const now = () => new Date().toISOString();
   const meta = { get: k => (S.local.get(META_KEY, {}) || {})[k] || '', set: (k, v) => { const m = S.local.get(META_KEY, {}) || {}; m[k] = v; S.local.set(META_KEY, m); } };

@@ -127,12 +127,12 @@
     root.innerHTML = html`
       <header class="page-head">
         <div><p class="eyebrow">${longDate()}</p><h1>${hello}</h1></div>
-        <div class="row gap wrap"><a class="btn primary" href="#/autopilot">Run autopilot</a><a class="btn ghost" href="#/new">New application</a></div>
+        <div class="row gap wrap"><button class="btn ghost" id="dash-custom" type="button" title="Move, hide or reset the sections on this page">⚙ Customise</button><a class="btn primary" href="#/autopilot">Run autopilot</a><a class="btn ghost" href="#/new">New application</a></div>
       </header>
 
       <div class="dash3">
         <aside class="d-left">
-          <section class="panel pcard">
+          <section class="panel pcard" data-sec="profile">
             <div class="pcard-cover" aria-hidden="true"></div>
             <a class="pcard-avatar" href="#/profile" aria-label="Career profile">${initials}</a>
             <div class="pcard-body">
@@ -143,7 +143,7 @@
             <div class="pcard-strength"><div class="row gap"><span class="small">Profile strength</span><span class="grow-s"></span><strong class="small">${setup.filter(x => x.done).length}/${setup.length}</strong></div><div class="meter" aria-hidden="true"><span style="width:${Math.round(100 * setup.filter(x => x.done).length / setup.length)}%"></span></div></div>
             <nav class="pcard-links"><a href="#/pipeline"><span>My applications</span><strong>${apps.length}</strong></a><a href="#/jobs"><span>Jobs for you</span><strong>›</strong></a><a href="#/prep"><span>Interview prep</span><strong>›</strong></a><a href="#/profile"><span>Career profile</span><strong>›</strong></a></nav>
           </section>
-          <section class="kpis kpis-v" aria-label="Your numbers">
+          <section class="kpis kpis-v" data-sec="numbers" aria-label="Your numbers">
         <div class="kpi">
           <span class="kpi-label">Applied this week</span>
           <span class="kpi-num">${week.length}<small>/ ${goal}</small></span>
@@ -167,7 +167,7 @@
       </section>
         </aside>
         <div class="d-mid">
-      ${setup.every(x => x.done) ? '' : html`<section class="panel onboard" aria-label="Get started">
+      ${setup.every(x => x.done) ? '' : html`<section class="panel onboard" data-sec="setup" aria-label="Get started">
         <div class="panel-head"><h2>Get set up in four steps</h2><span class="row gap"><a class="link small" href="#/help">▶ Watch the 3-minute guide</a><span class="muted small">${setup.filter(x => x.done).length} of ${setup.length} done</span></span></div>
         <ol class="onboard-steps">${setup.map((x, i) => html`<li class="${x.done ? 'done' : ''}">
           <span class="step-num" aria-hidden="true">${x.done ? '✓' : i + 1}</span>
@@ -175,11 +175,11 @@
           ${x.done ? html`<span class="chip ok">Done</span>` : html`<a class="btn small" href="${x.href}">${x.cta}</a>`}
         </li>`)}</ol>
       </section>`}
-          <section class="panel wide" id="dash-jobs" aria-busy="true">
+          <section class="panel wide" id="dash-jobs" data-sec="jobs" aria-busy="true">
           <div class="panel-head"><h2>New jobs for you</h2><a class="link" href="#/jobs">All jobs</a></div>
           <p class="muted small">Loading…</p>
         </section>
-          <section class="panel">
+          <section class="panel" data-sec="actions">
           <div class="panel-head"><h2>Next actions</h2><a class="link" href="#/pipeline">Pipeline</a></div>
           ${due.length ? html`<ul class="actions">${due.slice(0, 8).map(a => html`
             <li class="${a.next.due < t ? 'overdue' : ''}">
@@ -194,7 +194,7 @@
             </li>`)}</ul>`
             : html`<p class="empty-note">Nothing due. When you mark a job as applied, a follow-up is scheduled for 7 days later.</p>`}
         </section>
-          <section class="panel wide">
+          <section class="panel wide" data-sec="recent">
           <div class="panel-head"><h2>Recent applications</h2><a class="link" href="#/pipeline">See all</a></div>
           ${apps.length ? html`<div class="table-wrap"><table class="list">
             <thead><tr><th>Role</th><th>Status</th><th>Fit</th><th>Decision</th><th>Updated</th></tr></thead>
@@ -208,18 +208,19 @@
         </section>
         </div>
         <aside class="d-right">
-          <section class="panel">
+          <section class="panel" data-sec="coach">
           <div class="panel-head"><h2>Coach notes</h2></div>
           ${notes.length ? html`<ul class="notes">${notes.slice(0, 5).map(n => html`
             <li class="note ${n.cls}"><span>${n.text}</span>${n.href ? html`<a class="link" href="${n.href}">${n.cta}</a>` : ''}</li>`)}</ul>`
             : html`<p class="empty-note">You're on track. Keep going.</p>`}
         </section>
-          <section class="panel wide" id="dash-prep"></section>
+          <section class="panel wide" id="dash-prep" data-sec="prep"></section>
         </aside>
       </div>`;
 
     drawJobs(root, profile);
     drawPrep(root);
+    await window.CVT.layout.dashboard(root);
 
     root.addEventListener('click', async e => {
       const b = e.target.closest('[data-act]'); if (!b) return;

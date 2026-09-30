@@ -93,6 +93,17 @@ function makeReply(sys, user) {
   } else if (/expects \(or was asked\) this interview question|wants to ASK the interviewer/.test(user)) {
     calls.myAns = user;
     reply = { outline: ['Explain the supplier value first', 'Offer light enablement', 'Escalate via procurement policy'], answer: 'At the utility I phased onboarding by spend tier and ran supplier webinars.', listen_for: ['Blaming the supplier'], follow_ups: ['What if a key supplier still refuses?'], sources: [] };
+  } else if (/research assistant like NotebookLM/.test(sys)) {
+    calls.studio = (calls.studio || 0) + 1; calls.studioUser = user;
+    const R = (o, q) => Object.assign(o, { ref: 'D1-P1', quote: q });
+    const Q1 = 'replace legacy procurement with SAP Ariba and S/4HANA 2023', Q2 = 'phased, UK first in Q3 2027, then Ireland', Q3 = 'maverick spend 22 percent, invoice exceptions, slow supplier onboarding', FAKE = 'the client will migrate everything to Oracle Cloud next spring';
+    if (/BRIEFING DOC/.test(user)) reply = { title: 'Northgate procurement programme', summary: 'Ariba and S/4HANA replace legacy procurement.', sections: [{ heading: 'Programme', points: [R({ text: 'Replacing legacy procurement with Ariba + S/4HANA 2023' }, Q1), R({ text: 'Phased go-live, UK first' }, Q2)] }, { heading: 'Pain points', points: [R({ text: 'Maverick spend at 22%' }, Q3), R({ text: 'Oracle migration' }, FAKE)] }] };
+    else if (/STUDY GUIDE/.test(user)) reply = { concepts: [R({ term: 'Maverick spend', explain: '22% of spend is off-contract.' }, Q3)], questions: [R({ q: 'When does the UK go live?', answer: 'Q3 2027, then Ireland.' }, Q2)] };
+    else if (/an FAQ/.test(user)) reply = { items: [R({ q: 'What is being replaced?', a: 'Legacy procurement.' }, Q1), R({ q: 'Fake?', a: 'x' }, FAKE)] };
+    else if (/TIMELINE/.test(user)) reply = { events: [R({ when: 'Q3 2027', what: 'UK go-live' }, Q2)], cast: [R({ name: 'Northgate Energy', role: 'The client' }, Q1)] };
+    else if (/FLASHCARDS/.test(user)) reply = { cards: [R({ front: 'Maverick spend?', back: '22 percent' }, Q3), R({ front: 'UK go-live?', back: 'Q3 2027' }, Q2), R({ front: 'Fake', back: 'x' }, FAKE)] };
+    else if (/multiple-choice QUIZ/.test(user)) reply = { questions: [R({ q: 'Which country goes live first?', options: ['Ireland', 'UK', 'France', 'Spain'], answer: 1, explain: 'UK first.' }, Q2), R({ q: 'Maverick spend?', options: ['5%', '10%', '22%', '40%'], answer: 2, explain: '22 percent.' }, Q3)] };
+    else if (/AUDIO OVERVIEW/.test(user)) reply = { title: 'Inside Northgate', lines: [R({ host: 'A', text: 'Northgate is replacing legacy procurement with Ariba.' }, Q1), { host: 'B', text: 'Why does that matter?', ref: '', quote: '' }, R({ host: 'A', text: 'Maverick spend is 22 percent.' }, Q3)] };
   } else if (/retrieval-augmented answering/.test(sys)) {
     calls.docAsk = user;
     reply = { answer: 'They are replacing legacy procurement with SAP Ariba and S/4HANA 2023 [D1-P1]. The team is 40 people in Leeds [D1-P1].', found: true, claims: [{ ref: 'D1-P1', quote: 'replace legacy procurement with SAP Ariba and S/4HANA 2023' }, { ref: 'D1-P1', quote: 'a team of 40 people based in Leeds' }], ask_them: 'Is the Integration Suite tenant already provisioned?' };
@@ -330,6 +341,28 @@ await page.click('.docs-grid > section:nth-child(2) .dq summary >> nth=0'); log(
 await page.fill('#dc-q', 'What connects Ariba to S/4HANA?'); await page.click('#dc-form button'); await page.waitForSelector('.chat-a', { timeout: 20000 });
 log('doc answer:', (await page.textContent('.chat-a .ans')).replace(/\s+/g, ' ').slice(0, 160), '| confidence:', (await page.textContent('.chat-a .conf')).trim(), '| cites:', await page.locator('.chat-a sup.cite').count(), '| verified:', await page.locator('.cites li.ok').count(), '| flagged:', await page.locator('.cites li.unv').count(), '| retrieval sent:', (calls.docAsk.match(/\[D\d+-P\d+\]/g) || []).length, 'passages | advert in prompt:', /ADVERT/.test(calls.docAsk), '| suggestions:', await page.locator('[data-suggest]').count());
 await page.click('.cites summary'); await shot('07g-ask');
+{ // Studio
+  await page.click('[data-jump="sec-studio"]'); await page.waitForSelector('#studio-root .st-tabs');
+  const res = {};
+  for (const k of ['briefing', 'study', 'faq', 'timeline', 'flashcards', 'quiz', 'audio']) {
+    await page.click(`[data-sttab="${k}"]`); await page.click('#studio-root [data-st="gen"]'); await page.waitForSelector('#studio-root .st-body', { timeout: 20000 });
+    res[k] = (await page.textContent('#studio-root .st-meta')).replace(/\s+/g, ' ').replace(/Built [^·]+· /, '').trim();
+  }
+  log('studio:', JSON.stringify(res), '| advert in prompt:', /ADVERT/.test(calls.studioUser || ''), '| fake shown:', /Oracle/.test(await page.textContent('#studio-root')));
+  await page.click('[data-sttab="briefing"]'); await page.click('[data-st="quotes"]'); log('briefing points:', await page.locator('.st-points li').count(), '| quotes shown:', await page.locator('.st-body .mm-quote').count());
+  await shot('07i-studio-briefing');
+  await page.click('[data-sttab="flashcards"]'); const front = (await page.textContent('.fc-text')).trim(); await page.click('[data-st="flip"]'); const back = (await page.textContent('.fc-text')).trim(); await page.click('[data-st="known"]');
+  log('flashcards:', front, '->', back, '|', (await page.textContent('.fc-bar')).replace(/\s+/g, ' ').trim());
+  await page.click('[data-sttab="quiz"]'); await page.click('[data-qz="0:1"]'); await page.click('[data-qz="1:0"]');
+  log('quiz:', (await page.textContent('.fc-bar')).replace(/\s+/g, ' ').trim(), '| right/wrong marks:', await page.locator('.quiz li.right').count(), await page.locator('.quiz li.wrong').count());
+  await shot('07j-studio-quiz');
+  await page.click('[data-sttab="audio"]'); await page.click('[data-au="play"]'); await page.waitForTimeout(400); log('audio lines:', await page.locator('.au-line').count(), '| checked lines:', await page.locator('.au-line .src-chip').count(), '| play button:', (await page.textContent('[data-au="play"]')).trim()); await page.click('[data-au="stop"]');
+  await shot('07k-studio-audio');
+  await page.click('[data-pin="0"]'); await page.waitForTimeout(300);
+  await page.fill('#st-note', 'Ask about the Ireland phase timing.'); await page.click('.st-note-add button[type=submit]'); await page.waitForTimeout(300);
+  log('notes:', await page.locator('.st-note').count(), '| pinned:', await page.locator('.st-note.pinned').count(), '| jump:', (await page.textContent('[data-jump="sec-studio"]')).replace(/\s+/g, ' ').trim());
+  await shot('07l-studio-notes');
+}
 await page.click('#mm-go'); await page.waitForSelector('.mm-svg', { timeout: 20000 });
 log('mind map nodes:', await page.locator('.mm-node').count(), '| branches:', await page.locator('.mm-node.d1').count(), '| prompt had docs:', /maverick spend 22 percent/.test(calls.map || ''), '| advert excluded:', !/ADVERT|JOB\n/.test(calls.map || ''), '| passages:', (calls.map.match(/\[D\d+-P\d+\]/g) || []).length);
 log('grounding note:', (await page.textContent('.docs-map .hint')).replace(/\s+/g, ' ').slice(0, 220));
@@ -357,7 +390,7 @@ log('docs stored:', JSON.stringify(stored));
   await shot('07d-deletes');
   const before = await page.evaluate(async () => { const a = (await window.CVT.store.listApps()).find(x => (x.docs || []).length); return { id: a.id, files: a.docs.map(d => d.id) }; });
   await page.click('#docs-wipe'); const armedW = (await page.textContent('#docs-wipe')).trim(); await page.click('#docs-wipe'); await page.waitForTimeout(800);
-  const after = await page.evaluate(async id => { const a = await window.CVT.store.getApp(id); return { docs: a.docs.length, q: !!a.docQuestions, map: !!a.docMap, chat: (a.docChat || []).length, myQs: (a.myQs || []).length }; }, before.id);
+  const after = await page.evaluate(async id => { const a = await window.CVT.store.getApp(id); return { docs: a.docs.length, q: !!a.docQuestions, map: !!a.docMap, chat: (a.docChat || []).length, studio: Object.keys(a.studio || {}).length, notes: (a.docNotes || []).length, myQs: (a.myQs || []).length }; }, before.id);
   const blobs = await page.evaluate(async ids => (await Promise.all(ids.map(i => window.CVT.store.getFile(i)))).filter(Boolean).length, before.files);
   log('delete everything:', armedW, '->', JSON.stringify(after), '| local files left:', blobs, '| wipe button gone:', !(await page.locator('#docs-wipe').count()), '| section buttons still there after re-add: see earlier');
 }

@@ -17,7 +17,7 @@ const srv = http.createServer((q, s) => {
 const out = process.argv[2] || 'tests/out'; fs.mkdirSync(out, { recursive: true });
 const NM = process.env.NODE_MODULES || 'node_modules';
 const browser = await chromium.launch({ executablePath: process.env.CHROME || undefined });
-const ctx = await browser.newContext({ acceptDownloads: true, timezoneId: 'Europe/London', locale: 'en-GB', viewport: { width: 1360, height: 900 } });
+const ctx = await browser.newContext({ serviceWorkers: 'block', acceptDownloads: true, timezoneId: 'Europe/London', locale: 'en-GB', viewport: { width: 1360, height: 900 } });
 await ctx.grantPermissions(['clipboard-read', 'clipboard-write'], { origin: 'http://localhost:8765' });
 const page = await ctx.newPage();
 await page.route('https://cdnjs.cloudflare.com/**', r => { const u = r.request().url(); const f = /pdf\.worker\.min\.js$/.test(u) ? NM + '/pdfjs-dist/build/pdf.worker.min.js' : /pdf\.min\.js$/.test(u) ? NM + '/pdfjs-dist/build/pdf.min.js' : NM + '/jszip/dist/jszip.min.js'; return r.fulfill({ path: f, contentType: 'text/javascript' }); });
@@ -38,6 +38,9 @@ await page.route('https://api.lever.co/**', r => { (calls.web = calls.web || [])
 await page.route('https://api.ashbyhq.com/**', r => r.fulfill({ json: { jobs: [] } }));
 await page.route('https://api.smartrecruiters.com/**', r => { const cc = (r.request().url().match(/country=(\w+)/) || [])[1]; (calls.web = calls.web || []).push('smartrecruiters:' + cc); return r.fulfill({ json: { content: [{ id: 'sr1' + cc, name: 'SAP Ariba Functional Consultant', location: { city: cc === 'in' ? 'Hyderabad' : 'Manchester', remote: false }, releasedDate: today0, company: { name: 'Version 1' }, typeOfEmployment: { label: 'Full-time' }, function: { label: 'Information Technology' } }] } }); });
 await page.route('https://remotive.com/**', r => { (calls.web = calls.web || []).push('remotive:' + decodeURIComponent(r.request().url().split('search=')[1].split('&')[0])); return r.fulfill({ json: { jobs: [{ title: 'Content Reviewer', company_name: 'X', candidate_required_location: 'Worldwide', url: 'https://remotive.com/x', publication_date: today0, description: 'Review content' }] } }); });
+await page.route('https://www.themuse.com/**', r => { (calls.web = calls.web || []).push('muse:' + decodeURIComponent((r.request().url().match(/category=([^&]+)/) || [])[1] || '')); return r.fulfill({ json: { page_count: 1, results: [
+  { name: 'Procurement Systems Business Analyst', company: { name: 'Muse Co' }, locations: [{ name: 'London, United Kingdom' }], levels: [{ name: 'Senior Level' }], refs: { landing_page: 'https://www.themuse.com/jobs/museco/1' }, publication_date: today0, contents: '<p>SAP Ariba and S/4HANA procurement, P2P process mapping, UAT and stakeholder management.</p>' },
+  { name: 'Registered Nurse', company: { name: 'Muse Health' }, locations: [{ name: 'New York, NY' }], refs: { landing_page: 'https://www.themuse.com/jobs/musehealth/2' }, publication_date: today0, contents: 'Patient care' }] } }); });
 await page.route('https://jobicy.com/**', r => { (calls.web = calls.web || []).push('jobicy'); return r.fulfill({ json: { jobs: [{ jobTitle: 'Remote SAP S/4HANA Procurement Lead', companyName: 'Remote Co', jobGeo: 'UK', url: 'https://jobicy.com/1', pubDate: today0, jobExcerpt: 'Lead SAP S/4HANA procurement and Ariba rollout', annualSalaryMin: 90000, annualSalaryMax: 110000, salaryCurrency: 'GBP' }] } }); });
 // Daily collector output (fictional).
 const recentIso = n => new Date(Date.now() - n * 864e5).toISOString().slice(0, 10);
@@ -223,7 +226,11 @@ const shot = n => page.screenshot({ path: `${out}/${n}.png`, fullPage: true });
 // 1. Empty dashboard
 await page.goto('http://localhost:8765/');
 await page.waitForSelector('.kpis');
-{ // first-run tour
+{ // first-run welcome (skipped here; a separate run below completes it), then the tour
+  await page.waitForSelector('.welcome .wl-card', { timeout: 5000 });
+  log('welcome:', (await page.textContent('.welcome h2')).trim(), '| fields:', await page.locator('.wl-chip').count());
+  await shot('00-welcome');
+  await page.click('.welcome [data-w="skip"]');
   await page.waitForSelector('.tour-card', { timeout: 5000 });
   const steps = [];
   for (let k = 0; k < 10; k++) {

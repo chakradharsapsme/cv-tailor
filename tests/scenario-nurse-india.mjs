@@ -1,0 +1,54 @@
+import http from 'node:http'; import fs from 'node:fs'; import path from 'node:path';
+import { chromium } from 'playwright';
+const root = '/home/claude/cv-tailor', OUT = process.argv[2], NM = root + '/node_modules';
+const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.webmanifest': 'application/manifest+json', '.png': 'image/png' };
+const srv = http.createServer((q, s) => { const p = decodeURIComponent(q.url.split('?')[0]); const f = path.join(root, p === '/' ? 'index.html' : p); if (!fs.existsSync(f) || fs.statSync(f).isDirectory()) { s.writeHead(404); return s.end(); } s.writeHead(200, { 'content-type': types[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(s); }).listen(8767);
+const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+const ctx = await b.newContext({ serviceWorkers: 'block', viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, timezoneId: 'Asia/Kolkata', locale: 'en-IN' });
+const page = await ctx.newPage();
+const errs = []; page.on('pageerror', e => errs.push(e.message)); page.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
+const calls = [];
+await page.route('https://cdnjs.cloudflare.com/**', r => r.fulfill({ path: NM + '/jszip/dist/jszip.min.js', contentType: 'text/javascript' }));
+await page.route('https://cdn.jsdelivr.net/**', r => r.fulfill({ path: NM + '/docx-preview/dist/docx-preview.min.js', contentType: 'text/javascript' }));
+await page.route('https://fonts.**', r => r.fulfill({ body: '', contentType: 'text/css' }));
+const today = new Date().toISOString();
+await page.route('https://www.themuse.com/**', r => { calls.push(r.request().url()); return r.fulfill({ json: { page_count: 1, results: [
+  { name: 'Staff Nurse - ICU', company: { name: 'Apollo Hospitals' }, locations: [{ name: 'Bengaluru, India' }], refs: { landing_page: 'https://x/1' }, publication_date: today, contents: '<p>Registered nurse for ICU. Patient care, medication administration, infection control, BLS.</p>' },
+  { name: 'Registered Nurse', company: { name: 'US Clinic' }, locations: [{ name: 'Boston, MA' }], refs: { landing_page: 'https://x/2' }, publication_date: today, contents: 'Patient care' },
+  { name: 'Software Engineer', company: { name: 'Tech' }, locations: [{ name: 'Bengaluru, India' }], refs: { landing_page: 'https://x/3' }, publication_date: today, contents: 'Java' }] } }); });
+await page.route(/greenhouse|lever\.co|ashbyhq|smartrecruiters|remotive|jobicy/, r => { calls.push(r.request().url()); return r.fulfill({ json: { jobs: [], content: [] } }); });
+await page.goto('http://localhost:8767/');
+await page.waitForSelector('.welcome .wl-card');
+await page.screenshot({ path: OUT + '/w1.png' });
+await page.click('.wl-chip[data-field="healthcare"]');
+await page.click('[data-add="Registered Nurse"]');
+await page.click('[data-w="next"]');
+console.log('country default:', await page.inputValue('#wl-country'));
+await page.screenshot({ path: OUT + '/w2.png' });
+await page.fill('#wl-city', 'Bengaluru');
+await page.click('[data-w="next"]');
+await page.click('[data-w="demo"]'); await page.waitForTimeout(400);
+await page.screenshot({ path: OUT + '/w3.png' });
+await page.click('[data-w="next"]');
+await page.waitForSelector('#jb-refresh'); await page.waitForTimeout(3500);
+console.log('callout:', (await page.textContent('.callout:not([hidden])')).replace(/\s+/g, ' ').slice(0, 330));
+console.log('jobs:', JSON.stringify(await page.$$eval('.job .job-title', els => els.map(e => e.textContent.trim()))));
+console.log('boards:', (await page.$$eval('#b-links a', els => els.map(e => e.textContent.trim().split(' ')[0]))).join(','));
+console.log('calls:', calls.map(u => u.replace(/^https:\/\/([^/]+).*/, '$1') + (u.match(/category=([^&]+)/) || ['', ''])[1]).join(' | '));
+await page.screenshot({ path: OUT + '/w4-jobs.png' });
+const prof = await page.evaluate(async () => { const p = await window.CVT.store.getProfile(); return [p.field, p.targetRoles, p.targetLocations, localStorage.getItem('cvt.country')]; });
+console.log('profile:', JSON.stringify(prof));
+await page.goto('http://localhost:8767/#/prep/drills'); await page.waitForTimeout(1200);
+console.log('decks:', await page.$$eval('#dr-deck option', o => o.map(x => x.textContent)));
+await page.goto('http://localhost:8767/#/profile'); await page.waitForTimeout(800);
+console.log('field select:', await page.inputValue('select[data-p="field"]'), '| roles placeholder:', await page.getAttribute('textarea[data-p="targetRoles"]', 'placeholder'));
+const sap = await page.evaluate(() => document.body.innerText.match(/SAP|Ariba/g));
+console.log('SAP mentions on profile:', sap ? sap.length : 0);
+await page.goto('http://localhost:8767/#/dashboard'); await page.waitForTimeout(1200);
+console.log('SAP on dashboard:', (await page.evaluate(() => document.body.innerText.match(/SAP|Ariba/g) || [])).length);
+await page.screenshot({ path: OUT + '/w5-dash.png' });
+// backup round trip
+const bk = await page.evaluate(async () => { const d = await window.CVT.store.exportAll(); return { v: d.version, kv: d.kv.length, files: d.files.length, masters: d.masters.length, settings: Object.keys(d.settings) }; });
+console.log('backup:', JSON.stringify(bk));
+console.log('errors:', JSON.stringify(errs.slice(0, 5)));
+await b.close(); srv.close();

@@ -239,10 +239,19 @@
   const CORE_SEARCHES = ['SAP Ariba', 'SAP S2P P2P', 'S/4HANA Procurement', 'SAP Business Analyst', 'IT Business Analyst', 'ERP Business Analyst'];
   /** Every search list keeps at least one business-analyst search. */
   const withBA = qs => { const q = qs.slice(0, 6); if (!q.some(x => /analyst/i.test(x))) { if (q.length >= 6) q.pop(); q.push('IT Business Analyst'); } return q; };
+  // Skills that make useful searches on their own (not soft skills or methods).
+  const GENERIC_TERMS = new Set(['Workshops', 'Agile', 'Stakeholder management', 'Change management', 'Business case', 'Team leadership', 'APIs', 'Approval workflow', 'PMP', 'PRINCE2',
+    'Offshore delivery', 'Design authority', 'Pre-sales', 'Global template', 'Cutover', 'SIT', 'UAT', 'Hypercare', 'Gap analysis', 'User stories', 'Process mapping', 'Jira', 'Public sector', 'Security clearance',
+    'Sustainability', 'AI', 'EDI', 'cXML', 'IDoc', 'UK VAT', 'GR/IR', 'Workflow', 'Catalogues', 'Functional specifications', 'Fit-to-standard', 'SAP Activate', 'Data migration']);
+  /** Searches built from your target job titles first, then the strongest skills on your CV. */
   async function defaultSearches() {
     const p = await S.getProfile();
-    const roles = (p.targetRoles || []).filter(Boolean).slice(0, 3);
-    return withBA([...new Set(roles.concat(CORE_SEARCHES))].slice(0, 6));
+    const roles = (p.targetRoles || []).filter(Boolean).slice(0, 4);
+    let skills = [];
+    try { const ev = await evidence(); skills = TERMS.map(t => t.name).filter(n => ev.terms.has(n) && !GENERIC_TERMS.has(n)).slice(0, 4); } catch (_) {}
+    if (!roles.length && p.currentTitle) roles.push(p.currentTitle);
+    const qs = [...new Set(roles.concat(skills))];
+    return withBA((qs.length ? qs : CORE_SEARCHES).slice(0, 6));
   }
   async function searchesOf(feed) {
     if (feed.searches && feed.searches.queries && feed.searches.queries.length) return Object.assign({}, feed.searches, { queries: withBA(feed.searches.queries) });
@@ -311,7 +320,8 @@
       const plan = [];
       cfg.queries.slice(0, 6).forEach(q => locs.forEach(l => plan.push({ q, l })));
       const errors = []; let added = 0, found = 0;
-      for (let i = 0; i < plan.length; i++) {
+      const useIndeed = await available();
+      for (let i = 0; useIndeed && i < plan.length; i++) {
         const { q, l } = plan[i];
         onStep && onStep(i, plan.length, q, l);
         try {
@@ -329,6 +339,29 @@
           if (['server_not_connected', 'needs_reauth', 'not_in_manifest', 'no_mcp', 'blocked_by_policy', 'not_granted', 'capability_disabled', 'approval_required'].includes(e.code)) break;
         }
       }
+      // Career portals and remote boards, straight from the browser (no keys).
+      try {
+        const ev = await evidence();
+        const qt = cfg.queries.map(tokens).filter(x => x.length);
+        const frac = (q, set) => q.filter(w => set.has(w)).length / q.length;
+        const relevant = j => {
+          if (!isItRole(j)) return false;
+          const tt = new Set(tokens(j.title)), bt = new Set(tokens(j.title + ' ' + (j.jd || '').slice(0, 1500)));
+          const titleRel = Math.max(0, ...qt.map(q => frac(q, tt))), bodyRel = Math.max(0, ...qt.map(q => frac(q, bt)));
+          const skills = termsIn(j.title + ' ' + (j.jd || '')).filter(t => ev.terms.has(t)).length;
+          return titleRel >= 0.5 || (bodyRel >= 0.67 && skills >= 2) || skills >= 4;
+        };
+        const W = window.CVT.websources;
+        const r = await W.search({ queries: cfg.queries, portals: cfg.portals, relevant, onStep: t => onStep && onStep(-1, 0, t) });
+        found += r.jobs.length;
+        for (const j of r.jobs) {
+          const k = keyOf(j), old = feed.items[k];
+          if (old) { old.sources = [...new Set([...(old.sources || [old.source]), j.source])]; if (!old.jd && j.jd) old.jd = j.jd; if (!old.pay && j.pay) old.pay = j.pay; old.lastSeen = new Date().toISOString(); }
+          else { feed.items[k] = Object.assign(j, { key: k, query: '', firstSeen: new Date().toISOString(), lastSeen: new Date().toISOString(), status: 'new' }); added++; }
+        }
+        feed.webRun = { at: new Date().toISOString(), bySource: r.bySource };
+        if (r.errors.length) feed.webErrors = r.errors.slice(0, 5); else delete feed.webErrors;
+      } catch (e) { errors.push({ code: 'web', text: 'Job sites: ' + (e.message || e) }); }
       // Keep the feed small: drop hidden/old items first.
       const all = Object.values(feed.items).sort((a, b) => (b.lastSeen || '').localeCompare(a.lastSeen || ''));
       if (all.length > MAX_ITEMS) all.slice(MAX_ITEMS).forEach(j => { if (j.status !== 'imported') delete feed.items[j.key]; });
@@ -518,17 +551,17 @@
 
     root.innerHTML = String(html`
       <header class="page-head">
-        <div><p class="eyebrow">${[avail ? 'Indeed live · ' + relTime(feed.lastRun) : '', col && col.ok ? 'Job robot · ' + relTime(col.robots[0].updated) : ''].filter(Boolean).join('  ·  ') || 'Job search'}</p><h1>Jobs for you</h1></div>
+        <div><p class="eyebrow">${[feed.lastRun ? 'Searched ' + relTime(feed.lastRun) : '', col && col.ok ? 'Job robot · ' + relTime(col.robots[0].updated) : ''].filter(Boolean).join('  ·  ') || 'Job search'}</p><h1>Jobs for you</h1></div>
         <div class="row gap wrap">
-          ${avail ? html`<button class="btn primary" id="jb-refresh" type="button">Refresh jobs</button>` : ''}
+          <button class="btn primary" id="jb-refresh" type="button">Find jobs now</button>
           <a class="btn ghost" href="#/autopilot">Autopilot</a>
           <a class="btn ghost" href="#/new">Paste an advert</a>
         </div>
       </header>
-      ${!avail ? html`<section class="panel callout">
-        <h2>Live job feed</h2>
-        <p class="hint">Jobs are pulled from Indeed through your own Indeed connector, at no cost, when Applywise is opened from your app link. Here you can still search every UK board in one click (below) and paste any advert into a new application.</p>
-      </section>` : ''}
+      <section class="panel callout">
+        <h2>Matched to your target titles and CV</h2>
+        <p class="hint">Find jobs now searches ${avail ? 'Indeed, ' : ''}company career portals and remote job boards for: <strong>${cfg.queries.join(' · ')}</strong>. Only roles that match these titles or several skills on your CV are kept, then scored against your CV.${feed.webRun ? ` Last run found ${Object.entries(feed.webRun.bySource || {}).filter(([, n]) => n).map(([k, n]) => `${n} on ${k}`).join(', ') || 'no new matches'}.` : ''} LinkedIn, Indeed, Reed and Totaljobs don't allow other sites to read them: use the one-click searches below for those.</p>
+      </section>
       <p class="error" id="jb-err" role="alert" ${feed.errors && feed.errors.length ? '' : raw('hidden')}>${feed.errors && feed.errors[0] ? feed.errors[0].text : ''}</p>
       <ol class="progress" id="jb-prog" hidden></ol>
 
@@ -559,7 +592,9 @@
               <label class="field"><span>Job type</span><select id="s-type">${Object.entries(TYPE_LABEL).map(([v, l]) => html`<option value="${v}" ${cfg.type === v ? raw('selected') : ''}>${l}</option>`)}</select></label>
             </div>
             <label class="check-line"><input id="s-remote" type="checkbox" ${cfg.remote ? raw('checked') : ''}> Also search remote roles</label>
-            <button class="btn small mt" id="s-save" type="button">Save searches</button>
+            <label class="field mt"><span>Company career portals (one careers-page link per line)</span><textarea id="s-portals" rows="4" placeholder="https://boards.greenhouse.io/company">${(cfg.portals && cfg.portals.length ? cfg.portals : window.CVT.websources.DEFAULT_PORTALS).join('\n')}</textarea></label>
+            <p class="muted small">Works with careers pages hosted on Greenhouse, Lever, Ashby and SmartRecruiters.</p>
+            <div class="row gap wrap mt"><button class="btn small" id="s-save" type="button">Save searches</button><button class="btn small ghost" id="s-auto" type="button">Rebuild from my titles and CV</button></div>
           </section>
 
           <section class="panel">
@@ -623,7 +658,7 @@
       shown = rows;
       const list = $('#jb-list', root);
       if (!Object.keys(f.items).length) {
-        list.innerHTML = String(html`<div class="empty-state"><h2>No jobs yet</h2><p class="hint">${avail ? 'Press Refresh jobs. The first time, claude.ai asks you to allow the Indeed connector for this page.' : 'Open Applywise inside claude.ai to pull live jobs, or use the board links.'}</p></div>`);
+        list.innerHTML = String(html`<div class="empty-state"><h2>No jobs yet</h2><p class="hint">Press Find jobs now to search career portals and job boards for your target titles and skills.</p></div>`);
       } else if (!rows.length) {
         list.innerHTML = String(html`<p class="empty-note">No jobs match these filters. Lower the minimum match or widen the date range.</p>`);
       } else list.innerHTML = rows.map(r => String(jobCard(r.j, r.sc, r.dups))).join('');
@@ -702,13 +737,13 @@
       const err = $('#jb-err', root); err.hidden = true;
       const prog = $('#jb-prog', root); prog.hidden = false;
       try {
-        const r = await refresh((i, n, q, l) => { prog.innerHTML = String(html`<li class="active">Searching “${q}” in ${l} (${i + 1} of ${n})</li>`); });
+        const r = await refresh((i, n, q, l) => { prog.innerHTML = String(i < 0 ? html`<li class="active">${q}</li>` : html`<li class="active">Searching Indeed for “${q}” in ${l} (${i + 1} of ${n})</li>`); });
         prog.hidden = true;
         if (r.errors.length) { err.textContent = r.errors[0].text; err.hidden = false; }
         toast(r.added ? `${r.added} new job${r.added > 1 ? 's' : ''} found` : r.found ? 'No new jobs since last time' : 'No jobs returned', r.added ? 'ok' : 'warn');
         await checkTop(4);
         window.CVT.app.rerender();
-      } catch (e2) { prog.hidden = true; err.textContent = errText(e2); err.hidden = false; rb.disabled = false; rb.textContent = 'Refresh jobs'; }
+      } catch (e2) { prog.hidden = true; err.textContent = errText(e2); err.hidden = false; rb.disabled = false; rb.textContent = 'Find jobs now'; }
     });
 
     // ---- searches ----
@@ -716,10 +751,19 @@
       const f = await loadFeed();
       f.searches = {
         queries: $('#s-q', root).value.split('\n').map(s => s.trim()).filter(Boolean).slice(0, 6),
-        location: $('#s-loc', root).value.trim() || 'United Kingdom', remote: $('#s-remote', root).checked, type: $('#s-type', root).value
+        location: $('#s-loc', root).value.trim() || 'United Kingdom', remote: $('#s-remote', root).checked, type: $('#s-type', root).value,
+        portals: $('#s-portals', root).value.split('\n').map(s => s.trim()).filter(Boolean).slice(0, 30)
       };
+      const bad = f.searches.portals.filter(u => !window.CVT.websources.detect(u));
+      if (bad.length) toast(`Skipped ${bad.length} link${bad.length > 1 ? 's' : ''} that isn't a Greenhouse, Lever, Ashby or SmartRecruiters careers page`, 'warn');
       if (!f.searches.queries.length) { toast('Add at least one search', 'warn'); return; }
-      await saveFeed(f); toast('Searches saved' + (avail ? '. Press Refresh jobs.' : '')); window.CVT.app.rerender();
+      await saveFeed(f); toast('Searches saved. Press Find jobs now.'); window.CVT.app.rerender();
+    });
+    $('#s-auto', root).addEventListener('click', async () => {
+      const f = await loadFeed(); resetEvidence();
+      const qs = await defaultSearches();
+      f.searches = Object.assign({}, f.searches || {}, { queries: qs });
+      await saveFeed(f); toast('Searches rebuilt from your target titles and CV'); window.CVT.app.rerender();
     });
 
     // ---- market insights ----

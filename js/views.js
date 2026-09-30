@@ -55,23 +55,19 @@
     const paint = (note = '') => {
       box.removeAttribute('aria-busy');
       const roles = (profile.targetRoles || []).length ? profile.targetRoles : ['SAP Ariba', 'SAP S2P'];
-      if (!avail && !t.items.length) {
-        box.innerHTML = String(html`${head()}
-          <p class="hint">Search every major UK board for your target roles in one click. Inside claude.ai, Applywise also pulls live Indeed jobs here and scores each one against your CV.</p>
-          <div class="search-rows">${roles.slice(0, 4).map(r => html`<div class="search-row"><span class="search-role">${r}</span><span class="search-links">${J.boards(r, (profile.targetLocations || [])[0]).slice(0, 6).map(l => html`<a class="pill-link" href="${l.href}" target="_blank" rel="noopener">${l.name}</a>`)}</span></div>`)}</div>`);
-        return;
-      }
       if (!t.items.length) {
         box.innerHTML = String(html`${head()}
-          <div class="empty-state slim"><p class="hint">Pull live SAP and procurement jobs from Indeed, scored against your CV. The first time, claude.ai asks you to allow the Indeed connector.</p>
-          <button class="btn primary" id="dj-run" type="button">Find jobs now</button></div>`);
+          <div class="empty-state slim"><p class="hint">Find roles that match your target job titles and the skills on your CV, from company career portals and job boards, scored against your CV.</p>
+          <button class="btn primary" id="dj-run" type="button">Find jobs now</button></div>
+          <p class="small muted mt">Or search the big boards in one click:</p>
+          <div class="search-rows">${roles.slice(0, 4).map(r => html`<div class="search-row"><span class="search-role">${r}</span><span class="search-links">${J.boards(r, (profile.targetLocations || [])[0]).slice(0, 6).map(l => html`<a class="pill-link" href="${l.href}" target="_blank" rel="noopener">${l.name}</a>`)}</span></div>`)}</div>`);
       } else {
         box.innerHTML = String(html`${head(`<span class="muted small">${note || 'Updated ' + J.relTime(t.feed.lastRun)}</span>`)}
           <div class="job-list compact">${t.items.map(r => J.jobCard(r.j, r.sc, r.dups, true))}</div>
           ${t.total > t.items.length ? html`<p class="small mt"><a class="link" href="#/jobs">See all ${t.total} jobs, market pulse and rate calculator</a></p>` : ''}`);
       }
       const run = $('#dj-run', box);
-      if (run) run.addEventListener('click', async () => { run.disabled = true; run.textContent = 'Searching Indeed…'; await go(); });
+      if (run) run.addEventListener('click', async () => { run.disabled = true; run.textContent = 'Searching job sites…'; await go(); });
     };
     const go = async () => {
       try { const r = await J.refresh(); if (r.errors.length && !r.found) toast(r.errors[0].text, 'bad'); await J.checkTop(3); }
@@ -79,7 +75,7 @@
       t = await J.top(6); paint();
       window.CVT.app.refreshBadges && window.CVT.app.refreshBadges();
     };
-    paint(avail && stale ? 'Refreshing…' : '');
+    paint(stale ? 'Refreshing…' : '');
     box.addEventListener('click', async e => {
       const b = e.target.closest('[data-j="import"]'); if (!b) return;
       const key = b.closest('[data-key]').dataset.key;
@@ -87,7 +83,7 @@
       try { await J.details(key).catch(() => null); const id = await J.importJob(key); window.CVT.app.go(`#/app/${id}/job`); }
       catch (err) { toast(err.message, 'bad'); b.disabled = false; b.textContent = 'Tailor'; }
     });
-    if (avail && stale) go();
+    if (stale) go();
   }
 
   async function dashboard(root) {

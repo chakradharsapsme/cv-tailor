@@ -239,8 +239,25 @@
   const placeIn = (code, loc) => (loc && (CO().inCountry(code, loc) || CO().get(code).name === loc)) ? loc : CO().get(code).name;
   /** Jobs found for the country you are searching now (older results had no country and were UK). */
   const inCountryNow = (j, cfg) => (j.country || 'GB') === cfg.country || j.status === 'imported' || j.status === 'saved';
+  /** Fingerprint of what the searches are built from: the default CV and the target titles. */
+  async function cvSig() {
+    const [p, masters] = await Promise.all([S.getProfile(), S.listMasters()]);
+    const def = masters.find(m => m.isDefault) || masters[0];
+    return [def ? def.id + ':' + ((def.data && def.data.byteLength) || 0) : '', (p.targetRoles || []).join('|'), String(p.extraSkills || '').length, p.field || ''].join('#');
+  }
   async function searchesOf(feed) {
     const code = (feed.searches && CO().list[feed.searches.country]) ? feed.searches.country : CO().current();
+    // Searches you didn't write yourself follow your latest CV and target titles automatically.
+    if (feed.searches && feed.searches.auto) {
+      const sig = await cvSig();
+      if (sig !== feed.searches.cvSig) {
+        resetEvidence();
+        const before = (feed.searches.queries || []).join('|');
+        feed.searches.queries = await defaultSearches(); feed.searches.cvSig = sig;
+        if (before && before !== feed.searches.queries.join('|')) feed.searches.updatedFromCv = new Date().toISOString();
+        await saveFeed(feed);
+      }
+    }
     if (feed.searches && feed.searches.queries && feed.searches.queries.length) return Object.assign({}, feed.searches, { country: code, location: placeIn(code, feed.searches.location), queries: withBA(feed.searches.queries) });
     const p = await S.getProfile();
     return { country: code, queries: await defaultSearches(), location: placeIn(code, (p.targetLocations || [])[0]), remote: true, type: p.workPreference === 'Contract' ? 'contract' : '' };
@@ -345,7 +362,7 @@
           return titleRel >= 0.5 || (!offTrack && titleSkill && skills >= 3) || (!offTrack && bodyRel >= 0.67 && skills >= 3 && (fl.analyst ? fl.analyst.test(j.title) : fl.fits(j)));
         };
         const W = window.CVT.websources;
-        const r = await W.search({ queries: cfg.queries, portals: cfg.portals, country: cfg.country, field: FL().current().id, relevant, onStep: t => onStep && onStep(-1, 0, t) });
+        const r = await W.search({ queries: cfg.queries, portals: cfg.portals, extraPortals: window.CVT.employers ? await window.CVT.employers.portals() : [], country: cfg.country, field: FL().current().id, relevant, onStep: t => onStep && onStep(-1, 0, t) });
         found += r.jobs.length;
         for (const j of r.jobs) {
           const k = keyOf(j), old = feed.items[k];
@@ -353,7 +370,7 @@
           else { feed.items[k] = Object.assign(j, { key: k, query: '', firstSeen: new Date().toISOString(), lastSeen: new Date().toISOString(), status: 'new' }); added++; }
         }
         // Drop earlier web results that no longer fit your searches (untouched ones only).
-        Object.values(feed.items).forEach(j => { if (j.status === 'new' && /^(Careers · |Remotive|Jobicy|The Muse)/.test(j.source || '') && (!relevant(j) || (j.country || 'GB') !== cfg.country)) delete feed.items[j.key]; });
+        Object.values(feed.items).forEach(j => { if (j.status === 'new' && /^(Careers · |Remotive|Jobicy|The Muse|Arbeitnow)/.test(j.source || '') && (!relevant(j) || (j.country || 'GB') !== cfg.country)) delete feed.items[j.key]; });
         feed.webRun = { at: new Date().toISOString(), bySource: r.bySource };
         if (r.errors.length) feed.webErrors = r.errors.slice(0, 5); else delete feed.webErrors;
       } catch (e) { errors.push({ code: 'web', text: 'Job sites: ' + (e.message || e) }); }
@@ -545,6 +562,7 @@
       ${cfg.queries.length ? '' : html`<section class="panel callout warn-callout"><h2>Tell us what you're looking for</h2><p class="hint">Add your target job titles and your field in <a class="link" href="#/profile">Career profile</a>, or type searches in the Searches box. Applywise then finds matching jobs in your country.</p></section>`}
       <section class="panel callout jobs-intro" ${cfg.queries.length ? '' : raw('hidden')}>
         <h2>Matched to your target titles and CV</h2>
+        ${feed.searches && feed.searches.updatedFromCv && daysBetween(feed.searches.updatedFromCv) <= 3 ? html`<p class="chip ok">Searches updated from your latest CV ${relTime(feed.searches.updatedFromCv)}</p>` : ''}
         <p class="hint">Find jobs now searches ${avail ? 'Indeed, ' : ''}The Muse, company career portals and remote job boards for: <strong>${cfg.queries.join(' · ')}</strong>, in <strong>${CO().get(cfg.country).flag} ${CO().get(cfg.country).name}</strong> (plus remote roles open to it) <button class="linkish" type="button" id="jb-country">change country</button>. Only roles that match these titles or several skills on your CV are kept, then scored against your CV.${feed.webRun ? ` Last run found ${Object.entries(feed.webRun.bySource || {}).filter(([, n]) => n).map(([k, n]) => `${n} on ${k}`).join(', ') || 'no new matches'}.` : ''} Big boards such as LinkedIn and ${CO().get(cfg.country).boards('x', '').filter(b => b.name !== 'LinkedIn' && b.name !== 'Google Jobs').slice(0, 2).map(b => b.name).join(' and ')} don't allow other sites to read them: use the one-click searches below for those.</p>
       <button class="linkish more" type="button" id="jb-more">Show details</button>
       </section>
@@ -582,9 +600,11 @@
             </div>
             <label class="check-line"><input id="s-remote" type="checkbox" ${cfg.remote ? raw('checked') : ''}> Also search remote roles</label>
             <label class="field mt"><span>Company career portals (one careers-page link per line)</span><textarea id="s-portals" rows="4" placeholder="https://boards.greenhouse.io/company">${(cfg.portals && cfg.portals.length ? cfg.portals : window.CVT.websources.portalsFor(cfg.country)).join('\n')}</textarea></label>
-            <p class="muted small">Works with careers pages hosted on Greenhouse, Lever, Ashby and SmartRecruiters.</p>
+            <p class="muted small">Works with careers pages hosted on Greenhouse, Lever, Ashby, SmartRecruiters, Workable, Recruitee, Personio, Teamtailor, Breezy and Rippling.</p>
             <div class="row gap wrap mt"><button class="btn small" id="s-save" type="button">Save searches</button><button class="btn small ghost" id="s-auto" type="button">Rebuild from my titles and CV</button></div>
           </section>
+
+          <section class="panel emp-panel" id="emp-panel" aria-live="polite"></section>
 
           ${!(col && col.ok) && !(window.claude && window.claude.use) ? '' : html`<section class="panel">
             <div class="panel-head"><h2>Job robot</h2>${col && col.ok ? html`<span class="chip ok">Ready</span>` : html`<span class="chip muted">Not run yet</span>`}</div>
@@ -762,19 +782,66 @@
         // Left empty when it is just the country's default list, so it follows the country if you change it later.
         portals: ps.join('\n') === portalsOf(country).trim() ? [] : ps
       };
+      const auto = f.searches.queries.join('|') === (await defaultSearches()).join('|');
+      Object.assign(f.searches, { auto, cvSig: auto ? await cvSig() : '' });
       const moved = country !== cfg.country;
       CO().remember(country);
       const bad = f.searches.portals.filter(u => !window.CVT.websources.detect(u));
-      if (bad.length) toast(`Skipped ${bad.length} link${bad.length > 1 ? 's' : ''} that isn't a Greenhouse, Lever, Ashby or SmartRecruiters careers page`, 'warn');
+      if (bad.length) toast(`Skipped ${bad.length} link${bad.length > 1 ? 's' : ''} that isn't a careers page Applywise can read`, 'warn');
       if (!f.searches.queries.length) { toast('Add at least one search', 'warn'); return; }
       await saveFeed(f); toast(moved ? `Now searching ${CO().get(country).name}. Press Find jobs now.` : 'Searches saved. Press Find jobs now.'); window.CVT.app.rerender();
     });
     $('#s-auto', root).addEventListener('click', async () => {
       const f = await loadFeed(); resetEvidence();
       const qs = await defaultSearches();
-      f.searches = Object.assign({}, f.searches || {}, { queries: qs });
+      f.searches = Object.assign({}, f.searches || {}, { queries: qs, auto: true, cvSig: await cvSig() });
       await saveFeed(f); toast('Searches rebuilt from your target titles and CV'); window.CVT.app.rerender();
     });
+
+    // ---- careers sites linked to your CV ----
+    const E = window.CVT.employers;
+    const KIND = { greenhouse: 'Greenhouse', lever: 'Lever', ashby: 'Ashby', smartrecruiters: 'SmartRecruiters', workable: 'Workable', recruitee: 'Recruitee', personio: 'Personio', teamtailor: 'Teamtailor', breezy: 'Breezy', rippling: 'Rippling' };
+    const empBox = $('#emp-panel', root);
+    let empBusy = '';
+    async function drawEmployers(note = '') {
+      const d = await E.load();
+      empBox.innerHTML = String(html`
+        <div class="panel-head"><h2>Careers sites from your CV</h2>${d.list.length ? html`<span class="muted small">${d.list.filter(x => x.on !== false).length} searched</span>` : ''}</div>
+        <p class="hint">Applywise finds the careers sites of employers and clients named on your CV, companies you applied to and companies posting matching jobs, then searches them every time you press Find jobs now.</p>
+        <div class="row gap wrap"><button class="btn small" type="button" id="emp-find" ${empBusy ? raw('disabled') : ''}>Find from my CV</button>
+          <button class="btn small ghost" type="button" id="emp-ai" ${empBusy ? raw('disabled') : ''} title="Uses your AI engine">Suggest similar employers</button></div>
+        ${empBusy ? html`<p class="small muted mt">${empBusy}</p>` : note ? html`<p class="small mt">${note}</p>` : ''}
+        ${d.list.length ? html`<ul class="emp-list">${d.list.map(x => html`<li>
+          <label class="check-line"><input type="checkbox" data-emp-on="${x.url}" ${x.on !== false ? raw('checked') : ''}> <span><strong>${x.name}</strong> <span class="muted small">· ${KIND[x.kind] || x.kind} · ${x.jobs} open roles worldwide</span><br><span class="muted small">${x.from || ''}</span></span></label>
+          <span class="row gap"><a class="link small" href="${x.url}" target="_blank" rel="noopener">Open</a><button class="icon-btn" type="button" data-emp-del="${x.url}" aria-label="Remove ${x.name}">×</button></span></li>`)}</ul>` : ''}
+        <div class="row gap mt emp-add"><input id="emp-name" type="text" placeholder="Add an employer by name, e.g. Deloitte" aria-label="Employer name"><button class="btn small ghost" type="button" id="emp-add">Add</button></div>`);
+    }
+    const runEmp = async (fn, doneText) => {
+      if (empBusy) return;
+      try {
+        empBusy = 'Starting…'; await drawEmployers();
+        const r = await fn(t => { empBusy = t; const p = empBox.querySelector('.small.muted.mt'); if (p) p.textContent = t; });
+        empBusy = ''; await drawEmployers(doneText(r));
+      } catch (e) { empBusy = ''; await drawEmployers(errText(e)); }
+    };
+    empBox.addEventListener('click', async e => {
+      if (e.target.closest('#emp-find')) return runEmp(async onStep => {
+        const names = await E.candidates({ useAI: true, onStep });
+        if (!names.length) return { none: true };
+        return E.discover({ names, onStep });
+      }, r => r.none ? 'No employer names found yet. Add your CV in Career profile, or add employers by name below.' : `Checked ${r.checked} employer${r.checked === 1 ? '' : 's'}: ${r.found} careers site${r.found === 1 ? '' : 's'} found. Press Find jobs now to search them.`);
+      if (e.target.closest('#emp-ai')) return runEmp(onStep => E.suggest({ onStep }), r => `Checked ${r.checked} suggested employer${r.checked === 1 ? '' : 's'}: ${r.found} careers site${r.found === 1 ? '' : 's'} found.`);
+      const del = e.target.closest('[data-emp-del]');
+      if (del) { await E.remove(del.dataset.empDel); return drawEmployers(); }
+      if (e.target.closest('#emp-add')) {
+        const inp = $('#emp-name', root), name = inp.value.trim(); if (!name) return inp.focus();
+        return runEmp(async onStep => { onStep(`Looking for ${name}'s careers site…`); return { hit: await E.addByName(name), name }; },
+          r => r.hit ? `${r.hit.name}: found on ${KIND[r.hit.kind]}. It will be searched from now on.` : `Couldn't find a careers site for ${r.name} that Applywise can read. Paste its careers-page link into the portals box above if it uses a supported system.`);
+      }
+    });
+    empBox.addEventListener('change', async e => { const cb = e.target.closest('[data-emp-on]'); if (cb) { await E.toggle(cb.dataset.empOn, cb.checked); drawEmployers(); } });
+    empBox.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.id === 'emp-name') { e.preventDefault(); $('#emp-add', root).click(); } });
+    drawEmployers();
 
     // ---- market insights ----
     const mk = await market();

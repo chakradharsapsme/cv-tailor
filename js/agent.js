@@ -472,6 +472,25 @@ Write a polite, confident UK counter-offer. Anchor on value and market, never th
   });
 
 
+  // ---------- 8b. employers for the job feed ----------
+  const RESEARCH = 'You are a careful careers researcher. Reply with ONLY one JSON object. Never invent companies; if unsure, leave a company out.';
+  const employersFromCv = ({ cvText, signal }) => ask({
+    signal, maxTokens: 1500, system: RESEARCH,
+    user: `List every organisation this CV says the person worked for or delivered work to (employers and named clients). Use the exact names written in the CV; skip anything marked fictional, schools and universities.
+CV:
+${String(cvText || '').slice(0, 9000)}
+JSON: {"employers": [{"name": "...", "kind": "employer" | "client"}]}`
+  });
+  const similarEmployers = ({ profile, country, known = [], signal }) => ask({
+    signal, maxTokens: 2000, system: RESEARCH,
+    user: `Suggest up to 20 real, well-known organisations that regularly hire for these roles in {{MARKET}} (${country}), including large employers, consultancies and fast-growing companies. Prefer organisations with their own online careers site.
+Target roles: ${(profile.targetRoles || []).join('; ') || profile.currentTitle || '(not given)'}
+Field: {{FIELD}}
+Skills: ${String(profile.extraSkills || '').slice(0, 400)}
+Already known (leave these out): ${known.slice(0, 40).join(', ') || 'none'}
+JSON: {"employers": [{"name": "official company name", "why": "one short reason"}]}`
+  });
+
   // ---------- 9. documents attached to an application ----------
   const docsBlock = (docs, budget = 30000) => {
     const use = (docs || []).filter(d => d.use !== false && ((d.text || '').trim() || (d.note || '').trim()));
@@ -594,5 +613,5 @@ ${STUDIO[kind]}`
     return [r.summary ? 'SUMMARY: ' + r.summary : '', r.text || ''].filter(Boolean).join('\n\n');
   }
 
-  window.CVT.agent = { loadPuter, chromeAIStatus, docStudio, myAnswer, docQuestions, docDigest, docMindmap, docAsk, describeImages, mockQuestion, mockGrade, storyDrafts, counterOffer, moreCards, listGemini, claudeSample, analyse, coverLetter, outreach, interviewPrep, answers, linkedin, parseJSON, profileBlock };
+  window.CVT.agent = { employersFromCv, similarEmployers, loadPuter, chromeAIStatus, docStudio, myAnswer, docQuestions, docDigest, docMindmap, docAsk, describeImages, mockQuestion, mockGrade, storyDrafts, counterOffer, moreCards, listGemini, claudeSample, analyse, coverLetter, outreach, interviewPrep, answers, linkedin, parseJSON, profileBlock };
 })();

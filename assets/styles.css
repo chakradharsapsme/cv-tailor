@@ -1334,3 +1334,12 @@ body.no-scroll { overflow: hidden; }
 .emp-list .check-line { align-items: flex-start; margin: 0; }
 .emp-list .check-line input { margin-top: 3px; }
 .emp-add input { flex: 1 1 auto; min-width: 0; }
+
+/* ===== v26: switch on free AI dialog ===== */
+.engine-modal { max-width: min(520px, calc(100vw - 32px)); }
+.eng-opts { display: grid; gap: 10px; margin: 14px 0 8px; }
+.eng-opt { display: grid; gap: 4px; text-align: left; border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; background: var(--surface-2); color: var(--ink); font: inherit; }
+button.eng-opt { cursor: pointer; }
+button.eng-opt:hover { border-color: var(--accent); background: var(--accent-soft); }
+.eng-opt span { color: var(--muted); font-size: .88rem; }
+.eng-opt input { flex: 1 1 auto; min-width: 0; }

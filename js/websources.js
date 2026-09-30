@@ -125,7 +125,10 @@
     const words = base.split(/[^A-Za-z0-9]+/).filter(Boolean);
     if (!words.length) return [];
     const joined = words.join('').toLowerCase(), dashed = words.join('-').toLowerCase(), camel = words.map(w => w[0].toUpperCase() + w.slice(1)).join('');
-    return [...new Set([joined, camel, words.length > 1 && words[0].length >= 6 ? words[0].toLowerCase() : '', dashed])].filter(x => x.length >= 2).slice(0, 4);
+    // The full name with "Group", "Ltd"... kept, as some employers register that way (e.g. BoschGroup).
+    const full = String(name || '').replace(/\((.*?)\)/g, ' ').replace(/\./g, '').split(/[^A-Za-z0-9]+/).filter(Boolean);
+    const fullCamel = full.map(w => w[0].toUpperCase() + w.slice(1)).join('');
+    return [...new Set([joined, camel, words.length > 1 && words[0].length >= 5 ? words[0].toLowerCase() : '', fullCamel, dashed])].filter(x => x.length >= 2).slice(0, 5);
   }
   async function exists(kind, slug) {
     try {

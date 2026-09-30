@@ -116,14 +116,14 @@
     }
     if (k === 'video') {
       const lim = await imageLimits();
-      if (!lim) return { text: '', status: 'notes', why: 'Speech in videos can’t be transcribed here. Paste a transcript or notes below.' };
+      if (!lim) return { text: '', status: 'notes', why: 'This video can’t be read here (speech can’t be transcribed, and slide reading isn’t available in this view). Paste a transcript or notes below, or upload the transcript file: Teams, Zoom and YouTube can export one (.vtt or .txt).' };
       onStep && onStep('Taking frames from the video');
       const frames = await videoFrames(blob, Math.min(lim.maxCount, 8));
       if (!frames.length) return { text: '', status: 'notes', why: 'Could not read frames from this video. Paste a transcript or notes below.' };
       onStep && onStep('Asking Claude to read the slides and screens');
       return { text: await A.describeImages({ blobs: frames, name: d.name, kind: 'video' }), status: 'ready', why: 'Slides and on-screen text were read from frames. Speech is not transcribed: paste a transcript below for the best questions.' };
     }
-    if (k === 'audio') return { text: '', status: 'notes', why: 'Audio can’t be transcribed here. Paste a transcript or your notes below.' };
+    if (k === 'audio') return { text: '', status: 'notes', why: 'Audio can’t be transcribed here. Paste a transcript or your notes below, or upload a transcript file (.vtt or .txt).' };
     return { text: '', status: 'notes', why: 'This file type can’t be read. Add notes describing what matters in it.' };
   }
 
@@ -147,6 +147,11 @@
     const stories = await S.getKV('stories', []) || [];
     const statusText = d => d.status === 'reading' ? 'Reading…' : d.status === 'ready' ? `Ready · ${(d.text || '').length.toLocaleString('en-GB')} characters${d.pages ? ' · ' + d.pages + ' pages' : ''}` : d.status === 'error' ? 'Could not read' : (d.note || '').trim() ? 'Using your notes' : 'Needs notes';
     const readable = () => a.docs.filter(d => d.use !== false && (((d.text || '').trim()) || (d.note || '').trim()));
+    const dqHint = () => {
+      const n = readable().length, waiting = a.docs.filter(d => d.use !== false && !((d.text || '').trim() || (d.note || '').trim()));
+      if (n) return `Built from ${n} document${n === 1 ? '' : 's'}, the advert and your real experience. Answer outlines never invent experience.${waiting.length ? ` ${waiting.length} file${waiting.length > 1 ? 's have' : ' has'} no readable text yet and will be skipped.` : ''}`;
+      return a.docs.length ? `None of your files has readable text yet${waiting.some(d => d.kind === 'video' || d.kind === 'audio') ? ' (videos and audio need a transcript or notes)' : ''}. Questions will come from the job advert and your experience; add notes to a file to include it.` : 'Questions come from the job advert and your experience. Add documents to make them more specific.';
+    };
 
     const draw = () => {
       body.innerHTML = String(html`
@@ -182,8 +187,8 @@
 
           <section class="panel">
             <div class="panel-head"><h2>Likely interview questions</h2>${a.docQuestions ? html`<button class="btn ghost small" id="dq-copy" type="button">Copy all</button>` : ''}</div>
-            <p class="hint">Built from ${readable().length} document${readable().length === 1 ? '' : 's'}, the advert and your real experience. Answer outlines never invent experience.</p>
-            <button class="btn primary" id="dq-go" type="button" ${readable().length ? '' : raw('disabled')}>${a.docQuestions ? 'Prepare again' : 'Prepare questions'}</button>
+            <p class="hint" id="dq-hint">${dqHint()}</p>
+            <button class="btn primary" id="dq-go" type="button">${a.docQuestions ? 'Prepare again' : 'Prepare questions'}</button>
             <ol class="progress" id="dq-prog" hidden></ol>
             ${a.docQuestions ? html`
               ${(a.docQuestions.themes || []).length ? html`<p class="small mt">Themes: ${a.docQuestions.themes.map(t => html`<span class="chip accent">${t}</span> `)}</p>` : ''}
@@ -197,7 +202,7 @@
             <div class="panel-head"><h2>Ask about these documents</h2>${(a.docChat || []).length ? html`<button class="linkish small" id="dc-clear" type="button">Clear</button>` : ''}</div>
             <p class="hint">Clarify anything: scope, systems, who's who, what the client wants. Answers come only from your documents and the advert.</p>
             <div class="chat">${(a.docChat || []).map(m => html`<div class="chat-q">${m.q}</div><div class="chat-a">${m.a}${(m.sources || []).length ? html`<div class="muted small mt-s">Sources: ${m.sources.join(', ')}</div>` : ''}${m.ask ? html`<div class="small mt-s"><strong>Ask them:</strong> ${m.ask} <button class="linkish small" data-copyask="${m.ask}" type="button">Copy</button></div>` : ''}</div>`)}</div>
-            <form id="dc-form" class="row gap"><input id="dc-q" type="text" placeholder="e.g. Which S/4HANA modules are in scope?" ${readable().length ? '' : raw('disabled')} autocomplete="off"><button class="btn primary" type="submit" ${readable().length ? '' : raw('disabled')}>Ask</button></form>
+            <form id="dc-form" class="row gap"><input id="dc-q" type="text" placeholder="e.g. Which S/4HANA modules are in scope?" ${readable().length ? '' : raw('disabled')} autocomplete="off" title="${readable().length ? '' : 'Add a readable file or notes first'}"><button class="btn primary" type="submit" ${readable().length ? '' : raw('disabled')}>Ask</button></form>
           </section>
         </div>`);
     };
@@ -238,7 +243,8 @@
       const d = a.docs.find(x => x.id === id), row = $(`[data-id="${id}"]`, body);
       const st = row && $('.doc-main .muted.small span', row); if (st) { st.textContent = statusText(d); st.className = d.status === 'ready' || (d.note || '').trim() ? 'ok-text' : 'warn-text'; }
       const n = readable().length, go = $('#dq-go', body), q = $('#dc-q', body), qb = $('#dc-form button', body);
-      if (go) go.disabled = !n; if (q) q.disabled = !n; if (qb) qb.disabled = !n;
+      const h = $('#dq-hint', body); if (h) h.textContent = dqHint();
+      if (q) q.disabled = !n; if (qb) qb.disabled = !n;
     });
     const dz = () => $('#dz', body);
     body.addEventListener('dragover', e => { if (e.target.closest('#dz')) { e.preventDefault(); dz().classList.add('over'); } });

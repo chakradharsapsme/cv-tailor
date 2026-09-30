@@ -324,6 +324,7 @@
           <button type="button" data-jump="sec-qs">Interview questions <span>${nq ? `${np}/${nq}` : '0'}</span></button>
           <button type="button" data-jump="sec-map">Mind map <span>${a.docMap ? '✓' : '–'}</span></button>
           <button type="button" data-jump="sec-ask">Ask <span>${(a.docChat || []).length}</span></button>
+          ${a.docs.length || a.docQuestions || a.docMap || (a.docChat || []).length ? html`<span class="grow-s"></span><button type="button" class="btn ghost small danger" id="docs-wipe" title="Delete every file, question, the mind map and the Q&A on this page">🗑 Delete everything &amp; start again</button>` : ''}
         </nav>
         <div class="docs-grid">
           <section class="panel" id="sec-docs">
@@ -500,6 +501,19 @@
       }
       if (t.id === 'mm-dl' && mmApi) { window.CVT.ui.download(new Blob([mmApi.svgText()], { type: 'image/svg+xml' }), `${(a.company || 'job').replace(/\W+/g, '_')}_mind_map.svg`); return; }
       if (t.id === 'dq-copy') { copy(a.docQuestions.items.map(qText).join('\n\n')); return; }
+      if (t.id === 'docs-wipe') {
+        if (!t.dataset.sure) { t.dataset.sure = '1'; t.textContent = `Click again to delete ${a.docs.length} file${a.docs.length === 1 ? '' : 's'}, questions, mind map and Q&A`; t.classList.add('armed'); setTimeout(() => { if (t.isConnected) { delete t.dataset.sure; t.textContent = '🗑 Delete everything & start again'; t.classList.remove('armed'); } }, 5000); return; }
+        t.disabled = true; t.textContent = 'Deleting…';
+        const as = a.docs.some(d => d.assetId) ? await assets() : null;
+        for (const d of a.docs) {
+          await S.delFile(d.id).catch(() => {});
+          if (d.assetId && as && as.delete) { try { await as.delete(d.assetId); } catch (_) {} }
+        }
+        const n = a.docs.length;
+        a.docs = []; a.docQuestions = null; a.docMap = null; a.docChat = []; mmApi = null; openQ.clear(); dqFilter = 'all';
+        await save(); draw(); window.scrollTo({ top: 0 }); toast(`Cleared: ${n} file${n === 1 ? '' : 's'} and everything built from them. Your My questions tab is untouched.`);
+        return;
+      }
       if (t.id === 'dc-clear') { if (!confirmInline(t)) return; a.docChat = []; await save(); draw(); toast('Deleted'); return; }
       const sg = t.closest('[data-suggest]'); if (sg) { const i = $('#dc-q', body); i.value = sg.dataset.suggest; $('#dc-form', body).requestSubmit(); return; }
       const ca = t.closest('[data-copyask]'); if (ca) { copy(ca.dataset.copyask); return; }

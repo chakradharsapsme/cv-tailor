@@ -811,3 +811,4 @@ sup.cite.unv { color: var(--warn); background: var(--warn-soft); }
 .dq-more input[type=text] { width: 100%; }
 .my-help { display: grid; gap: 6px; }
 .my-help p, .my-help ul { margin: 0; }
+.docs-jump .grow-s { flex: 1; }

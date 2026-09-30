@@ -720,3 +720,10 @@ p.grow { flex: 1 1 auto; }
 @media (max-width: 700px) { .mm-svg { min-width: 680px; } }
 .mm-t { paint-order: stroke; stroke: var(--bg); stroke-width: 4px; stroke-linejoin: round; }
 .mm-quote { margin: 6px 0 4px; padding: 6px 10px; border-left: 3px solid var(--line); background: var(--surface); font-size: .88rem; font-style: italic; border-radius: 0 6px 6px 0; }
+
+/* v12 delete controls */
+.btn.danger.armed { background: var(--bad); color: #fff; border-color: var(--bad); }
+.q-del { margin-left: auto; flex: none; border: 0; background: none; cursor: pointer; font-size: .85rem; padding: 2px 6px; border-radius: 6px; opacity: .45; line-height: 1; }
+.q-del:hover, .q-del:focus-visible { opacity: 1; background: var(--surface-2); }
+.chat-q { display: flex; align-items: flex-start; gap: 6px; }
+.qs details > summary .q-text, .chat-q > span { flex: 1; }

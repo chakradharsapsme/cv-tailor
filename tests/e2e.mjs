@@ -205,6 +205,17 @@ const shot = n => page.screenshot({ path: `${out}/${n}.png`, fullPage: true });
 // 1. Empty dashboard
 await page.goto('http://localhost:8765/');
 await page.waitForSelector('.kpis');
+{ // first-run tour
+  await page.waitForSelector('.tour-card', { timeout: 5000 });
+  const steps = [];
+  for (let k = 0; k < 10; k++) {
+    const c = await page.locator('.tour-card').count(); if (!c) break;
+    steps.push((await page.textContent('.tour-card h2')).trim() + (await page.locator('.tour-hole').count() ? '' : ' (no target)'));
+    if (k === 0 || k === 2) await shot('00-tour-' + (k + 1));
+    await page.click('.tour-card [data-t="next"]'); await page.waitForTimeout(200);
+  }
+  log('tour:', steps.join(' → '), '| saved done:', await page.evaluate(() => localStorage.getItem('cvt.tourDone')));
+}
 await shot('01-dashboard-empty');
 log('coach notes (empty):', await page.locator('.note').count());
 
@@ -612,10 +623,25 @@ log('submitted?', await form.evaluate(() => !!window.submitted));
 log('panel:', (await form.textContent('#cvt-autofill-panel')).replace(/\s+/g, ' ').slice(0, 220));
 await form.screenshot({ path: `${out}/11-autofill.png`, fullPage: true });
 
+// 11b. Top bar search, pricing, shots of the refreshed look
+await page.goto('http://localhost:8765/#/dashboard'); await page.waitForSelector('.kpis');
+await page.keyboard.press('/'); await page.keyboard.type('ariba');
+await page.waitForSelector('#tb-results .tb-hit', { timeout: 8000 });
+log('search results:', JSON.stringify(await page.$$eval('#tb-results .tb-hit', e => e.map(x => x.querySelector('.tb-kind').textContent + ': ' + x.querySelector('.tb-t').textContent).slice(0, 6))));
+await shot('20-search');
+await page.keyboard.press('Enter'); await page.waitForTimeout(700);
+log('search opened:', await page.textContent('#tb-title'), '|', (await page.evaluate(() => document.title)));
+await page.click('.tb-link'); await page.waitForSelector('.plans');
+log('pricing:', await page.locator('.plan-card').count(), 'plans |', (await page.textContent('.plans')).includes('not on sale') || (await page.textContent('.view')).includes('not on sale'));
+await page.click('[data-plan="pro"]'); await page.waitForTimeout(300); log('notify saved:', await page.evaluate(async () => !!((await window.CVT.store.getKV('planInterest', null)) || {}).pro));
+await shot('21-pricing');
+for (const [h, n] of [['#/dashboard', '22-dashboard'], ['#/pipeline', '23-pipeline'], ['#/jobs', '24-jobs'], ['#/settings', '25-settings']]) { await page.goto('http://localhost:8765/' + h); await page.waitForTimeout(900); await page.screenshot({ path: `${out}/${n}.png` }); }
+await page.click('#tb-tour'); await page.waitForSelector('.tour-card'); log('tour relaunch:', await page.textContent('.tour-card h2')); await page.keyboard.press('Escape'); log('tour closed:', !(await page.locator('.tour').count()));
+
 // 12. Mobile layout
 await page.setViewportSize({ width: 400, height: 860 });
 const overflow = async () => page.evaluate(() => [...document.querySelectorAll('body *')].filter(e => e.getBoundingClientRect().right > window.innerWidth + 1 && !e.closest('.table-wrap,.preview-box,.board-wrap,.side,.ws-tabs')).slice(0, 6).map(e => e.tagName + '.' + e.className + ' ' + Math.round(e.getBoundingClientRect().right)));
-for (const h of ['#/dashboard', '#/jobs', '#/pipeline', '#/profile', '#/settings', '#/help', '#/prep/mock', '#/prep/stories', '#/prep/drills', '#/prep/offers', '#/autopilot']) { await page.goto('http://localhost:8765/' + h); await page.waitForTimeout(500); log('overflow', h, JSON.stringify(await overflow())); }
+for (const h of ['#/dashboard', '#/jobs', '#/pipeline', '#/profile', '#/settings', '#/help', '#/prep/mock', '#/prep/stories', '#/prep/drills', '#/prep/offers', '#/autopilot', '#/pricing']) { await page.goto('http://localhost:8765/' + h); await page.waitForTimeout(500); log('overflow', h, JSON.stringify(await overflow())); }
 const appId = await page.evaluate(async () => (await window.CVT.store.listApps())[0].id);
 for (const t of ['job', 'fit', 'cv', 'letter', 'outreach', 'interview', 'docs', 'apply', 'myqs']) { await page.goto(`http://localhost:8765/#/app/${appId}/${t}`); await page.waitForTimeout(600); log('overflow', t, JSON.stringify(await overflow())); }
 await page.goto(`http://localhost:8765/#/app/${appId}/fit`); await page.waitForTimeout(600);

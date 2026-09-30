@@ -47,7 +47,7 @@
       if (!pick.length) log(eligible.length ? 'Best matches only have advert summaries; open them and paste the full advert' : `No new jobs scored ${cfg.min}+ this time`);
 
       // 4. Prepare each application.
-      if (pick.length && !state.key) throw new Error('Switch on the AI engine in Settings first');
+      if (pick.length && !(await window.CVT.ai.ensure('Autopilot prepares each application with AI.'))) throw new Error('Choose one of the free AI engines first');
       for (const [i, r] of pick.entries()) {
         if (stopped()) throw new Error('Stopped');
         const label = `${r.j.title} · ${r.j.company || ''}`;

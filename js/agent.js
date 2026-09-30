@@ -114,6 +114,8 @@
   }
 
   async function ask(opts) {
+    // No engine yet: offer the free options right here instead of failing.
+    if (window.CVT.ai && !window.CVT.ai.ready() && !(await window.CVT.ai.ensure())) throw new Error('This needs the AI. Choose one of the free engines (Settings → AI engine).');
     // Speak for the user's own field and country ({{WHO}}, {{MARKET}}, ... in the prompts).
     const fill = window.CVT.fields ? window.CVT.fields.fill : x => x;
     opts = { ...opts, system: fill(opts.system), user: fill(opts.user) };

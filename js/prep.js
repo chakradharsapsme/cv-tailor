@@ -23,7 +23,7 @@
   const saveDrills = v => S.setKV('drills', v);
   const getMocks = async () => (await S.getKV('mocks', [])) || [];
   const saveMocks = v => S.setKV('mocks', v.slice(0, 20));
-  const needAi = () => { if (!state.key) { toast('Switch on the AI engine in Settings first', 'warn'); return false; } return true; };
+  const needAi = async () => { if (await window.CVT.ai.ensure()) return true; toast('Choose one of the free AI engines to use this', 'warn'); return false; };
 
   // ---------------------------------------------------------------------
   // Stories matched to a job (local, instant)
@@ -151,7 +151,7 @@
     const app = () => apps.find(a => a.id === $('#mk-app', body).value) || null;
 
     const ask = async () => {
-      if (!needAi()) return;
+      if (!(await needAi())) return;
       live.innerHTML = '<section class="panel"><p class="muted">Thinking of the next question…</p></section>';
       try {
         ctl = new AbortController();
@@ -321,7 +321,7 @@
       });
     };
     const draft = async () => {
-      if (!needAi()) return;
+      if (!(await needAi())) return;
       const btn = $('#st-draft', body); btn.disabled = true; btn.textContent = 'Drafting (30–60 s)…';
       try {
         const [profile, mm] = await Promise.all([S.getProfile(), masterModel()]);
@@ -384,7 +384,7 @@
       }));
       $('#dr-gen', body).addEventListener('click', async () => {
         const topic = $('#dr-topic', body).value.trim(); if (!topic) return toast('Type a topic first', 'warn');
-        if (!needAi()) return;
+        if (!(await needAi())) return;
         const b = $('#dr-gen', body); b.disabled = true; b.textContent = 'Creating…';
         try {
           const r = await A.moreCards({ topic });
@@ -482,7 +482,7 @@
       });
     };
     const counter = async o => {
-      if (!needAi()) return;
+      if (!(await needAi())) return;
       const x = $('#of-extra', body);
       x.innerHTML = String(html`<section class="panel"><div class="panel-head"><h2>Counter-offer for ${o.company}</h2></div>
         <label class="field"><span>What do you want? (e.g. £95k base, or £600/day, 2 days on-site, start in 6 weeks)</span><input id="co-goal" type="text"></label>

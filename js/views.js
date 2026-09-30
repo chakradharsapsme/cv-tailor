@@ -3,7 +3,7 @@
   const { html, raw, esc, $, $$, toast, download, copy, today, ukDate, longDate, daysBetween, VERDICT, scoreCls, state, masterModel } = window.CVT.ui;
   const S = window.CVT.store, A = window.CVT.agent, D = window.CVT.docx;
   const FL = window.CVT.fields;
-  const VERSION = 'v5.1';
+  const VERSION = 'v5.2';
   const ACTIVE = ['Applied', 'Screening', 'Interview', 'Offer'];
   const REACHED = s => ['Screening', 'Interview', 'Offer', 'Accepted'].includes(s);
 

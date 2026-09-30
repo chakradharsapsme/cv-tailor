@@ -72,15 +72,15 @@ function makeReply(sys, user) {
     calls.outreach = user;
     const m = (s, b) => ({ subject: s, body: b });
     reply = { linkedin_note: 'Hi Sarah, I led Guided Buying for a UK utility on Ariba + S/4HANA and have applied for your S2P Architect role. Would value connecting.', hiring_manager: m('S2P Architect', 'Hello...'), recruiter: m('SAP Ariba Architect – Alex Morgan', 'Hi...'), follow_up: m('Following up', 'Hi...'), thank_you: m('Thank you', 'Thanks for [topic]...') };
-  } else if (/Build a mind map with the job\/programme at the centre/.test(user)) {
+  } else if (/Build a mind map of what these passages contain/.test(user)) {
     calls.map = user;
-    const leaf = (l, d) => ({ label: l, detail: d, source: 'role-pack.pdf' });
-    reply = { center: 'Northgate S2P programme', branches: [
-      { label: 'Client & programme', detail: 'Legacy procurement replaced by Ariba + S/4HANA', source: 'role-pack.pdf', children: [leaf('SAP Ariba + S/4HANA 2023', 'Target platform'), leaf('Phased UK then Ireland', 'Go-live plan')] },
-      { label: 'Scope & processes', detail: 'What is in scope', source: 'role-pack.pdf', children: [leaf('Guided Buying', 'Catalogue-first buying'), leaf('Contracts', 'Contract workspaces'), { label: 'SLP onboarding', detail: 'Supplier lifecycle', source: 'role-pack.pdf', children: [leaf('Registration', 'Questionnaires'), leaf('Qualification', 'Risk checks')] }] },
-      { label: 'Systems & integration', detail: 'How it connects', source: 'role-pack.pdf', children: [leaf('Integration Suite', 'CIG successor'), leaf('Central Procurement', 'S/4HANA hub')] },
-      { label: 'Pain points', detail: 'Why they are changing', source: 'role-pack.pdf', children: [leaf('Maverick spend 22%', 'Off-contract buying'), leaf('Invoice exceptions', 'AP workload')] },
-      { label: 'People', detail: 'Who you will work with', source: 'recruiter-notes.txt', children: [leaf('Head of Procurement Transformation', 'Hiring manager'), leaf('Offshore build team', 'Pune')] }
+    const n = (label, quote, children) => ({ label, detail: label + '.', ref: 'D1-P1', quote, children: children || [] });
+    reply = { center: 'Northgate procurement programme', center_ref: 'D1-P1', branches: [
+      n('Programme', 'replace legacy procurement with SAP Ariba and S/4HANA 2023', [n('Phased go-live', 'phased, UK first in Q3 2027, then Ireland')]),
+      n('Scope', 'Guided Buying, Buying and Invoicing, Contracts, SLP supplier onboarding', [n('Case study task', 'design an approval flow for IT hardware over 5,000 GBP')]),
+      n('Pain points', 'maverick spend 22 percent, invoice exceptions, slow supplier onboarding'),
+      n('Commercials', 'Day rate up to 650 outside IR35', [n('Invented topic', 'Coupa migration planned for 2028 across all of Europe')]),
+      n('Made-up branch', 'the client plans to outsource all AP to a shared service centre')
     ] };
   } else if (/Prove you read it/.test(user)) {
     calls.digest = (calls.digest || 0) + 1;
@@ -284,8 +284,9 @@ log('doc questions:', await page.locator('.docs-grid .panel:nth-child(2) .qs det
 await page.fill('#dc-q', 'What connects Ariba to S/4HANA?'); await page.click('#dc-form button'); await page.waitForSelector('.chat-a', { timeout: 20000 });
 log('doc answer:', (await page.textContent('.chat-a')).replace(/\s+/g, ' ').slice(0, 160));
 await page.click('#mm-go'); await page.waitForSelector('.mm-svg', { timeout: 20000 });
-log('mind map nodes:', await page.locator('.mm-node').count(), '| branches:', await page.locator('.mm-node.d1').count(), '| prompt had docs:', /maverick spend 22 percent/.test(calls.map || ''));
-await page.click('.mm-node.d1 >> nth=1'); await page.waitForSelector('.mm-detail');
+log('mind map nodes:', await page.locator('.mm-node').count(), '| branches:', await page.locator('.mm-node.d1').count(), '| prompt had docs:', /maverick spend 22 percent/.test(calls.map || ''), '| advert excluded:', !/ADVERT|JOB\n/.test(calls.map || ''), '| passages:', (calls.map.match(/\[D\d+-P\d+\]/g) || []).length);
+log('grounding note:', (await page.textContent('.docs-map .hint')).replace(/\s+/g, ' ').slice(0, 220));
+await page.click('.mm-node.d1 >> nth=0'); await page.waitForSelector('.mm-detail');
 log('node detail:', (await page.textContent('.mm-detail')).replace(/\s+/g, ' ').slice(0, 100));
 await page.click('[data-mm-toggle]'); await page.waitForTimeout(200);
 log('after collapse nodes:', await page.locator('.mm-node').count());

@@ -222,7 +222,7 @@
         <div class="row gap wrap"><strong>✓ Read and understood</strong>${g.relevance ? html`<span class="chip ${/^high/i.test(g.relevance) ? 'ok' : /^low/i.test(g.relevance) ? 'bad' : 'muted'}" title="${g.relevance}">Relevance to this job: ${g.relevance.split(':')[0]}</span>` : ''}${stale ? html`<span class="chip warn">Notes changed since check</span>` : ''}<button class="linkish small" data-digest="${d.id}" type="button">Check again</button></div>
         <p class="small mt-s">${g.summary}</p>
         ${(g.facts || []).length ? html`<p class="small muted mt-s">Facts it found (check these against your file):</p><ul class="tight small">${g.facts.map(f => html`<li>${f}</li>`)}</ul>` : ''}
-        ${(g.questions || []).length ? html`<p class="small mt-s"><strong>Questions from this file</strong></p><div class="qs qs-doc">${g.questions.map(q => html`<details><summary><span class="chip muted">${q.type || 'question'}</span> ${q.q}</summary><p class="small muted">${q.why || ''}</p><ul class="tight small">${(q.answer_outline || []).map(x => html`<li>${x}</li>`)}</ul></details>`)}</div>` : ''}
+        ${(g.questions || []).length ? html`<p class="small mt-s"><strong>Questions from this file</strong></p><div class="qs qs-doc">${g.questions.map((q, qi) => html`<details><summary><span class="chip muted">${q.type || 'question'}</span> <span class="q-text">${q.q}</span><button class="q-del" data-gqdel="${d.id}:${qi}" type="button" title="Delete this question" aria-label="Delete question">🗑</button></summary><p class="small muted">${q.why || ''}</p><ul class="tight small">${(q.answer_outline || []).map(x => html`<li>${x}</li>`)}</ul></details>`)}</div>` : ''}
       </div>`;
     };
     async function digest(d) {
@@ -262,20 +262,20 @@
                   <label class="check-line small"><input type="checkbox" data-use="${d.id}" ${d.use !== false ? raw('checked') : ''}> Use</label>
                   <button class="btn ghost small" data-open="${d.id}" type="button">Open</button>
                   ${d.status === 'error' || d.status === 'notes' ? html`<button class="btn ghost small" data-retry="${d.id}" type="button">Read again</button>` : ''}
-                  <button class="icon-btn" data-del="${d.id}" type="button" title="Remove" aria-label="Remove ${d.name}">✕</button>
+                  <button class="btn ghost small danger" data-del="${d.id}" data-label="Delete" type="button" title="Delete this file and what was read from it" aria-label="Delete ${d.name}">🗑 Delete</button>
                 </div>
               </article>`)}</div>
             ${a.docs.length ? '' : html`<p class="empty-note">No documents yet.</p>`}
           </section>
 
           <section class="panel">
-            <div class="panel-head"><h2>Likely interview questions</h2>${a.docQuestions ? html`<button class="btn ghost small" id="dq-copy" type="button">Copy all</button>` : ''}</div>
+            <div class="panel-head"><h2>Likely interview questions</h2>${a.docQuestions ? html`<div class="row gap"><button class="btn ghost small" id="dq-copy" type="button">Copy all</button><button class="btn ghost small danger" id="dq-clear" data-label="Delete all" type="button" title="Delete all these questions">🗑 Delete all</button></div>` : ''}</div>
             <p class="hint" id="dq-hint">${dqHint()}</p>
             <button class="btn primary" id="dq-go" type="button">${a.docQuestions ? 'Prepare again' : 'Prepare questions'}</button>
             <ol class="progress" id="dq-prog" hidden></ol>
             ${a.docQuestions ? html`
               ${(a.docQuestions.themes || []).length ? html`<p class="small mt">Themes: ${a.docQuestions.themes.map(t => html`<span class="chip accent">${t}</span> `)}</p>` : ''}
-              ${groups(a.docQuestions.items).map(([src, items]) => html`<h3 class="h-sub mt">${src}</h3><div class="qs">${items.map((q, i) => html`<details><summary><span class="chip muted">${q.type}</span> ${q.q}</summary>
+              ${groups(a.docQuestions.items).map(([src, items]) => html`<h3 class="h-sub mt">${src}</h3><div class="qs">${items.map(q => html`<details><summary><span class="chip muted">${q.type}</span> <span class="q-text">${q.q}</span><button class="q-del" data-qdel="${a.docQuestions.items.indexOf(q)}" type="button" title="Delete this question" aria-label="Delete question">🗑</button></summary>
                 <p class="small muted">${q.why}</p>
                 <ul class="tight small">${(q.answer_outline || []).map(x => html`<li>${x}</li>`)}</ul>
                 ${q.story_hint && stories.find(s => s.id === q.story_hint) ? html`<p class="small">Story to use: <strong>${stories.find(s => s.id === q.story_hint).title}</strong></p>` : ''}</details>`)}</div>`)}` : ''}
@@ -283,15 +283,15 @@
 
           <section class="panel docs-map">
             <div class="panel-head"><h2>Mind map of your documents</h2>
-              <div class="row gap wrap">${a.docMap ? html`<button class="btn ghost small" id="mm-dl" type="button">Download (SVG)</button>` : ''}<button class="btn ${a.docMap ? 'ghost' : 'primary'} small" id="mm-go" type="button" ${readable().length ? '' : raw('disabled')}>${a.docMap ? 'Rebuild' : 'Build mind map'}</button></div></div>
+              <div class="row gap wrap">${a.docMap ? html`<button class="btn ghost small" id="mm-dl" type="button">Download (SVG)</button><button class="btn ghost small danger" id="mm-del" data-label="Delete map" type="button">🗑 Delete map</button>` : ''}<button class="btn ${a.docMap ? 'ghost' : 'primary'} small" id="mm-go" type="button" ${readable().length ? '' : raw('disabled')}>${a.docMap ? 'Rebuild' : 'Build mind map'}</button></div></div>
             <p class="hint">${a.docMap && a.docMap.grounded ? html`Built only from your ${a.docMap.from} (${a.docMap.passages} passages${a.docMap.coverage < 100 ? `, ${a.docMap.coverage}% of the text` : ''}) on ${new Date(a.docMap.at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}. Every topic quotes the passage it came from: ${a.docMap.kept} checked against your files${a.docMap.removed ? html`, <strong>${a.docMap.removed} removed</strong> because the quote wasn't found` : ''}.${a.docMap.sig !== mapSig() ? html` <span class="chip warn">Documents changed since. Rebuild to include them</span>` : ''}` : a.docMap ? html`<span class="chip warn">This map was built before document-only mode. Rebuild it.</span>` : readable().length ? `Built only from your ${readable().length} readable document${readable().length === 1 ? '' : 's'}: nothing from the advert or outside knowledge. Every topic is checked against the exact words in your files.` : 'Add a readable document or notes first. The mind map uses only your documents.'}</p>
             <div id="mm-root">${a.docMap ? '' : ''}</div>
           </section>
 
           <section class="panel docs-ask">
-            <div class="panel-head"><h2>Ask about these documents</h2>${(a.docChat || []).length ? html`<button class="linkish small" id="dc-clear" type="button">Clear</button>` : ''}</div>
+            <div class="panel-head"><h2>Ask about these documents</h2>${(a.docChat || []).length ? html`<button class="btn ghost small danger" id="dc-clear" data-label="Delete all" type="button">🗑 Delete all</button>` : ''}</div>
             <p class="hint">Clarify anything: scope, systems, who's who, what the client wants. Answers come only from your documents and the advert.</p>
-            <div class="chat">${(a.docChat || []).map(m => html`<div class="chat-q">${m.q}</div><div class="chat-a">${m.a}${(m.sources || []).length ? html`<div class="muted small mt-s">Sources: ${m.sources.join(', ')}</div>` : ''}${m.ask ? html`<div class="small mt-s"><strong>Ask them:</strong> ${m.ask} <button class="linkish small" data-copyask="${m.ask}" type="button">Copy</button></div>` : ''}</div>`)}</div>
+            <div class="chat">${(a.docChat || []).map((m, ci) => html`<div class="chat-q"><span>${m.q}</span><button class="q-del" data-cdel="${ci}" type="button" title="Delete this question and answer" aria-label="Delete question and answer">🗑</button></div><div class="chat-a">${m.a}${(m.sources || []).length ? html`<div class="muted small mt-s">Sources: ${m.sources.join(', ')}</div>` : ''}${m.ask ? html`<div class="small mt-s"><strong>Ask them:</strong> ${m.ask} <button class="linkish small" data-copyask="${m.ask}" type="button">Copy</button></div>` : ''}</div>`)}</div>
             <form id="dc-form" class="row gap"><input id="dc-q" type="text" placeholder="e.g. Which S/4HANA modules are in scope?" ${readable().length ? '' : raw('disabled')} autocomplete="off" title="${readable().length ? '' : 'Add a readable file or notes first'}"><button class="btn primary" type="submit" ${readable().length ? '' : raw('disabled')}>Ask</button></form>
           </section>
         </div>`);
@@ -357,9 +357,17 @@
         const d = a.docs.find(x => x.id === del.dataset.del);
         if (!confirmInline(del)) return;
         await S.delFile(d.id).catch(() => {});
-        if (d.assetId) { const as = await assets(); if (as) as.delete(d.assetId).catch(() => {}); }
+        if (d.assetId) { const as = await assets(); try { if (as && as.delete) await as.delete(d.assetId); } catch (_) { /* the local copy is gone either way */ } }
         a.docs = a.docs.filter(x => x !== d); await save(); draw(); toast('Removed'); return;
       }
+      const qd = t.closest('[data-qdel]');
+      if (qd) { e.preventDefault(); a.docQuestions.items.splice(+qd.dataset.qdel, 1); if (!a.docQuestions.items.length) a.docQuestions = null; await save(); draw(); toast('Question deleted'); return; }
+      const gq = t.closest('[data-gqdel]');
+      if (gq) { e.preventDefault(); const [id, i] = gq.dataset.gqdel.split(':'); const d = a.docs.find(x => x.id === id); if (d && d.digest) { d.digest.questions.splice(+i, 1); await save(); draw(); toast('Question deleted'); } return; }
+      const cd = t.closest('[data-cdel]');
+      if (cd) { a.docChat.splice(+cd.dataset.cdel, 1); await save(); draw(); toast('Deleted'); return; }
+      if (t.id === 'dq-clear') { if (!confirmInline(t)) return; a.docQuestions = null; await save(); draw(); toast('Questions deleted'); return; }
+      if (t.id === 'mm-del') { if (!confirmInline(t)) return; a.docMap = null; mmApi = null; await save(); draw(); toast('Mind map deleted'); return; }
       const dg = t.closest('[data-digest]');
       if (dg) { const d = a.docs.find(x => x.id === dg.dataset.digest); if (d) digest(d); return; }
       const retry = t.closest('[data-retry]');
@@ -389,11 +397,11 @@
       }
       if (t.id === 'mm-dl' && mmApi) { window.CVT.ui.download(new Blob([mmApi.svgText()], { type: 'image/svg+xml' }), `${(a.company || 'job').replace(/\W+/g, '_')}_mind_map.svg`); return; }
       if (t.id === 'dq-copy') { copy(a.docQuestions.items.map((q, i) => `${i + 1}. ${q.q}\n   ${(q.answer_outline || []).map(x => '- ' + x).join('\n   ')}`).join('\n\n')); return; }
-      if (t.id === 'dc-clear') { a.docChat = []; await save(); draw(); return; }
+      if (t.id === 'dc-clear') { if (!confirmInline(t)) return; a.docChat = []; await save(); draw(); toast('Deleted'); return; }
       const ca = t.closest('[data-copyask]'); if (ca) { copy(ca.dataset.copyask); return; }
     });
     // Two-step delete without browser dialogs.
-    function confirmInline(btn) { if (btn.dataset.sure) return true; btn.dataset.sure = '1'; btn.textContent = 'Sure?'; btn.classList.add('danger'); setTimeout(() => { if (btn.isConnected) { delete btn.dataset.sure; btn.textContent = '✕'; btn.classList.remove('danger'); } }, 3000); return false; }
+    function confirmInline(btn) { if (btn.dataset.sure) return true; const was = btn.textContent; btn.dataset.sure = '1'; btn.textContent = 'Click again to delete'; btn.classList.add('armed'); setTimeout(() => { if (btn.isConnected) { delete btn.dataset.sure; btn.textContent = was; btn.classList.remove('armed'); } }, 4000); return false; }
 
     body.addEventListener('submit', async e => {
       if (e.target.id !== 'dc-form') return; e.preventDefault();

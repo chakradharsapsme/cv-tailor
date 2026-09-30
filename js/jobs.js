@@ -361,6 +361,8 @@
           if (old) { old.sources = [...new Set([...(old.sources || [old.source]), j.source])]; if (!old.jd && j.jd) old.jd = j.jd; if (!old.pay && j.pay) old.pay = j.pay; old.lastSeen = new Date().toISOString(); }
           else { feed.items[k] = Object.assign(j, { key: k, query: '', firstSeen: new Date().toISOString(), lastSeen: new Date().toISOString(), status: 'new' }); added++; }
         }
+        // Drop earlier web results that no longer fit your searches (untouched ones only).
+        Object.values(feed.items).forEach(j => { if (j.status === 'new' && /^(Careers · |Remotive|Jobicy)/.test(j.source || '') && !relevant(j)) delete feed.items[j.key]; });
         feed.webRun = { at: new Date().toISOString(), bySource: r.bySource };
         if (r.errors.length) feed.webErrors = r.errors.slice(0, 5); else delete feed.webErrors;
       } catch (e) { errors.push({ code: 'web', text: 'Job sites: ' + (e.message || e) }); }

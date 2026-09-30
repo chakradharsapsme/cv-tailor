@@ -315,7 +315,8 @@
       } catch (e) { toast(`${d.name}: ${e.message}`, 'bad'); }
       checking.delete(d.id); await save(); draw();
     }
-    const draw = () => { drawBase(); mountMap(); };
+    const mountStudio = () => { const r = $('#studio-root', body); if (r && window.CVT.studio) window.CVT.studio.mount(r, { a, readable, passagesOf, found, save: () => save(), sig: mapSig, redraw: () => draw(), refreshJump: () => draw() }); };
+    const draw = () => { drawBase(); mountMap(); mountStudio(); };
     const drawBase = () => {
       const nq = a.docQuestions ? a.docQuestions.items.length : 0, np = a.docQuestions ? a.docQuestions.items.filter(q => q.practised).length : 0;
       body.innerHTML = String(html`
@@ -324,7 +325,8 @@
           <button type="button" data-jump="sec-qs">Interview questions <span>${nq ? `${np}/${nq}` : '0'}</span></button>
           <button type="button" data-jump="sec-map">Mind map <span>${a.docMap ? '✓' : '–'}</span></button>
           <button type="button" data-jump="sec-ask">Ask <span>${(a.docChat || []).length}</span></button>
-          ${a.docs.length || a.docQuestions || a.docMap || (a.docChat || []).length ? html`<span class="grow-s"></span><button type="button" class="btn ghost small danger" id="docs-wipe" title="Delete every file, question, the mind map and the Q&A on this page">🗑 Delete everything &amp; start again</button>` : ''}
+          <button type="button" data-jump="sec-studio">Studio <span>${Object.keys(a.studio || {}).length + ((a.docNotes || []).length ? '+' + a.docNotes.length : '')}</span></button>
+          ${a.docs.length || a.docQuestions || a.docMap || (a.docChat || []).length || Object.keys(a.studio || {}).length || (a.docNotes || []).length ? html`<span class="grow-s"></span><button type="button" class="btn ghost small danger" id="docs-wipe" title="Delete every file, question, the mind map, the Q&A, Studio outputs and notes on this page">🗑 Delete everything &amp; start again</button>` : ''}
         </nav>
         <div class="docs-grid">
           <section class="panel" id="sec-docs">
@@ -376,10 +378,12 @@
             <div id="mm-root">${a.docMap ? '' : ''}</div>
           </section>
 
+          <section class="panel docs-studio" id="sec-studio"><div id="studio-root"></div></section>
+
           <section class="panel docs-ask" id="sec-ask">
             <div class="panel-head"><h2>Ask about these documents</h2>${(a.docChat || []).length ? html`<button class="btn ghost small danger" id="dc-clear" data-label="Delete all" type="button">🗑 Delete all</button>` : ''}</div>
             <p class="hint">Answers come only from your documents. Applywise first finds the passages that match your question, then ${engine()} writes the answer citing each passage, and every quote is checked against your files.</p>
-            <div class="chat">${(a.docChat || []).map((m, ci) => html`<div class="chat-q"><span>${m.q}</span><button class="q-del" data-cdel="${ci}" type="button" title="Delete this question and answer" aria-label="Delete question and answer">🗑</button></div><div class="chat-a">${m.conf ? html`<span class="conf conf-${m.conf}">${CONF[m.conf]}</span>` : ''}<div class="ans">${cited(m.a, m.cites)}</div>${(m.cites || []).length ? html`<details class="cites"><summary class="small">Sources · ${m.cites.length} passage${m.cites.length === 1 ? '' : 's'}${m.searched ? ` (searched ${m.searched} of ${m.total})` : ''}</summary><ol>${m.cites.map((c, i) => html`<li id="${'cite-' + ci + '-' + i}" class="${c.ok ? 'ok' : 'unv'}"><span class="small"><strong>${c.doc}</strong>${c.ref ? ', passage ' + pnum(c.ref) : ''} ${c.ok ? html`<span class="ok-text">✓ quote found</span>` : html`<span class="warn-text">⚠ quote not found: treat with care</span>`}</span><blockquote class="mm-quote">“${c.quote}”</blockquote></li>`)}</ol></details>` : (m.sources || []).length ? html`<div class="muted small mt-s">Sources: ${m.sources.join(', ')}</div>` : ''}${m.ask ? html`<div class="small mt-s"><strong>Ask them:</strong> ${m.ask} <button class="linkish small" data-copyask="${m.ask}" type="button">Copy</button></div>` : ''}</div>`)}</div>
+            <div class="chat">${(a.docChat || []).map((m, ci) => html`<div class="chat-q"><span>${m.q}</span><button class="q-del" data-cdel="${ci}" type="button" title="Delete this question and answer" aria-label="Delete question and answer">🗑</button></div><div class="chat-a">${m.conf ? html`<span class="conf conf-${m.conf}">${CONF[m.conf]}</span>` : ''}<div class="ans">${cited(m.a, m.cites)}</div>${(m.cites || []).length ? html`<details class="cites"><summary class="small">Sources · ${m.cites.length} passage${m.cites.length === 1 ? '' : 's'}${m.searched ? ` (searched ${m.searched} of ${m.total})` : ''}</summary><ol>${m.cites.map((c, i) => html`<li id="${'cite-' + ci + '-' + i}" class="${c.ok ? 'ok' : 'unv'}"><span class="small"><strong>${c.doc}</strong>${c.ref ? ', passage ' + pnum(c.ref) : ''} ${c.ok ? html`<span class="ok-text">✓ quote found</span>` : html`<span class="warn-text">⚠ quote not found: treat with care</span>`}</span><blockquote class="mm-quote">“${c.quote}”</blockquote></li>`)}</ol></details>` : (m.sources || []).length ? html`<div class="muted small mt-s">Sources: ${m.sources.join(', ')}</div>` : ''}${m.ask ? html`<div class="small mt-s"><strong>Ask them:</strong> ${m.ask} <button class="linkish small" data-copyask="${m.ask}" type="button">Copy</button></div>` : ''}<div class="mt-s"><button class="linkish small" data-pin="${ci}" type="button">${m.pinned ? '📌 Saved to notes' : '📌 Save to notes'}</button></div></div>`)}</div>
             ${readable().length ? html`<div class="dc-suggest">${SUGGEST.map(x => html`<button type="button" class="dq-f" data-suggest="${x}">${x}</button>`)}</div>` : ''}
             <form id="dc-form" class="row gap"><input id="dc-q" type="text" placeholder="e.g. Which S/4HANA modules are in scope?" ${readable().length ? '' : raw('disabled')} autocomplete="off" title="${readable().length ? '' : 'Add a readable file or notes first'}"><button class="btn primary" type="submit" ${readable().length ? '' : raw('disabled')}>Ask</button></form>
           </section>
@@ -502,7 +506,7 @@
       if (t.id === 'mm-dl' && mmApi) { window.CVT.ui.download(new Blob([mmApi.svgText()], { type: 'image/svg+xml' }), `${(a.company || 'job').replace(/\W+/g, '_')}_mind_map.svg`); return; }
       if (t.id === 'dq-copy') { copy(a.docQuestions.items.map(qText).join('\n\n')); return; }
       if (t.id === 'docs-wipe') {
-        if (!t.dataset.sure) { t.dataset.sure = '1'; t.textContent = `Click again to delete ${a.docs.length} file${a.docs.length === 1 ? '' : 's'}, questions, mind map and Q&A`; t.classList.add('armed'); setTimeout(() => { if (t.isConnected) { delete t.dataset.sure; t.textContent = '🗑 Delete everything & start again'; t.classList.remove('armed'); } }, 5000); return; }
+        if (!t.dataset.sure) { t.dataset.sure = '1'; t.textContent = `Click again to delete ${a.docs.length} file${a.docs.length === 1 ? '' : 's'}, questions, mind map, Q&A, Studio and notes`; t.classList.add('armed'); setTimeout(() => { if (t.isConnected) { delete t.dataset.sure; t.textContent = '🗑 Delete everything & start again'; t.classList.remove('armed'); } }, 5000); return; }
         t.disabled = true; t.textContent = 'Deleting…';
         const as = a.docs.some(d => d.assetId) ? await assets() : null;
         for (const d of a.docs) {
@@ -510,11 +514,13 @@
           if (d.assetId && as && as.delete) { try { await as.delete(d.assetId); } catch (_) {} }
         }
         const n = a.docs.length;
-        a.docs = []; a.docQuestions = null; a.docMap = null; a.docChat = []; mmApi = null; openQ.clear(); dqFilter = 'all';
+        if (window.CVT.studio) window.CVT.studio.stop();
+        a.docs = []; a.docQuestions = null; a.docMap = null; a.docChat = []; a.studio = {}; a.docNotes = []; mmApi = null; openQ.clear(); dqFilter = 'all';
         await save(); draw(); window.scrollTo({ top: 0 }); toast(`Cleared: ${n} file${n === 1 ? '' : 's'} and everything built from them. Your My questions tab is untouched.`);
         return;
       }
       if (t.id === 'dc-clear') { if (!confirmInline(t)) return; a.docChat = []; await save(); draw(); toast('Deleted'); return; }
+      const pn = t.closest('[data-pin]'); if (pn) { const m = a.docChat[+pn.dataset.pin]; if (!m.pinned) { window.CVT.studio.pin(a, m.q, m.a.replace(/\s*\[D\d+-P\d+(?:\s*[,;]\s*D\d+-P\d+)*\]/g, '')); m.pinned = true; await save(); window.CVT.studio.open(a.id, 'notes'); draw(); toast('Saved to Studio → Notes'); } return; }
       const sg = t.closest('[data-suggest]'); if (sg) { const i = $('#dc-q', body); i.value = sg.dataset.suggest; $('#dc-form', body).requestSubmit(); return; }
       const ca = t.closest('[data-copyask]'); if (ca) { copy(ca.dataset.copyask); return; }
     });

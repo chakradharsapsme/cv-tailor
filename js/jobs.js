@@ -514,6 +514,7 @@
     const [feed, apps, profile, avail, ev] = await Promise.all([loadFeed(), S.listApps(), S.getProfile(), available(), evidence()]);
     const cfg = await searchesOf(feed);
     const ui = Object.assign({ min: 0, days: 30, type: '', q: '', sort: 'score', showHidden: false, allRoles: false, src: '', kind: '', mode: '' }, S.local.get('cvt.jobsUi', {}));
+    if (window.CVT._jobQuery) { ui.q = window.CVT._jobQuery; window.CVT._jobQuery = null; }
 
     root.innerHTML = String(html`
       <header class="page-head">

@@ -2,7 +2,7 @@
 (function () {
   const { html, raw, esc, $, $$, toast, download, copy, today, ukDate, longDate, daysBetween, VERDICT, scoreCls, state, masterModel } = window.CVT.ui;
   const S = window.CVT.store, A = window.CVT.agent, D = window.CVT.docx;
-  const VERSION = 'v3.1';
+  const VERSION = 'v4.0';
   const ACTIVE = ['Applied', 'Screening', 'Interview', 'Offer'];
   const REACHED = s => ['Screening', 'Interview', 'Offer', 'Accepted'].includes(s);
 
@@ -586,8 +586,9 @@
   // =====================================================================
   async function help(root) {
     const inClaude = window.CVT.app.inClaude();
+    root.addEventListener('click', e => { if (e.target.closest('#help-tour')) window.CVT.shell.tour(true); });
     root.innerHTML = String(html`
-      <header class="page-head"><div><p class="eyebrow">Applywise ${VERSION}</p><h1>Help and privacy</h1></div></header>
+      <header class="page-head"><div><p class="eyebrow">Applywise ${VERSION}</p><h1>Help and privacy</h1></div><div class="row gap"><button class="btn ghost" type="button" id="help-tour">Take the tour</button><a class="btn ghost" href="#/pricing">Plans and pricing</a></div></header>
       ${inClaude ? html`<section class="panel mb">
         <div class="panel-head"><h2>Watch the 3-minute guide</h2><span class="muted small">AI voice · captions on</span></div>
         <video class="help-video" controls preload="none" playsinline poster="/_blob/f007580ce716ede25ce4271f3ee9c15e" src="/_blob/dbb74236c941ca767f19c6e9ddb2e69f"></video>

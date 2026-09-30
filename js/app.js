@@ -97,10 +97,13 @@
       else if (view === 'autopilot') await window.CVT.autopilot.view(root);
       else if (view === 'prep') await window.CVT.prep.view(root, id, tab);
       else if (view === 'help') await V.help(root);
+      else if (view === 'pricing') await window.CVT.shell.pricing(root);
       else if (view === 'profile') await V.profile(root);
       else if (view === 'settings') await V.settings(root);
       else await V.dashboard(root);
-      document.title = ({ app: 'Application', pipeline: 'Pipeline', jobs: 'Jobs', prep: 'Interview prep', autopilot: 'Autopilot', help: 'Help and privacy', profile: 'Career profile', settings: 'Settings' }[view] || 'Dashboard') + ' · Applywise';
+      const T = ({ app: 'Application', pipeline: 'Pipeline', jobs: 'Jobs', prep: 'Interview prep', autopilot: 'Autopilot', help: 'Help and privacy', profile: 'Career profile', settings: 'Settings', pricing: 'Plans and pricing' }[view] || 'Dashboard');
+      document.title = T + ' · Applywise';
+      if (window.CVT.shell) window.CVT.shell.refresh(T);
     } catch (e) {
       console.error(e);
       root.innerHTML = `<section class="panel"><h1>Something went wrong</h1><p class="error">${window.CVT.ui.esc(e.message)}</p><p><a class="link" href="#/dashboard">Back to dashboard</a></p></section>`;
@@ -122,8 +125,10 @@
     try { await S.migrateV1(); } catch (e) { console.warn('Migration skipped', e); }
     if (state.provider === 'gemini' && state.geminiKey) loadModels();
     window.addEventListener('hashchange', () => { if (location.hash && location.hash !== current) { current = location.hash; route(); } });
+    if (window.CVT.shell) window.CVT.shell.initTopbar();
     await route();
     refreshBadges();
+    if (window.CVT.shell) setTimeout(() => window.CVT.shell.tour(false), 400);
     window.CVT.sync.onChange(st => { const n = $('#data-note'); if (n && st.state === 'on') n.textContent = 'Private to you and synced to your Claude account. Nothing is submitted without you.'; });
     // Pull newer data from your other devices (inside claude.ai), then redraw if anything changed.
     try {

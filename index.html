@@ -7,7 +7,7 @@
 <meta name="description" content="Applywise is a private job-search workspace. Find matching jobs, tailor your own Word CV without breaking its layout, write cover letters, prepare for interviews and track every application. Your data stays in your browser.">
 <meta name="theme-color" content="#0F1729">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="assets/icon-192.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Applywise">
@@ -18,7 +18,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500;600&display=swap">
-<link rel="stylesheet" href="assets/styles.css?v=4.6">
+<link rel="stylesheet" href="assets/styles.css?v=5.0">
 </head>
 <body>
 <div class="shell">
@@ -56,6 +56,7 @@
       <div class="tb-actions">
         <a class="tb-link" href="#/pricing">Pricing</a>
         <button class="tb-icon" id="tb-theme" type="button" title="Switch light / dark" aria-label="Switch light or dark theme"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="6.5"/><path d="M10 3.5a6.5 6.5 0 0 0 0 13z" fill="currentColor"/></svg></button>
+        <button class="btn primary small tb-install" id="tb-install" type="button" hidden>Install app</button>
         <button class="tb-icon" id="tb-tour" type="button" title="Take the tour" aria-label="Take the tour">?</button>
         <a class="tb-avatar" id="tb-avatar" href="#/profile" aria-label="Career profile">Me</a>
       </div>
@@ -63,7 +64,7 @@
     <main id="main" class="main" tabindex="-1"></main>
     <footer class="site-foot">
       <div class="sf-brand"><span class="brand-mark sm" aria-hidden="true">Aw</span><span><strong>Applywise</strong><span class="muted"> · Apply smarter. Land the right role.</span></span></div>
-      <nav class="sf-links" aria-label="Footer"><a href="#/help">Help and privacy</a><a href="#/pricing">Pricing</a><a href="#/settings">Settings</a><button type="button" class="linkish" id="sf-theme">Light / dark</button></nav>
+      <nav class="sf-links" aria-label="Footer"><a href="#/help">Help and privacy</a><a href="#/pricing">Pricing</a><a href="#/settings">Settings</a><a href="privacy.html">Privacy policy</a><a href="terms.html">Terms</a><button type="button" class="linkish" id="sf-install" hidden>Install app</button><button type="button" class="linkish" id="sf-theme">Light / dark</button></nav>
       <p class="sf-note">Your data stays private to you. Nothing is submitted without your click.</p>
     </footer>
   </div>
@@ -71,27 +72,30 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/docx-preview@0.3.5/dist/docx-preview.min.js"></script>
-<script src="js/docx-engine.js?v=4.6"></script>
-<script src="js/agent.js?v=4.6"></script>
-<script src="js/store.js?v=4.6"></script>
-<script src="js/ui.js?v=4.6"></script>
-<script src="js/sync.js?v=4.6"></script>
-<script src="js/autofill.js?v=4.6"></script>
-<script src="js/demo.js?v=4.6"></script>
-<script src="js/countries.js?v=4.6"></script>
-<script src="js/websources.js?v=4.6"></script>
-<script src="js/jobs.js?v=4.6"></script>
-<script src="js/drills.js?v=4.6"></script>
-<script src="js/prep.js?v=4.6"></script>
-<script src="js/views.js?v=4.6"></script>
-<script src="js/workspace.js?v=4.6"></script>
-<script src="js/mindmap.js?v=4.6"></script>
-<script src="js/docs.js?v=4.6"></script>
-<script src="js/studio.js?v=4.6"></script>
-<script src="js/myqs.js?v=4.6"></script>
-<script src="js/autopilot.js?v=4.6"></script>
-<script src="js/shell.js?v=4.6"></script>
-<script src="js/layout.js?v=4.6"></script>
-<script src="js/app.js?v=4.6"></script>
+<script src="js/docx-engine.js?v=5.0"></script>
+<script src="js/agent.js?v=5.0"></script>
+<script src="js/store.js?v=5.0"></script>
+<script src="js/countries.js?v=5.0"></script>
+<script src="js/fields.js?v=5.0"></script>
+<script src="js/ui.js?v=5.0"></script>
+<script src="js/sync.js?v=5.0"></script>
+<script src="js/autofill.js?v=5.0"></script>
+<script src="js/demo.js?v=5.0"></script>
+<script src="js/websources.js?v=5.0"></script>
+<script src="js/jobs.js?v=5.0"></script>
+<script src="js/drills.js?v=5.0"></script>
+<script src="js/prep.js?v=5.0"></script>
+<script src="js/views.js?v=5.0"></script>
+<script src="js/workspace.js?v=5.0"></script>
+<script src="js/mindmap.js?v=5.0"></script>
+<script src="js/docs.js?v=5.0"></script>
+<script src="js/studio.js?v=5.0"></script>
+<script src="js/myqs.js?v=5.0"></script>
+<script src="js/autopilot.js?v=5.0"></script>
+<script src="js/shell.js?v=5.0"></script>
+<script src="js/layout.js?v=5.0"></script>
+<script src="js/pwa.js?v=5.0"></script>
+<script src="js/welcome.js?v=5.0"></script>
+<script src="js/app.js?v=5.0"></script>
 </body>
 </html>

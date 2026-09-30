@@ -526,6 +526,7 @@
       <div class="job-score"><span class="score-pill ${scoreCls(sc.score)}" title="${sc.quick ? 'Quick match from the title. Open details for a full check.' : 'Skills in the advert that your CV shows'}">${sc.score}${sc.quick ? raw('<small>~</small>') : ''}</span></div>
       <div class="job-main">
         <div class="job-title-row">
+          <span class="co-logo" style="--h:${[...String(j.company || '?')].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 360, 7)}" aria-hidden="true">${(String(j.company || '?').replace(/^the\s+/i, '').trim()[0] || '?').toUpperCase()}</span>
           ${j.url ? html`<a class="job-title" href="${j.url}" target="_blank" rel="noopener">${j.title}</a>` : html`<span class="job-title">${j.title}</span>`}
           ${j.status === 'new' ? html`<span class="chip accent">New</span>` : ''}
           ${j.status === 'imported' ? html`<span class="chip ok">In pipeline</span>` : ''}

@@ -525,6 +525,16 @@ if (PROVIDER === 'claude') {
   log('jobs intro:', (await page.textContent('.callout')).replace(/\s+/g, ' ').slice(0, 260));
   await shot('09z-jobs-web');
 }
+{ // Careers sites linked to the CV: add an employer by name, then find employers from the CV
+  await page.fill('#emp-name', 'Monzo'); await page.click('#emp-add');
+  await page.waitForFunction(() => /found on|Couldn/.test((document.querySelector('#emp-panel') || {}).textContent || ''), null, { timeout: 30000 });
+  log('employer add:', (await page.textContent('#emp-panel .small.mt')).trim(), '| list:', await page.locator('.emp-list li').count());
+  await page.click('#emp-find');
+  await page.waitForFunction(() => /Checked|No employer/.test((document.querySelector('#emp-panel') || {}).textContent || ''), null, { timeout: 90000 });
+  log('employers from CV:', (await page.textContent('#emp-panel .small.mt')).trim(), '| names:', JSON.stringify(await page.$$eval('.emp-list strong', e => e.map(x => x.textContent))));
+  log('employer portals searched:', JSON.stringify(await page.evaluate(() => window.CVT.employers.portals())));
+  await shot('09x-employers');
+}
 { // Country: detected as UK; switch to India and search there
   log('country detected:', await page.evaluate(() => window.CVT.countries.detect()), '| select:', await page.inputValue('#s-country'), '| loc:', await page.inputValue('#s-loc'));
   const ukBoards = await page.$$eval('#b-links a', els => els.map(e => e.textContent.trim().split(' ')[0]));

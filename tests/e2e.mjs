@@ -355,6 +355,11 @@ log('docs stored:', JSON.stringify(stored));
   await page.click('#dq-clear'); await page.click('#dq-clear'); await page.waitForTimeout(300);
   log('delete all questions:', !(await page.locator('[data-qdel]').count()), '| button back to:', (await page.textContent('#dq-go')).trim());
   await shot('07d-deletes');
+  const before = await page.evaluate(async () => { const a = (await window.CVT.store.listApps()).find(x => (x.docs || []).length); return { id: a.id, files: a.docs.map(d => d.id) }; });
+  await page.click('#docs-wipe'); const armedW = (await page.textContent('#docs-wipe')).trim(); await page.click('#docs-wipe'); await page.waitForTimeout(800);
+  const after = await page.evaluate(async id => { const a = await window.CVT.store.getApp(id); return { docs: a.docs.length, q: !!a.docQuestions, map: !!a.docMap, chat: (a.docChat || []).length, myQs: (a.myQs || []).length }; }, before.id);
+  const blobs = await page.evaluate(async ids => (await Promise.all(ids.map(i => window.CVT.store.getFile(i)))).filter(Boolean).length, before.files);
+  log('delete everything:', armedW, '->', JSON.stringify(after), '| local files left:', blobs, '| wipe button gone:', !(await page.locator('#docs-wipe').count()), '| section buttons still there after re-add: see earlier');
 }
 const media = await page.evaluate(async () => {
   const A = window.CVT.agent, orig = A.claudeSample; let sent = 0;

@@ -2,7 +2,7 @@
 (function () {
   const { html, raw, esc, $, $$, toast, download, copy, today, ukDate, longDate, daysBetween, VERDICT, scoreCls, state, masterModel } = window.CVT.ui;
   const S = window.CVT.store, A = window.CVT.agent, D = window.CVT.docx;
-  const VERSION = 'v4.0';
+  const VERSION = 'v4.1';
   const ACTIVE = ['Applied', 'Screening', 'Interview', 'Offer'];
   const REACHED = s => ['Screening', 'Interview', 'Offer', 'Accepted'].includes(s);
 
@@ -60,7 +60,7 @@
           <div class="empty-state slim"><p class="hint">Find roles that match your target job titles and the skills on your CV, from company career portals and job boards, scored against your CV.</p>
           <button class="btn primary" id="dj-run" type="button">Find jobs now</button></div>
           <p class="small muted mt">Or search the big boards in one click:</p>
-          <div class="search-rows">${roles.slice(0, 4).map(r => html`<div class="search-row"><span class="search-role">${r}</span><span class="search-links">${J.boards(r, (profile.targetLocations || [])[0]).slice(0, 6).map(l => html`<a class="pill-link" href="${l.href}" target="_blank" rel="noopener">${l.name}</a>`)}</span></div>`)}</div>`);
+          <div class="search-rows">${roles.slice(0, 4).map(r => html`<div class="search-row"><span class="search-role">${r}</span><span class="search-links">${J.boards(r, '', window.CVT.countries.current()).slice(0, 6).map(l => html`<a class="pill-link" href="${l.href}" target="_blank" rel="noopener">${l.name}</a>`)}</span></div>`)}</div>`);
       } else {
         box.innerHTML = String(html`${head(`<span class="muted small">${note || 'Updated ' + J.relTime(t.feed.lastRun)}</span>`)}
           <div class="job-list compact">${t.items.map(r => J.jobCard(r.j, r.sc, r.dups, true))}</div>

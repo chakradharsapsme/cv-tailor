@@ -1,7 +1,7 @@
 /*
  * jobs.js — live job feed, market insights and company intel.
  *   Live pull : Indeed, through the viewer's Indeed connector in claude.ai (no key, no cost).
- *   Anywhere  : one-click searches on other UK boards, and paste-an-advert import.
+ *   Anywhere  : one-click searches on other boards in your country, and paste-an-advert import.
  * Scoring is local and instant: skills in the advert vs. skills your CV already shows.
  */
 (function () {
@@ -253,10 +253,16 @@
     const qs = [...new Set(roles.concat(skills))];
     return withBA((qs.length ? qs : CORE_SEARCHES).slice(0, 6));
   }
+  const CO = () => window.CVT.countries;
+  /** A place in the country: your target location if it is there, else the country itself. */
+  const placeIn = (code, loc) => (loc && (CO().inCountry(code, loc) || CO().get(code).name === loc)) ? loc : CO().get(code).name;
+  /** Jobs found for the country you are searching now (older results had no country and were UK). */
+  const inCountryNow = (j, cfg) => (j.country || 'GB') === cfg.country || j.status === 'imported' || j.status === 'saved';
   async function searchesOf(feed) {
-    if (feed.searches && feed.searches.queries && feed.searches.queries.length) return Object.assign({}, feed.searches, { queries: withBA(feed.searches.queries) });
+    const code = (feed.searches && CO().list[feed.searches.country]) ? feed.searches.country : CO().current();
+    if (feed.searches && feed.searches.queries && feed.searches.queries.length) return Object.assign({}, feed.searches, { country: code, location: placeIn(code, feed.searches.location), queries: withBA(feed.searches.queries) });
     const p = await S.getProfile();
-    return { queries: await defaultSearches(), location: (p.targetLocations || [])[0] || 'United Kingdom', remote: true, type: p.workPreference === 'Contract' ? 'contract' : '' };
+    return { country: code, queries: await defaultSearches(), location: placeIn(code, (p.targetLocations || [])[0]), remote: true, type: p.workPreference === 'Contract' ? 'contract' : '' };
   }
 
   let evidenceCache = null;
@@ -316,7 +322,8 @@
     running = (async () => {
       const feed = await loadFeed();
       const cfg = await searchesOf(feed);
-      const locs = [cfg.location || 'United Kingdom'].concat(cfg.remote ? ['remote'] : []);
+      const cc = CO().get(cfg.country);
+      const locs = [cfg.location || cc.name].concat(cfg.remote ? ['remote'] : []);
       const plan = [];
       cfg.queries.slice(0, 6).forEach(q => locs.forEach(l => plan.push({ q, l })));
       const errors = []; let added = 0, found = 0;
@@ -325,14 +332,14 @@
         const { q, l } = plan[i];
         onStep && onStep(i, plan.length, q, l);
         try {
-          const res = await call('search_jobs', { search: q, location: l, country_code: 'GB', job_type: cfg.type || null });
+          const res = await call('search_jobs', { search: q, location: l, country_code: cc.indeed, job_type: cfg.type || null });
           const jobs = parseSearch(res.result || res.text || '');
           found += jobs.length;
           for (const j of jobs) {
             const k = keyOf(j);
             const old = feed.items[k];
-            if (old) { Object.assign(old, { url: j.url || old.url, jobId: j.jobId, posted: j.posted || old.posted, pay: old.pay || j.pay, lastSeen: new Date().toISOString() }); if (l === 'remote') old.remote = true; }
-            else { feed.items[k] = Object.assign(j, { key: k, query: q, remote: l === 'remote', firstSeen: new Date().toISOString(), lastSeen: new Date().toISOString(), status: 'new' }); added++; }
+            if (old) { Object.assign(old, { url: j.url || old.url, jobId: j.jobId, posted: j.posted || old.posted, pay: old.pay || j.pay, lastSeen: new Date().toISOString() }); if ((old.country || 'GB') !== cfg.country) Object.assign(old, { country: cfg.country, location: j.location || old.location }); if (l === 'remote') old.remote = true; }
+            else { feed.items[k] = Object.assign(j, { key: k, query: q, country: cfg.country, remote: l === 'remote', firstSeen: new Date().toISOString(), lastSeen: new Date().toISOString(), status: 'new' }); added++; }
           }
         } catch (e) {
           errors.push({ code: e.code || 'error', text: errText(e) });
@@ -355,15 +362,15 @@
           return titleRel >= 0.5 || (!offTrack && titleSkill && skills >= 3) || (!offTrack && bodyRel >= 0.67 && skills >= 3 && IT_GENERIC.test(j.title));
         };
         const W = window.CVT.websources;
-        const r = await W.search({ queries: cfg.queries, portals: cfg.portals, relevant, onStep: t => onStep && onStep(-1, 0, t) });
+        const r = await W.search({ queries: cfg.queries, portals: cfg.portals, country: cfg.country, relevant, onStep: t => onStep && onStep(-1, 0, t) });
         found += r.jobs.length;
         for (const j of r.jobs) {
           const k = keyOf(j), old = feed.items[k];
-          if (old) { old.sources = [...new Set([...(old.sources || [old.source]), j.source])]; if (!old.jd && j.jd) old.jd = j.jd; if (!old.pay && j.pay) old.pay = j.pay; old.lastSeen = new Date().toISOString(); }
+          if (old) { old.sources = [...new Set([...(old.sources || [old.source]), j.source])]; if ((old.country || 'GB') !== j.country) Object.assign(old, { country: j.country, location: j.location, url: j.url || old.url }); if (!old.jd && j.jd) old.jd = j.jd; if (!old.pay && j.pay) old.pay = j.pay; old.lastSeen = new Date().toISOString(); }
           else { feed.items[k] = Object.assign(j, { key: k, query: '', firstSeen: new Date().toISOString(), lastSeen: new Date().toISOString(), status: 'new' }); added++; }
         }
         // Drop earlier web results that no longer fit your searches (untouched ones only).
-        Object.values(feed.items).forEach(j => { if (j.status === 'new' && /^(Careers · |Remotive|Jobicy)/.test(j.source || '') && !relevant(j)) delete feed.items[j.key]; });
+        Object.values(feed.items).forEach(j => { if (j.status === 'new' && /^(Careers · |Remotive|Jobicy)/.test(j.source || '') && (!relevant(j) || (j.country || 'GB') !== cfg.country)) delete feed.items[j.key]; });
         feed.webRun = { at: new Date().toISOString(), bySource: r.bySource };
         if (r.errors.length) feed.webErrors = r.errors.slice(0, 5); else delete feed.webErrors;
       } catch (e) { errors.push({ code: 'web', text: 'Job sites: ' + (e.message || e) }); }
@@ -425,7 +432,7 @@
     if (cached && daysBetween(cached.at) < 7) return cached.d;
     const res = await call('get_company_data', {
       companyName: name, jobTitle: title || undefined, language: 'en',
-      location: { country: 'GB', usState: null, usStateCode: null, usCity: null },
+      location: { country: CO().get(CO().current()).indeed, usState: null, usStateCode: null, usCity: null },
       knowledgeCategories: { metadata: true, ratings: true, salaries: true }
     });
     const e = res.employerData || {}, det = ((e.dossier || {}).employerDetails) || {}, u = e.ugcStats || {}, sal = e.salaries || {};
@@ -463,23 +470,11 @@
   }
 
   // ---------------------------------------------------------------------
-  // Other UK boards (deep links; they don't offer free open APIs)
+  // Other job boards in the country (deep links; they don't offer free open APIs)
   // ---------------------------------------------------------------------
-  function boards(q, loc) {
-    const s = x => String(x).toLowerCase().replace(/\//g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-    const uk = !loc || /united kingdom|^uk$/i.test(loc);
-    return [
-      { name: 'LinkedIn', note: 'last 24h', href: `https://www.linkedin.com/jobs/search/?keywords=${enc(q)}&location=${enc(uk ? 'United Kingdom' : loc)}&f_TPR=r86400` },
-      { name: 'Indeed', note: 'last 3 days', href: `https://uk.indeed.com/jobs?q=${enc(q)}&l=${enc(uk ? '' : loc)}&fromage=3` },
-      { name: 'Reed', href: `https://www.reed.co.uk/jobs/${s(q)}-jobs${uk ? '' : '-in-' + s(loc)}` },
-      { name: 'Totaljobs', href: `https://www.totaljobs.com/jobs/${s(q)}${uk ? '' : '/in-' + s(loc)}` },
-      { name: 'CWJobs', note: 'IT', href: `https://www.cwjobs.co.uk/jobs/${s(q)}${uk ? '' : '/in-' + s(loc)}` },
-      { name: 'Jobserve', note: 'contracts', href: `https://www.jobserve.com/gb/en/JobSearch.aspx?shid=&q=${enc(q)}` },
-      { name: 'CV-Library', href: `https://www.cv-library.co.uk/${s(q)}-jobs${uk ? '' : '-in-' + s(loc)}` },
-      { name: 'Adzuna', href: `https://www.adzuna.co.uk/jobs/search?q=${enc(q)}${uk ? '' : '&w=' + enc(loc)}` },
-      { name: 'Glassdoor', href: `https://www.glassdoor.co.uk/Job/jobs.htm?sc.keyword=${enc(q)}` },
-      { name: 'Google Jobs', href: `https://www.google.com/search?q=${enc(q + ' jobs ' + (uk ? 'UK' : loc))}&ibp=htl;jobs` }
-    ];
+  function boards(q, loc, code) {
+    const c = CO().list[code] ? code : CO().current();
+    return CO().get(c).boards(q, loc && loc !== CO().get(c).name ? loc : '');
   }
 
   // ---------------------------------------------------------------------
@@ -566,7 +561,7 @@
       </header>
       <section class="panel callout">
         <h2>Matched to your target titles and CV</h2>
-        <p class="hint">Find jobs now searches ${avail ? 'Indeed, ' : ''}company career portals and remote job boards for: <strong>${cfg.queries.join(' · ')}</strong>. Only roles that match these titles or several skills on your CV are kept, then scored against your CV.${feed.webRun ? ` Last run found ${Object.entries(feed.webRun.bySource || {}).filter(([, n]) => n).map(([k, n]) => `${n} on ${k}`).join(', ') || 'no new matches'}.` : ''} LinkedIn, Indeed, Reed and Totaljobs don't allow other sites to read them: use the one-click searches below for those.</p>
+        <p class="hint">Find jobs now searches ${avail ? 'Indeed, ' : ''}company career portals and remote job boards for: <strong>${cfg.queries.join(' · ')}</strong>, in <strong>${CO().get(cfg.country).flag} ${CO().get(cfg.country).name}</strong> (plus remote roles open to it) <button class="linkish" type="button" id="jb-country">change country</button>. Only roles that match these titles or several skills on your CV are kept, then scored against your CV.${feed.webRun ? ` Last run found ${Object.entries(feed.webRun.bySource || {}).filter(([, n]) => n).map(([k, n]) => `${n} on ${k}`).join(', ') || 'no new matches'}.` : ''} Big boards such as LinkedIn and ${CO().get(cfg.country).boards('x', '').filter(b => b.name !== 'LinkedIn' && b.name !== 'Google Jobs').slice(0, 2).map(b => b.name).join(' and ')} don't allow other sites to read them: use the one-click searches below for those.</p>
       </section>
       <p class="error" id="jb-err" role="alert" ${feed.errors && feed.errors.length ? '' : raw('hidden')}>${feed.errors && feed.errors[0] ? feed.errors[0].text : ''}</p>
       <ol class="progress" id="jb-prog" hidden></ol>
@@ -593,12 +588,14 @@
             <div class="panel-head"><h2>Searches</h2></div>
             <p class="hint">One job title or skill per line. The feed runs each search for your location${cfg.remote ? ' and for remote roles' : ''}.</p>
             <label class="field"><span class="sr">Searches</span><textarea id="s-q" rows="5">${cfg.queries.join('\n')}</textarea></label>
+            <label class="field"><span>Country</span><select id="s-country">${Object.entries(CO().list).map(([k, c]) => html`<option value="${k}" ${cfg.country === k ? raw('selected') : ''}>${c.flag} ${c.name}</option>`)}</select></label>
+            <p class="muted small">Detected from your browser: ${CO().get(CO().detect()).name}. Pick another to search there.</p>
             <div class="grid-2">
               <label class="field"><span>Location</span><input id="s-loc" type="text" value="${cfg.location}"></label>
               <label class="field"><span>Job type</span><select id="s-type">${Object.entries(TYPE_LABEL).map(([v, l]) => html`<option value="${v}" ${cfg.type === v ? raw('selected') : ''}>${l}</option>`)}</select></label>
             </div>
             <label class="check-line"><input id="s-remote" type="checkbox" ${cfg.remote ? raw('checked') : ''}> Also search remote roles</label>
-            <label class="field mt"><span>Company career portals (one careers-page link per line)</span><textarea id="s-portals" rows="4" placeholder="https://boards.greenhouse.io/company">${(cfg.portals && cfg.portals.length ? cfg.portals : window.CVT.websources.DEFAULT_PORTALS).join('\n')}</textarea></label>
+            <label class="field mt"><span>Company career portals (one careers-page link per line)</span><textarea id="s-portals" rows="4" placeholder="https://boards.greenhouse.io/company">${(cfg.portals && cfg.portals.length ? cfg.portals : window.CVT.websources.portalsFor(cfg.country)).join('\n')}</textarea></label>
             <p class="muted small">Works with careers pages hosted on Greenhouse, Lever, Ashby and SmartRecruiters.</p>
             <div class="row gap wrap mt"><button class="btn small" id="s-save" type="button">Save searches</button><button class="btn small ghost" id="s-auto" type="button">Rebuild from my titles and CV</button></div>
           </section>
@@ -632,7 +629,7 @@
           </section>
 
           <section class="panel">
-            <div class="panel-head"><h2>Search other UK boards</h2></div>
+            <div class="panel-head"><h2>Search other boards in ${CO().get(cfg.country).name}</h2></div>
             <label class="field"><span class="sr">Search</span><select id="b-q">${cfg.queries.map(q => html`<option>${q}</option>`)}</select></label>
             <div class="board-links" id="b-links"></div>
           </section>
@@ -647,6 +644,7 @@
       const q = ui.q.toLowerCase();
       const base = Object.values(f.items)
         .filter(j => j.status !== 'hidden')
+        .filter(j => inCountryNow(j, cfg))
         .filter(j => ui.allRoles || isItRole(j))
         .filter(j => !q || (j.title + ' ' + j.company + ' ' + j.location + ' ' + (j.jd || '')).toLowerCase().includes(q))
         .filter(j => !ui.kind || kindOf(j) === ui.kind)
@@ -753,17 +751,33 @@
     });
 
     // ---- searches ----
+    const portalsOf = code => window.CVT.websources.portalsFor(code).join('\n');
+    const readPortals = () => $('#s-portals', root).value.split('\n').map(s => s.trim()).filter(Boolean).slice(0, 30);
+    let shownCountry = cfg.country;
+    $('#s-country', root).addEventListener('change', () => {
+      const code = $('#s-country', root).value, was = CO().get(shownCountry);
+      const locEl = $('#s-loc', root), pEl = $('#s-portals', root);
+      if (!locEl.value.trim() || locEl.value.trim() === was.name || !CO().inCountry(code, locEl.value)) locEl.value = CO().get(code).name;
+      if (pEl.value.trim() === portalsOf(shownCountry).trim()) pEl.value = portalsOf(code);
+      shownCountry = code;
+    });
+    $('#jb-country', root).addEventListener('click', () => { const sel = $('#s-country', root); sel.scrollIntoView({ block: 'center', behavior: 'smooth' }); sel.focus(); });
     $('#s-save', root).addEventListener('click', async () => {
       const f = await loadFeed();
+      const country = $('#s-country', root).value, ps = readPortals();
       f.searches = {
+        country,
         queries: $('#s-q', root).value.split('\n').map(s => s.trim()).filter(Boolean).slice(0, 6),
-        location: $('#s-loc', root).value.trim() || 'United Kingdom', remote: $('#s-remote', root).checked, type: $('#s-type', root).value,
-        portals: $('#s-portals', root).value.split('\n').map(s => s.trim()).filter(Boolean).slice(0, 30)
+        location: $('#s-loc', root).value.trim() || CO().get(country).name, remote: $('#s-remote', root).checked, type: $('#s-type', root).value,
+        // Left empty when it is just the country's default list, so it follows the country if you change it later.
+        portals: ps.join('\n') === portalsOf(country).trim() ? [] : ps
       };
+      const moved = country !== cfg.country;
+      CO().remember(country);
       const bad = f.searches.portals.filter(u => !window.CVT.websources.detect(u));
       if (bad.length) toast(`Skipped ${bad.length} link${bad.length > 1 ? 's' : ''} that isn't a Greenhouse, Lever, Ashby or SmartRecruiters careers page`, 'warn');
       if (!f.searches.queries.length) { toast('Add at least one search', 'warn'); return; }
-      await saveFeed(f); toast('Searches saved. Press Find jobs now.'); window.CVT.app.rerender();
+      await saveFeed(f); toast(moved ? `Now searching ${CO().get(country).name}. Press Find jobs now.` : 'Searches saved. Press Find jobs now.'); window.CVT.app.rerender();
     });
     $('#s-auto', root).addEventListener('click', async () => {
       const f = await loadFeed(); resetEvidence();
@@ -814,7 +828,7 @@
     calc();
 
     // ---- other boards ----
-    const drawBoards = () => { $('#b-links', root).innerHTML = boards($('#b-q', root).value, cfg.location).map(l => String(html`<a class="pill-link" href="${l.href}" target="_blank" rel="noopener">${l.name}${l.note ? html` <small>${l.note}</small>` : ''}</a>`)).join(''); };
+    const drawBoards = () => { $('#b-links', root).innerHTML = boards($('#b-q', root).value, cfg.location, cfg.country).map(l => String(html`<a class="pill-link" href="${l.href}" target="_blank" rel="noopener">${l.name}${l.note ? html` <small>${l.note}</small>` : ''}</a>`)).join(''); };
     $('#b-q', root).addEventListener('change', drawBoards); drawBoards();
 
     // Mark as seen once viewed.
@@ -837,7 +851,7 @@
     await syncCollected();
     const [feed, ev, apps] = await Promise.all([loadFeed(), evidence(), S.listApps()]);
     const cfg = await searchesOf(feed);
-    const items = Object.values(feed.items).filter(j => (j.status === 'new' || j.status === 'seen') && isItRole(j))
+    const items = Object.values(feed.items).filter(j => (j.status === 'new' || j.status === 'seen') && isItRole(j) && inCountryNow(j, cfg))
       .map(j => ({ j, sc: score(j, ev, cfg.queries), dups: duplicates(j, apps) }))
       .filter(r => r.sc.age == null || r.sc.age <= 30)
       .sort((a, b) => b.sc.score - a.sc.score);

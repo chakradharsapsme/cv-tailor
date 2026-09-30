@@ -154,6 +154,9 @@
     };
 
     const groups = items => { const m = new Map(); items.forEach(q => { const k = q.source ? 'From ' + q.source : 'From the job advert'; if (!m.has(k)) m.set(k, []); m.get(k).push(q); }); return [...m.entries()]; };
+    const mapSig = () => readable().map(d => d.id + ':' + sigOf(d)).join('|');
+    let mmApi = null;
+    const mountMap = () => { const root = $('#mm-root', body); if (!root || !a.docMap) return; mmApi = window.CVT.mindmap.mount(root, JSON.parse(JSON.stringify(a.docMap.tree)), { collapsed: a.docMap.collapsed || [], onChange: c => { a.docMap.collapsed = c; ctx.saveSoon ? ctx.saveSoon() : save(); } }); };
     const sigOf = d => (d.text || '').length + ':' + (d.note || '').trim().length;
     const hasContent = d => !!(((d.text || '').trim()) || (d.note || '').trim());
     const checking = new Set();
@@ -179,7 +182,8 @@
       } catch (e) { toast(`${d.name}: ${e.message}`, 'bad'); }
       checking.delete(d.id); await save(); draw();
     }
-    const draw = () => {
+    const draw = () => { drawBase(); mountMap(); };
+    const drawBase = () => {
       body.innerHTML = String(html`
         <div class="docs-grid">
           <section class="panel">
@@ -223,6 +227,13 @@
                 <p class="small muted">${q.why}</p>
                 <ul class="tight small">${(q.answer_outline || []).map(x => html`<li>${x}</li>`)}</ul>
                 ${q.story_hint && stories.find(s => s.id === q.story_hint) ? html`<p class="small">Story to use: <strong>${stories.find(s => s.id === q.story_hint).title}</strong></p>` : ''}</details>`)}</div>`)}` : ''}
+          </section>
+
+          <section class="panel docs-map">
+            <div class="panel-head"><h2>Mind map of your documents</h2>
+              <div class="row gap wrap">${a.docMap ? html`<button class="btn ghost small" id="mm-dl" type="button">Download (SVG)</button>` : ''}<button class="btn ${a.docMap ? 'ghost' : 'primary'} small" id="mm-go" type="button">${a.docMap ? 'Rebuild' : 'Build mind map'}</button></div></div>
+            <p class="hint">${a.docMap ? html`Built from ${a.docMap.from} on ${new Date(a.docMap.at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}.${a.docMap.sig !== mapSig() ? html` <span class="chip warn">Documents changed since. Rebuild to include them</span>` : ''}` : readable().length ? `Organises everything in your ${readable().length} readable document${readable().length === 1 ? '' : 's'} (and the advert) around this job: programme, scope, systems, people, pain points and timeline.` : 'Add a readable document (or notes) first. Until then the map uses the job advert only.'}</p>
+            <div id="mm-root">${a.docMap ? '' : ''}</div>
           </section>
 
           <section class="panel docs-ask">
@@ -310,6 +321,18 @@
         } catch (err) { toast(err.message, 'bad'); t.disabled = false; t.textContent = 'Prepare questions'; }
         return;
       }
+      if (t.id === 'mm-go') {
+        t.disabled = true; t.textContent = 'Building… (30–60 s)';
+        try {
+          const r = await A.docMindmap({ app: a, docs: a.docs });
+          if (!r || !(r.branches || []).length) throw new Error('The mind map came back empty. Try again.');
+          const n = readable().length;
+          a.docMap = { at: new Date().toISOString(), sig: mapSig(), from: n ? `${n} document${n === 1 ? '' : 's'} and the advert` : 'the job advert', tree: { center: r.center || a.role || 'This job', branches: r.branches }, collapsed: [] };
+          await save(); draw(); toast('Mind map ready');
+        } catch (err) { toast(err.message, 'bad'); t.disabled = false; t.textContent = a.docMap ? 'Rebuild' : 'Build mind map'; }
+        return;
+      }
+      if (t.id === 'mm-dl' && mmApi) { window.CVT.ui.download(new Blob([mmApi.svgText()], { type: 'image/svg+xml' }), `${(a.company || 'job').replace(/\W+/g, '_')}_mind_map.svg`); return; }
       if (t.id === 'dq-copy') { copy(a.docQuestions.items.map((q, i) => `${i + 1}. ${q.q}\n   ${(q.answer_outline || []).map(x => '- ' + x).join('\n   ')}`).join('\n\n')); return; }
       if (t.id === 'dc-clear') { a.docChat = []; await save(); draw(); return; }
       const ca = t.closest('[data-copyask]'); if (ca) { copy(ca.dataset.copyask); return; }

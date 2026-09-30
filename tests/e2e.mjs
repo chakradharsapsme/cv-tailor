@@ -162,7 +162,7 @@ if (PROVIDER === 'claude') {
         const col = c => { const q = { doc: id => doc(c + '/' + id), limit: () => q, get: async () => { const docs = [...M.entries()].filter(([k]) => k.startsWith(c + '/') && k.split('/').length === c.split('/').length + 1).map(([k, v]) => snap(k, v)); return { docs, size: docs.length, empty: !docs.length }; } }; return q; };
         return { doc, collection: col };
       }
-      if (name === 'assets') return { upload: async blob => { const id = 'a' + Math.random().toString(36).slice(2, 10); await window.__assetPut(id, await blob.text()); return { id, url: '/_blob/' + id, sizeBytes: blob.size, contentType: 'text/plain' }; } };
+      if (name === 'assets') return { upload: async blob => { const id = 'a' + Math.random().toString(36).slice(2, 10); await window.__assetPut(id, await blob.text()); return { id, url: '/_blob/' + id, sizeBytes: blob.size, contentType: 'text/plain' }; }, delete: async id => { window.__assetDeleted = (window.__assetDeleted || 0) + 1; } };
       if (name === 'mcp') return { callTool: async (server, tool, input) => ({ content: [], payload: await window.__mockMcp(server, tool, input) }) };
       if (name === 'downloads') return { save: async ({ filename, data }) => { const u = URL.createObjectURL(data); const a = document.createElement('a'); a.href = u; a.download = filename; document.body.append(a); a.click(); a.remove(); return 'saved'; } };
       return null;
@@ -296,6 +296,19 @@ dl = page.waitForEvent('download'); await page.click('#mm-dl'); d = await dl; aw
 await shot('07b-documents');
 const stored = await page.evaluate(async () => { const a = (await window.CVT.store.listApps()).find(x => (x.docs || []).length); return { n: a.docs.length, blob: !!(await window.CVT.store.getFile(a.docs[0].id)), synced: a.docs.filter(d => d.assetId).length }; });
 log('docs stored:', JSON.stringify(stored));
+{ // Delete controls
+  const nq = await page.locator('.docs-grid > section:nth-child(2) [data-qdel]').count();
+  const gq = await page.locator('[data-gqdel]').count();
+  await page.click('.docs-grid > section:nth-child(2) [data-qdel] >> nth=0'); await page.waitForTimeout(300);
+  if (gq) { await page.click('[data-gqdel] >> nth=0'); await page.waitForTimeout(300); }
+  const nc = await page.locator('[data-cdel]').count(); await page.click('[data-cdel] >> nth=0'); await page.waitForTimeout(300);
+  await page.click('#mm-del'); const armed = (await page.textContent('#mm-del')).trim(); await page.click('#mm-del'); await page.waitForTimeout(300);
+  const nd = await page.locator('[data-del]').count(); await page.click('[data-del] >> nth=0'); await page.click('[data-del] >> nth=0'); await page.waitForTimeout(500);
+  log('delete: questions', nq, '->', await page.locator('.docs-grid > section:nth-child(2) [data-qdel]').count(), '| file questions', gq, '->', await page.locator('[data-gqdel]').count(), '| chat', nc, '->', await page.locator('[data-cdel]').count(), '| map armed:', armed, 'gone:', !(await page.locator('.mm-svg').count()), '| files', nd, '->', await page.locator('[data-del]').count(), '| synced copy deleted:', await page.evaluate(() => window.__assetDeleted || 0));
+  await page.click('#dq-clear'); await page.click('#dq-clear'); await page.waitForTimeout(300);
+  log('delete all questions:', !(await page.locator('[data-qdel]').count()), '| button back to:', (await page.textContent('#dq-go')).trim());
+  await shot('07d-deletes');
+}
 const media = await page.evaluate(async () => {
   const A = window.CVT.agent, orig = A.claudeSample; let sent = 0;
   const fake = async () => { const f = async () => ({}); f.limits = async () => ({ images: { maxCount: 4, maxInputBytes: 5e6, mediaTypes: ['image/jpeg', 'image/png'] } }); f.json = async (input, o) => { sent = (o.images || []).length; return { text: 'Timeline slide: UK go-live Q3 2027', summary: 'A programme timeline.' }; }; return f; };

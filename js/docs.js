@@ -104,14 +104,14 @@
       // Scanned PDF: let Claude read the first pages as images.
       const lim = await imageLimits();
       if (!lim) return { text: '', status: 'notes', why: 'This PDF is scanned (no text layer). Add notes, or open Applywise in claude.ai to read it.' };
-      onStep && onStep('Scanned PDF: asking Claude to read the pages');
+      onStep && onStep('Scanned PDF: reading the pages');
       const imgs = await pdfPageImages(r.doc, lim.maxCount);
       return { text: (await A.describeImages({ blobs: imgs, name: d.name, kind: 'pdf' })).slice(0, TEXT_CAP), status: 'ready', pages: r.pages };
     }
     if (k === 'image') {
       const lim = await imageLimits();
       if (!lim) return { text: '', status: 'notes', why: 'Image reading needs Applywise opened in claude.ai. Add notes describing it instead.' };
-      onStep && onStep('Asking Claude to read the image');
+      onStep && onStep('Reading the image');
       return { text: await A.describeImages({ blobs: [blob], name: d.name, kind: 'image' }), status: 'ready' };
     }
     if (k === 'video') {
@@ -120,7 +120,7 @@
       onStep && onStep('Taking frames from the video');
       const frames = await videoFrames(blob, Math.min(lim.maxCount, 8));
       if (!frames.length) return { text: '', status: 'notes', why: 'Could not read frames from this video. Paste a transcript or notes below.' };
-      onStep && onStep('Asking Claude to read the slides and screens');
+      onStep && onStep('Reading the slides and screens');
       return { text: await A.describeImages({ blobs: frames, name: d.name, kind: 'video' }), status: 'ready', why: 'Slides and on-screen text were read from frames. Speech is not transcribed: paste a transcript below for the best questions.' };
     }
     if (k === 'audio') return { text: '', status: 'notes', why: 'Audio can’t be transcribed here. Paste a transcript or your notes below, or upload a transcript file (.vtt or .txt).' };
@@ -247,7 +247,7 @@
     const TYPE = { functional: 'Functional', ba: 'Business analysis', behavioural: 'Behavioural', motivation: 'Motivation', case: 'Case study' };
     const CONF = { high: '✓ Fully backed by your documents', partial: '◐ Partly backed: check the flagged source', none: '○ Not in your documents' };
     const SUGGEST = ['What is in scope?', 'Which systems are mentioned?', 'What are the key dates?', 'Who are the stakeholders?', 'What problems are they trying to fix?', 'What will the interview or case study involve?'];
-    const engine = () => { const st = (window.CVT.ui && window.CVT.ui.state) || {}; return st.provider === 'claude-plan' ? 'Claude on your own plan (no extra cost)' : 'your free Gemini model'; };
+    const engine = () => { const st = (window.CVT.ui && window.CVT.ui.state) || {}; return st.provider === 'claude-plan' ? 'the built-in AI (no extra cost)' : 'your free Gemini model'; };
     /** Answer text with [D1-P3] markers turned into small source numbers. */
     const cited = (text, cites) => {
       const refs = (cites || []).map(c => c.ref), seen = {};

@@ -17,7 +17,7 @@
     const saveSoon = () => (ctx.saveSoon ? ctx.saveSoon() : save());
     const open = new Set(); let filter = 'all'; const busy = new Set();
     const readable = () => (a.docs || []).filter(d => d.use !== false && ((d.text || '').trim() || (d.note || '').trim()));
-    const engine = () => { const st = window.CVT.ui.state || {}; return st.provider === 'claude-plan' ? 'Claude on your plan, no extra cost' : 'your free Gemini model'; };
+    const engine = () => { const st = window.CVT.ui.state || {}; return st.provider === 'claude-plan' ? 'the built-in AI, no extra cost' : 'your free Gemini model'; };
 
     const card = (q, i) => html`<li class="dq ${q.practised ? 'done' : ''}"><details data-k="${q.id}" ${open.has(q.id) ? raw('open') : ''}>
       <summary><span class="dq-n">${q.practised ? '✓' : i + 1}</span><span class="dq-body"><span class="dq-q">${q.q}</span><span class="dq-meta"><span class="chip ${q.kind === 'ask' ? 'accent' : q.kind === 'asked' ? 'warn' : 'muted'}">${KSHORT[q.kind] || 'Question'}</span>${(q.notes || '').trim() ? html`<span>· your notes</span>` : ''}${q.help ? html`<span>· answer help</span>` : ''}${q.inPrep ? html`<span>· in Prep</span>` : ''}</span></span><button class="q-del" data-mdel="${q.id}" type="button" title="Delete this question" aria-label="Delete question">🗑</button></summary>

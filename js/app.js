@@ -4,17 +4,17 @@
   const S = window.CVT.store, A = window.CVT.agent, V = window.CVT.views;
 
   const inClaude = () => !!(window.claude && window.claude.use);
-  const LABEL = { 'claude-plan': 'Claude plan', gemini: 'Gemini (free)' };
+  const LABEL = { 'claude-plan': 'Built-in AI', gemini: 'Gemini (free)', puter: 'Puter AI (free)', 'chrome-ai': 'Chrome built-in AI' };
 
   /** state.key is "ready" when the chosen engine can run; the real keys live in their own fields. */
   function refreshKey() {
     const s = state;
-    const ready = s.provider === 'claude-plan' ? inClaude() : !!(s.geminiKey && s.geminiModel);
+    const ready = s.provider === 'claude-plan' ? inClaude() : s.provider === 'puter' ? true : s.provider === 'chrome-ai' ? typeof window.LanguageModel !== 'undefined' : !!(s.geminiKey && s.geminiModel);
     s.key = ready ? 'ready' : '';
     s.model = s.provider === 'gemini' ? s.geminiModel : 'claude-plan';
     const pill = $('#key-pill');
     pill.dataset.state = ready ? 'ready' : 'missing';
-    pill.textContent = ready ? LABEL[s.provider] + (s.provider === 'claude-plan' ? '' : ' · ' + String(s.model || '').replace(/^claude-|^gemini-/, '')) : 'Set up the AI engine';
+    pill.textContent = ready ? LABEL[s.provider] + (s.provider !== 'gemini' ? '' : ' · ' + String(s.model || '').replace(/^claude-|^gemini-/, '')) : 'Set up the AI engine';
     pill.title = ready ? 'Agent connected' : 'Choose an AI engine in Settings';
   }
 
@@ -119,7 +119,7 @@
     state.geminiKey = S.local.get('cvt.geminiKey', '');
     state.geminiModel = S.local.get('cvt.geminiModel', '');
     state.provider = S.local.get('cvt.provider', '') || (inClaude() ? 'claude-plan' : 'gemini');
-    if (!['claude-plan', 'gemini'].includes(state.provider)) state.provider = inClaude() ? 'claude-plan' : 'gemini';
+    if (!['claude-plan', 'gemini', 'puter', 'chrome-ai'].includes(state.provider)) state.provider = inClaude() ? 'claude-plan' : 'gemini';
     if (state.provider === 'claude-plan' && !inClaude()) state.provider = 'gemini';
     refreshKey();
     try { await S.migrateV1(); } catch (e) { console.warn('Migration skipped', e); }
@@ -129,7 +129,7 @@
     await route();
     refreshBadges();
     if (window.CVT.shell) setTimeout(() => window.CVT.shell.tour(false), 400);
-    window.CVT.sync.onChange(st => { const n = $('#data-note'); if (n && st.state === 'on') n.textContent = 'Private to you and synced to your Claude account. Nothing is submitted without you.'; });
+    window.CVT.sync.onChange(st => { const n = $('#data-note'); if (n && st.state === 'on') n.textContent = 'Private to you and synced to your own account. Nothing is submitted without you.'; });
     // Pull newer data from your other devices (inside claude.ai), then redraw if anything changed.
     try {
       const r = await window.CVT.sync.pull();

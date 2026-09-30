@@ -103,7 +103,7 @@
   }
   const available = async () => !!(await mcp());
   const ERR = {
-    server_not_connected: 'Indeed is not connected to your Claude account. Add it in claude.ai → Settings → Connectors, then reload.',
+    server_not_connected: 'Indeed is not connected to your account. Add the Indeed connector in your account settings, then reload.',
     needs_reauth: 'Your Indeed connection has expired. Reconnect it in claude.ai → Settings → Connectors.',
     not_in_manifest: 'You turned Indeed off for this page. Reload and choose Allow to pull jobs.',
     selection_required: 'Choose which Indeed connection to use in the prompt claude.ai showed, then try again.',
@@ -212,7 +212,7 @@
         if (snap.exists) {
           const d = snap.data();
           added += mergeCollected(feed, d);
-          robots.push({ id: 'claude', name: 'Claude job robot', updated: d.updated, sources: d.sources || [], errors: d.errors || [], count: (d.jobs || []).length });
+          robots.push({ id: 'claude', name: 'Job robot', updated: d.updated, sources: d.sources || [], errors: d.errors || [], count: (d.jobs || []).length });
         }
       }
     } catch (_) {}
@@ -527,7 +527,7 @@
       </header>
       ${!avail ? html`<section class="panel callout">
         <h2>Live job feed</h2>
-        <p class="hint">Jobs are pulled from Indeed through your Claude account's Indeed connector, at no cost. Open Applywise inside claude.ai to switch it on. Here you can still search every UK board in one click (below) and paste any advert into a new application.</p>
+        <p class="hint">Jobs are pulled from Indeed through your own Indeed connector, at no cost, when Applywise is opened from your app link. Here you can still search every UK board in one click (below) and paste any advert into a new application.</p>
       </section>` : ''}
       <p class="error" id="jb-err" role="alert" ${feed.errors && feed.errors.length ? '' : raw('hidden')}>${feed.errors && feed.errors[0] ? feed.errors[0].text : ''}</p>
       <ol class="progress" id="jb-prog" hidden></ol>
@@ -567,7 +567,7 @@
             ${col && col.ok ? col.robots.map(r => html`<p class="hint"><strong>${r.name}</strong>: ${r.count} jobs from ${r.sources.join(', ') || 'job sites'}, last run ${relTime(r.updated)}.</p>
               ${r.errors && r.errors.length ? html`<p class="muted small">Note: ${r.errors[0]}</p>` : ''}`)
             : ''}
-            <p class="hint">Runs only when you ask. In any Claude chat, type <strong>“run my job robot”</strong>: Claude searches Indeed, SimplyHired, Reed, ContractorUK and consultancy career pages (Deloitte, PwC, KPMG, EY, Accenture, Capgemini) for SAP, S2P/P2P and IT business-analyst roles, removes duplicates across sites and adds new matches here. LinkedIn, Totaljobs and CWJobs block automated reading; set up their free job-alert emails instead. For Indeed only, press <strong>Refresh jobs</strong> above.</p>
+            <p class="hint">Runs only when you ask. Tell your AI assistant <strong>“run my job robot”</strong>: it searches Indeed, SimplyHired, Reed, ContractorUK and consultancy career pages (Deloitte, PwC, KPMG, EY, Accenture, Capgemini) for SAP, S2P/P2P and IT business-analyst roles, removes duplicates across sites and adds new matches here. LinkedIn, Totaljobs and CWJobs block automated reading; set up their free job-alert emails instead. For Indeed only, press <strong>Refresh jobs</strong> above.</p>
             <details class="small"><summary>Optional: add Reed and Adzuna feeds</summary>
               <ol class="tight small mt">
                 <li>Get a free key at <a class="link" href="https://www.reed.co.uk/developers/jobseeker" target="_blank" rel="noopener">reed.co.uk/developers</a> and a free app ID and key at <a class="link" href="https://developer.adzuna.com/signup" target="_blank" rel="noopener">developer.adzuna.com</a>.</li>

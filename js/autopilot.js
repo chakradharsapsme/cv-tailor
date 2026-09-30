@@ -57,7 +57,7 @@
           log(`(${i + 1}/${pick.length}) Analysing fit and tailoring your CV: ${label}`);
           await E().analyse(a, profile, ctl.signal);
           const verdict = a.analysis.decision && a.analysis.decision.verdict;
-          if (verdict === 'skip') { res.skipped.push({ id, label, why: (a.analysis.decision && a.analysis.decision.reason) || 'Claude advises skipping this one' }); continue; }
+          if (verdict === 'skip') { res.skipped.push({ id, label, why: (a.analysis.decision && a.analysis.decision.reason) || 'The AI advises skipping this one' }); continue; }
           if (cfg.letter) { log(`(${i + 1}/${pick.length}) Writing the cover letter`); await E().letter(a, profile); }
           if (cfg.outreach) { log(`(${i + 1}/${pick.length}) Drafting recruiter and hiring-manager messages`); await E().outreach(a, profile); }
           if (cfg.answers) { log(`(${i + 1}/${pick.length}) Preparing application-form answers`); await E().answers(a, profile); }
@@ -103,7 +103,7 @@
             <label class="field"><span>Only jobs scoring at least</span><select data-c="min">${[50, 60, 65, 70, 75, 80].map(n => html`<option ${cfg.min === n ? raw('selected') : ''}>${n}</option>`)}</select></label>
           </div>
           ${ch('letter', 'Write a cover letter')}${ch('outreach', 'Draft recruiter and hiring-manager messages')}${ch('answers', 'Prepare application-form answers')}${ch('interview', 'Prepare interview questions (slower)')}${ch('includeAgency', 'Include agency adverts')}
-          <p class="muted small">Each prepared job uses a few Claude requests from your plan (about 1–2 minutes per job). Duplicates, stale adverts and roles below your level are skipped.</p>
+          <p class="muted small">Each prepared job uses a few AI requests (about 1–2 minutes per job). Duplicates, stale adverts and roles below your level are skipped.</p>
         </section>
         <section class="panel" id="ap-live">
           <div class="panel-head"><h2>${last ? 'Last run' : 'Not run yet'}</h2>${last ? html`<span class="muted small">${new Date(last.at).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>` : ''}</div>

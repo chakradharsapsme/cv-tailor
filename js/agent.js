@@ -21,16 +21,16 @@
     return sampleFn;
   }
   const SAMPLE_ERRORS = {
-    not_granted: 'You declined the Claude permission prompt. Reload the page and choose Allow to use your Claude plan.',
-    rate_limited: 'Your Claude plan is busy or at its limit. Wait a minute and try again.',
+    not_granted: 'You declined the AI permission prompt. Reload the page and choose Allow to switch the AI on.',
+    rate_limited: 'The AI is busy or your usage limit is reached. Wait a minute and try again.',
     prompt_too_large: 'The job description and CV are too long for one request. Shorten the job description.',
-    invalid_json: 'Claude replied in an unexpected format. Try again.',
-    sampling_disabled: 'Asking Claude from pages is turned off for your account. Use a free Gemini key in Settings instead.'
+    invalid_json: 'The AI replied in an unexpected format. Try again.',
+    sampling_disabled: 'The built-in AI is turned off for your account. Use a free Gemini key in Settings instead.'
   };
 
   async function askClaudePlan({ system, user, signal, tier }) {
     const sample = await claudeSample();
-    if (!sample) throw new Error('Claude plan mode only works when Applywise is opened inside claude.ai. Use a free Gemini key here instead.');
+    if (!sample) throw new Error('The built-in AI is not available on this web address. Use a free Gemini key in Settings instead.');
     // Stay under the 64 KiB input cap.
     let input = `${system}\n\n${user}`;
     if (input.length > 60000) input = input.slice(0, 60000);
@@ -38,7 +38,7 @@
       return await sample.json(input, { modelTier: tier || 'default', signal, cache: false });
     } catch (e) {
       if (e && e.code === 'cancelled') { const x = new Error('Stopped.'); x.name = 'AbortError'; throw x; }
-      throw new Error((e && SAMPLE_ERRORS[e.code]) || (e && e.message) || 'Claude could not answer. Try again.');
+      throw new Error((e && SAMPLE_ERRORS[e.code]) || (e && e.message) || 'The AI could not answer. Try again.');
     }
   }
 
@@ -76,8 +76,47 @@
     return parseJSON(text);
   }
 
+  // ---------- Puter (each visitor signs in to their own free Puter account; no key, no cost to the site owner) ----------
+  let puterP = null;
+  function loadPuter() {
+    if (window.puter) return Promise.resolve(window.puter);
+    if (!puterP) puterP = new Promise((ok, bad) => { const sc = document.createElement('script'); sc.src = 'https://js.puter.com/v2/'; sc.onload = () => ok(window.puter); sc.onerror = () => { puterP = null; bad(new Error('Could not load Puter. Check your connection or choose another engine in Settings.')); }; document.head.appendChild(sc); });
+    return puterP;
+  }
+  const textOf = r => {
+    if (r == null) return '';
+    if (typeof r === 'string') return r;
+    const c = r.message && r.message.content;
+    if (typeof c === 'string') return c;
+    if (Array.isArray(c)) return c.map(x => x.text || '').join('');
+    if (r.text) return r.text;
+    return String(r);
+  };
+  async function askPuter({ system, user, signal }) {
+    const p = await loadPuter();
+    if (signal && signal.aborted) { const x = new Error('Stopped.'); x.name = 'AbortError'; throw x; }
+    let r;
+    try { r = await p.ai.chat(`${system}\n\n${user}`.slice(0, 120000)); }
+    catch (e) { throw new Error((e && (e.message || (e.error && e.error.message))) || 'Puter could not answer. Try again, or sign in to Puter when asked.'); }
+    return parseJSON(textOf(r));
+  }
+  // ---------- Chrome's built-in AI (Gemini Nano, runs on this computer; desktop Chrome only) ----------
+  const chromeAI = () => (typeof window.LanguageModel !== 'undefined' ? window.LanguageModel : null);
+  async function chromeAIStatus() { const L = chromeAI(); if (!L) return 'unavailable'; try { return await L.availability(); } catch (_) { return 'unavailable'; } }
+  async function askChromeAI({ system, user, signal }) {
+    const L = chromeAI(); if (!L) throw new Error("This browser has no built-in AI. Use desktop Chrome, or choose Gemini or Puter in Settings.");
+    const session = await L.create({ initialPrompts: [{ role: 'system', content: system.slice(0, 3000) }], signal });
+    try {
+      // The on-device model has a small context window: keep the request short.
+      const out = await session.prompt(user.length > 9000 ? user.slice(0, 9000) + '\n[... shortened for the on-device model]' : user, { signal });
+      return parseJSON(out);
+    } finally { try { session.destroy(); } catch (_) {} }
+  }
+
   async function ask(opts) {
     const s = P();
+    if (s.provider === 'puter') return askPuter(opts);
+    if (s.provider === 'chrome-ai') return askChromeAI(opts);
     if (s.provider === 'claude-plan') return askClaudePlan({ ...opts, tier: opts.tier || (opts.maxTokens >= 9000 ? 'complex' : 'default') });
     if (!s.geminiKey || !s.geminiModel) throw new Error('Add your free Gemini key and pick a model in Settings first.');
     return askGemini({ ...opts, key: s.geminiKey, model: s.geminiModel, maxTokens: opts.maxTokens || 8000 });
@@ -552,5 +591,5 @@ ${STUDIO[kind]}`
     return [r.summary ? 'SUMMARY: ' + r.summary : '', r.text || ''].filter(Boolean).join('\n\n');
   }
 
-  window.CVT.agent = { docStudio, myAnswer, docQuestions, docDigest, docMindmap, docAsk, describeImages, mockQuestion, mockGrade, storyDrafts, counterOffer, moreCards, listGemini, claudeSample, analyse, coverLetter, outreach, interviewPrep, answers, linkedin, parseJSON, profileBlock };
+  window.CVT.agent = { loadPuter, chromeAIStatus, docStudio, myAnswer, docQuestions, docDigest, docMindmap, docAsk, describeImages, mockQuestion, mockGrade, storyDrafts, counterOffer, moreCards, listGemini, claudeSample, analyse, coverLetter, outreach, interviewPrep, answers, linkedin, parseJSON, profileBlock };
 })();

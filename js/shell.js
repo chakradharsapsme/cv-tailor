@@ -52,10 +52,36 @@
     q.addEventListener('focus', () => { if (results.length) box.hidden = false; });
     document.addEventListener('keydown', e => { if (e.key === '/' && !/input|textarea|select/i.test(document.activeElement.tagName) && !document.activeElement.isContentEditable) { e.preventDefault(); q.focus(); } });
     $('#tb-tour').addEventListener('click', () => tour(true));
+    [$('#tb-theme'), $('#sf-theme')].forEach(b => b && b.addEventListener('click', toggleTheme));
+    const onScroll = () => document.body.classList.toggle('scrolled', window.scrollY > 12);
+    window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
     refresh();
   }
   /** Page title and the account initials. */
+  // ---------------- theme and motion ----------------
+  const reduced = () => window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function applyTheme(t) { if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme; }
+  function toggleTheme() {
+    const cur = document.documentElement.dataset.theme || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    const next = cur === 'dark' ? 'light' : 'dark';
+    applyTheme(next); S.local.set('cvt.theme', next);
+  }
+  applyTheme(S.local.get('cvt.theme', ''));
+  /** Numbers on the page count up from zero when a page opens. */
+  function countUp(root) {
+    if (reduced()) return;
+    (root || document).querySelectorAll('.kpi-num').forEach(el => {
+      const node = [...el.childNodes].find(n => n.nodeType === 3 && /\d/.test(n.textContent)); if (!node) return;
+      const m = node.textContent.match(/^(\D*)(\d+)(.*)$/s); if (!m) return;
+      const target = +m[2]; if (!target || target > 100000) return;
+      const t0 = performance.now(), dur = 700;
+      const step = now => { const k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3); node.textContent = m[1] + Math.round(target * e) + m[3]; if (k < 1) requestAnimationFrame(step); };
+      node.textContent = m[1] + '0' + m[3]; requestAnimationFrame(step);
+    });
+  }
+
   async function refresh(title) {
+    setTimeout(() => countUp($('#main')), 30);
     const tt = $('#tb-title'); if (tt && title) tt.textContent = title;
     try {
       const p = await S.getProfile();
@@ -158,5 +184,5 @@
     draw();
   }
 
-  window.CVT.shell = { initTopbar, refresh, pricing, tour };
+  window.CVT.shell = { initTopbar, refresh, pricing, tour, toggleTheme, countUp };
 })();

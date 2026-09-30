@@ -693,3 +693,29 @@ p.grow { flex: 1 1 auto; }
 .qs-doc details { padding: 6px 0; }
 .spinner { width: 14px; height: 14px; border: 2px solid var(--line); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; flex: none; }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* v11: documents mind map */
+.docs-map { grid-column: 1 / -1; }
+.mm-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin: 6px 0 8px; }
+.grow-s { flex: 1 1 auto; }
+.seg-mini { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; padding: 2px; gap: 2px; background: var(--bg); }
+.seg-mini button { border: 0; background: transparent; padding: 4px 12px; border-radius: 6px; font: 500 .82rem var(--sans); color: var(--muted); cursor: pointer; }
+.seg-mini button[aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
+.mm-wrap { border: 1px solid var(--line); border-radius: 12px; background: var(--bg); overflow-x: auto; padding: 8px; }
+.mm-svg { display: block; min-width: 900px; height: auto; }
+.mm-t { font: 13px var(--sans); fill: var(--ink); }
+.mm-node.d1 .mm-t { font-weight: 600; font-size: 14px; }
+.mm-node { cursor: pointer; outline: none; }
+.mm-node:hover .mm-t, .mm-node:focus .mm-t { text-decoration: underline; }
+.mm-node.sel circle { stroke-width: 4; }
+.mm-node.sel .mm-t { font-weight: 700; }
+.mm-ct { font: 600 14px var(--sans); fill: #fff; }
+.mm-detail-slot { margin-top: 10px; }
+.mm-detail { border-left: 4px solid var(--accent); padding: 8px 12px; background: var(--surface-2); border-radius: 0 10px 10px 0; }
+.mm-detail p { margin: 4px 0; }
+.mm-outline, .mm-outline ul { list-style: none; margin: 0; padding-left: 18px; }
+.mm-outline > li { padding-left: 0; }
+.mm-outline li { margin: 4px 0; }
+.mm-outline ul { border-left: 1px dashed var(--line); margin-left: 4px; }
+@media (max-width: 700px) { .mm-svg { min-width: 680px; } }
+.mm-t { paint-order: stroke; stroke: var(--bg); stroke-width: 4px; stroke-linejoin: round; }

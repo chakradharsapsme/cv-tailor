@@ -17,7 +17,7 @@ const srv = http.createServer((q, s) => {
 const out = process.argv[2] || 'tests/out'; fs.mkdirSync(out, { recursive: true });
 const NM = process.env.NODE_MODULES || 'node_modules';
 const browser = await chromium.launch({ executablePath: process.env.CHROME || undefined });
-const ctx = await browser.newContext({ acceptDownloads: true, viewport: { width: 1360, height: 900 } });
+const ctx = await browser.newContext({ acceptDownloads: true, timezoneId: 'Europe/London', locale: 'en-GB', viewport: { width: 1360, height: 900 } });
 await ctx.grantPermissions(['clipboard-read', 'clipboard-write'], { origin: 'http://localhost:8765' });
 const page = await ctx.newPage();
 await page.route('https://cdnjs.cloudflare.com/**', r => { const u = r.request().url(); const f = /pdf\.worker\.min\.js$/.test(u) ? NM + '/pdfjs-dist/build/pdf.worker.min.js' : /pdf\.min\.js$/.test(u) ? NM + '/pdfjs-dist/build/pdf.min.js' : NM + '/jszip/dist/jszip.min.js'; return r.fulfill({ path: f, contentType: 'text/javascript' }); });
@@ -25,13 +25,18 @@ await page.route('https://cdn.jsdelivr.net/**', r => r.fulfill({ path: NM + '/do
 await page.route('https://fonts.googleapis.com/**', r => r.fulfill({ body: '', contentType: 'text/css' }));
 // Career portals and remote boards (browser APIs) — fixed fixtures, one relevant and one irrelevant job each.
 const today0 = new Date().toISOString();
-await page.route('https://boards-api.greenhouse.io/**', r => { (calls.web = calls.web || []).push('greenhouse'); const slug = r.request().url().split('/boards/')[1].split('/')[0]; return r.fulfill({ json: { jobs: slug === 'monzo' ? [
-  { title: 'Senior IT Business Analyst, Procurement Systems', location: { name: 'London, UK' }, absolute_url: 'https://boards.greenhouse.io/monzo/jobs/1', updated_at: today0, content: '&lt;p&gt;Business analysis for our S2P and Coupa procure-to-pay platform, SAP S/4HANA integration, UAT, stakeholder management.&lt;/p&gt;' },
-  { title: 'Head of Brand Marketing', location: { name: 'London, UK' }, absolute_url: 'https://boards.greenhouse.io/monzo/jobs/2', updated_at: today0, content: 'Marketing campaigns' },
-  { title: 'IT Business Analyst', location: { name: 'San Francisco, CA' }, absolute_url: 'https://boards.greenhouse.io/monzo/jobs/3', updated_at: today0, content: 'US only' } ] : [] } }); });
+const GH = { monzo: [
+  { id: 1, title: 'Senior IT Business Analyst, Procurement Systems', location: { name: 'London, UK' }, absolute_url: 'https://boards.greenhouse.io/monzo/jobs/1', updated_at: today0, content: '&lt;p&gt;Business analysis for our S2P and Coupa procure-to-pay platform, SAP S/4HANA integration, UAT, stakeholder management.&lt;/p&gt;' },
+  { id: 2, title: 'Head of Brand Marketing', location: { name: 'London, UK' }, absolute_url: 'https://boards.greenhouse.io/monzo/jobs/2', updated_at: today0, content: 'Marketing campaigns' },
+  { id: 3, title: 'IT Business Analyst', location: { name: 'San Francisco, CA' }, absolute_url: 'https://boards.greenhouse.io/monzo/jobs/3', updated_at: today0, content: 'US only' } ],
+  groww: [{ id: 7, title: 'SAP Ariba Business Analyst', location: { name: 'Bengaluru, India' }, absolute_url: 'https://boards.greenhouse.io/groww/jobs/7', updated_at: today0, content: 'SAP Ariba S2P, procure-to-pay, Coupa, UAT, stakeholder management' }] };
+await page.route('https://boards-api.greenhouse.io/**', r => { const u = r.request().url(); const [slug, , id] = u.split('/boards/')[1].split('?')[0].split('/'); (calls.web = calls.web || []).push('greenhouse:' + slug + (id ? '#' + id : ''));
+  const list = GH[slug] || [];
+  if (id) { const j = list.find(x => String(x.id) === id); return j ? r.fulfill({ json: j }) : r.fulfill({ status: 404, json: {} }); }
+  return r.fulfill({ json: { jobs: list.map(({ content, ...j }) => /content=true/.test(u) ? { ...j, content } : j) } }); });
 await page.route('https://api.lever.co/**', r => { (calls.web = calls.web || []).push('lever'); return r.fulfill({ json: [] }); });
 await page.route('https://api.ashbyhq.com/**', r => r.fulfill({ json: { jobs: [] } }));
-await page.route('https://api.smartrecruiters.com/**', r => { (calls.web = calls.web || []).push('smartrecruiters'); return r.fulfill({ json: { content: [{ id: 'sr1', name: 'SAP Ariba Functional Consultant', location: { city: 'Manchester', remote: false }, releasedDate: today0, company: { name: 'Version 1' }, typeOfEmployment: { label: 'Full-time' }, function: { label: 'Information Technology' } }] } }); });
+await page.route('https://api.smartrecruiters.com/**', r => { const cc = (r.request().url().match(/country=(\w+)/) || [])[1]; (calls.web = calls.web || []).push('smartrecruiters:' + cc); return r.fulfill({ json: { content: [{ id: 'sr1' + cc, name: 'SAP Ariba Functional Consultant', location: { city: cc === 'in' ? 'Hyderabad' : 'Manchester', remote: false }, releasedDate: today0, company: { name: 'Version 1' }, typeOfEmployment: { label: 'Full-time' }, function: { label: 'Information Technology' } }] } }); });
 await page.route('https://remotive.com/**', r => { (calls.web = calls.web || []).push('remotive:' + decodeURIComponent(r.request().url().split('search=')[1].split('&')[0])); return r.fulfill({ json: { jobs: [{ title: 'Content Reviewer', company_name: 'X', candidate_required_location: 'Worldwide', url: 'https://remotive.com/x', publication_date: today0, description: 'Review content' }] } }); });
 await page.route('https://jobicy.com/**', r => { (calls.web = calls.web || []).push('jobicy'); return r.fulfill({ json: { jobs: [{ jobTitle: 'Remote SAP S/4HANA Procurement Lead', companyName: 'Remote Co', jobGeo: 'UK', url: 'https://jobicy.com/1', pubDate: today0, jobExcerpt: 'Lead SAP S/4HANA procurement and Ariba rollout', annualSalaryMin: 90000, annualSalaryMax: 110000, salaryCurrency: 'GBP' }] } }); });
 // Daily collector output (fictional).
@@ -512,6 +517,28 @@ if (PROVIDER === 'claude') {
   log('web queries used:', JSON.stringify((calls.web || []).filter(x => x.startsWith('remotive')).slice(0, 6)));
   log('jobs intro:', (await page.textContent('.callout')).replace(/\s+/g, ' ').slice(0, 260));
   await shot('09z-jobs-web');
+}
+{ // Country: detected as UK; switch to India and search there
+  log('country detected:', await page.evaluate(() => window.CVT.countries.detect()), '| select:', await page.inputValue('#s-country'), '| loc:', await page.inputValue('#s-loc'));
+  const ukBoards = await page.$$eval('#b-links a', els => els.map(e => e.textContent.trim().split(' ')[0]));
+  await page.selectOption('#s-country', 'IN');
+  log('after switch loc:', await page.inputValue('#s-loc'), '| portals:', (await page.inputValue('#s-portals')).split('\n').length, (await page.inputValue('#s-portals')).includes('groww'));
+  await page.click('#s-save'); await page.waitForSelector('#jb-refresh'); await page.waitForTimeout(400);
+  calls.web = [];
+  await page.click('#jb-refresh'); await page.waitForFunction(() => !document.querySelector('#jb-prog') || document.querySelector('#jb-prog').hidden, null, { timeout: 30000 }).catch(() => {});
+  await page.waitForTimeout(800);
+  const f = await page.evaluate(async () => Object.values((await window.CVT.store.getKV('feed', {})).items || {}).filter(j => j.status !== 'imported').map(j => (j.country || '-') + ' ' + j.source + ': ' + j.title + ' @ ' + j.location));
+  log('IN feed:', JSON.stringify(f));
+  log('IN calls:', JSON.stringify((calls.web || []).filter(x => /smartrecruiters|greenhouse/.test(x))));
+  log('IN shown:', JSON.stringify(await page.$$eval('.job .job-title', els => els.map(e => e.textContent.trim()))));
+  log('IN intro:', (await page.textContent('.callout')).replace(/\s+/g, ' ').slice(0, 200));
+  log('boards UK→IN:', ukBoards.join(','), '→', (await page.$$eval('#b-links a', els => els.map(e => e.textContent.trim().split(' ')[0]))).join(','));
+  await shot('09y-jobs-india');
+  // back to UK for the rest of the run
+  await page.selectOption('#s-country', 'GB'); await page.click('#s-save'); await page.waitForSelector('#jb-refresh'); await page.waitForTimeout(300);
+  await page.click('#jb-refresh'); await page.waitForFunction(() => !document.querySelector('#jb-prog') || document.querySelector('#jb-prog').hidden, null, { timeout: 30000 }).catch(() => {});
+  await page.waitForTimeout(600);
+  log('back to UK, shown:', await page.locator('.job').count(), '| loc:', await page.inputValue('#s-loc'));
 }
   log('jobs (default 30d filter):', JSON.stringify(jobRows));
   log('source bar:', (await page.textContent('#f-src')).replace(/\s+/g, ' ').trim(), '| summary:', (await page.textContent('#jb-sum')).replace(/\s+/g, ' ').trim());

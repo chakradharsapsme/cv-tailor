@@ -88,7 +88,7 @@
       </section>
       <section class="panel">
         <div class="panel-head"><h2>Stories to tell for this job</h2><a class="link small" href="#/prep/stories">Story bank</a></div>
-        ${!stories.length ? html`<p class="hint">Add your STAR stories once in the Story bank (Claude can draft them from your CV). They'll be matched to each job here.</p>`
+        ${!stories.length ? html`<p class="hint">Add your STAR stories once in the Story bank (the AI can draft them from your CV). They'll be matched to each job here.</p>`
         : matched.length ? html`<ul class="story-hits">${matched.map(m => html`<li><strong>${m.s.title}</strong>${m.hits.length ? html` <span class="muted small">covers ${m.hits.slice(0, 4).join(', ')}</span>` : ''}<p class="small">${m.s.result || ''}</p></li>`)}</ul>`
         : html`<p class="hint">None of your stories mention this job's key skills yet. Add one about ${J().termsIn(a.jd || '').slice(0, 3).join(', ') || 'its main requirement'}.</p>`}
       </section>`);
@@ -134,7 +134,7 @@
 
     body.innerHTML = String(html`
       <section class="panel" id="mk-setup">
-        <div class="panel-head"><h2>Practise with Claude as the interviewer</h2></div>
+        <div class="panel-head"><h2>Practise with an AI interviewer</h2></div>
         <p class="hint">One question at a time, tailored to the job. Answer as you would out loud: type, or press Speak. You get a score out of 5, what was missing, and a stronger answer built only from your real experience.</p>
         <div class="grid-2">
           <label class="field"><span>Job</span><select id="mk-app"><option value="">General SAP procurement / BA interview</option>${withJd.map(a => html`<option value="${a.id}" ${a.id === appId ? raw('selected') : ''}>${a.role || 'Role'} · ${a.company || ''}</option>`)}</select></label>
@@ -152,7 +152,7 @@
 
     const ask = async () => {
       if (!needAi()) return;
-      live.innerHTML = '<section class="panel"><p class="muted">Claude is thinking of the next question…</p></section>';
+      live.innerHTML = '<section class="panel"><p class="muted">Thinking of the next question…</p></section>';
       try {
         ctl = new AbortController();
         const q = await A.mockQuestion({ app: app(), profile, stories, asked: session.turns.map(t => t.q), kind: session.kind, signal: ctl.signal });

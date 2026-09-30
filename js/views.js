@@ -38,7 +38,7 @@
           <span class="kpi-label">Upcoming interviews</span>
           ${ups.length ? html`<ul class="tight small">${ups.slice(0, 3).map(a => html`<li><a class="link" href="#/app/${a.id}/interview">${a.company || a.role}</a> · ${when(a.interviewAt)}</li>`)}</ul>` : html`<p class="muted small">None booked. Add the slot on an application's Interview tab to get calendar reminders.</p>`}
         </div>
-        <div class="prep-tile"><span class="kpi-label">Mock interview</span><p class="small">Practise with Claude asking the questions, then get scored.</p><a class="btn small primary" href="#/prep/mock${ups[0] ? '/' + ups[0].id : ''}">${ups[0] ? 'Practise for ' + (ups[0].company || 'next interview') : 'Start practising'}</a></div>
+        <div class="prep-tile"><span class="kpi-label">Mock interview</span><p class="small">Practise with an AI interviewer, then get scored.</p><a class="btn small primary" href="#/prep/mock${ups[0] ? '/' + ups[0].id : ''}">${ups[0] ? 'Practise for ' + (ups[0].company || 'next interview') : 'Start practising'}</a></div>
         <div class="prep-tile"><span class="kpi-label">Drill cards</span><p class="kpi-num small-num">${due}<small> due</small></p><a class="btn small ghost" href="#/prep/drills">Review now</a></div>
         <div class="prep-tile"><span class="kpi-label">Story bank</span><p class="kpi-num small-num">${(stories || []).length}<small> stories</small></p><a class="btn small ghost" href="#/prep/stories">${(stories || []).length ? 'Review stories' : 'Build your stories'}</a></div>
       </div>`);
@@ -108,7 +108,7 @@
     // Coach notes: rule-based, most important first.
     const notes = [];
     if (!masters.length) notes.push({ cls: 'bad', text: 'Upload your master CV so the agent has something to tailor.', href: '#/profile', cta: 'Career profile' });
-    if (!state.key) notes.push({ cls: 'bad', text: 'Switch the agent on: use your Claude plan or a free Gemini key.', href: '#/settings', cta: 'Settings' });
+    if (!state.key) notes.push({ cls: 'bad', text: 'Switch the AI on: a free Gemini key, a free Puter sign-in or Chrome\'s built-in AI.', href: '#/settings', cta: 'Settings' });
     if (overdue.length) notes.push({ cls: 'warn', text: `${overdue.length} follow-up${overdue.length > 1 ? 's are' : ' is'} overdue. A short chase doubles the chance of a reply.`, href: '#/pipeline', cta: 'Pipeline' });
     if ((profile.achievements || []).filter(Boolean).length < 5) notes.push({ cls: 'accent', text: 'Add at least 5 achievements with numbers. The agent may quote them, which makes tailoring stronger without inventing anything.', href: '#/profile', cta: 'Achievements' });
     if (week.length < goal) notes.push({ cls: 'muted', text: `${goal - week.length} more application${goal - week.length > 1 ? 's' : ''} to reach this week's goal of ${goal}. Quality beats volume: aim for roles that score 70+.` });
@@ -122,7 +122,7 @@
     const feedRun = !!((await S.getKV('feed', null)) || {}).lastRun;
     const setup = [
       { done: masters.length > 0, title: 'Add your master CV', text: 'Upload the Word CV you use today. Its layout is never changed.', href: '#/profile', cta: 'Upload CV' },
-      { done: !!state.key, title: 'Switch on the AI agent', text: 'Use your Claude plan inside claude.ai, or a free Gemini key anywhere.', href: '#/settings', cta: 'Choose engine' },
+      { done: !!state.key, title: 'Switch on the AI agent', text: 'Free options: a Gemini key, a Puter sign-in or Chrome\'s built-in AI.', href: '#/settings', cta: 'Choose engine' },
       { done: (profile.targetRoles || []).length > 0 || feedRun, title: 'Tell it what you want', text: 'Target roles, locations and skills not on your CV. Jobs are matched against these.', href: '#/profile', cta: 'Set targets' },
       { done: apps.length > 0, title: 'Tailor your first application', text: 'Pick a job from the feed or paste any advert.', href: '#/jobs', cta: 'Find a job' }
     ];
@@ -453,18 +453,27 @@
       <div class="two-col">
         <section class="panel span-2 engine">
           <div class="panel-head"><h2>AI engine</h2><span class="muted small" id="key-status" aria-live="polite"></span></div>
-          <p class="hint">Both engines are free: Applywise never uses paid APIs.</p>
+          <p class="hint">Every engine is free: Applywise never uses paid APIs, and nobody else's account is used.</p>
           <div class="engines">
-            <label class="engine-opt ${state.provider === 'claude-plan' ? 'on' : ''} ${inClaude ? '' : 'disabled'}">
+            ${inClaude ? html`<label class="engine-opt ${state.provider === 'claude-plan' ? 'on' : ''}">
               <input type="radio" name="provider" value="claude-plan" ${state.provider === 'claude-plan' ? raw('checked') : ''} ${inClaude ? '' : raw('disabled')}>
-              <span class="engine-name">Your Claude plan <span class="chip ok">No extra cost</span></span>
-              <span class="engine-sub">Uses the Claude subscription you already pay for. Works when Applywise is opened from claude.ai. No key needed.</span>
-              ${inClaude ? '' : html`<span class="engine-sub"><strong>Not available on this web address.</strong> Open your Applywise link on claude.ai to use it.</span>`}
-            </label>
+              <span class="engine-name">Built-in AI <span class="chip ok">No extra cost</span></span>
+              <span class="engine-sub">Runs on the AI plan of the person using Applywise (via claude.ai), so each user pays nothing extra and never uses anyone else's account. No key needed.</span>
+            </label>` : ''}
             <label class="engine-opt ${state.provider === 'gemini' ? 'on' : ''}">
               <input type="radio" name="provider" value="gemini" ${state.provider === 'gemini' ? raw('checked') : ''}>
               <span class="engine-name">Google Gemini <span class="chip ok">Free tier</span></span>
-              <span class="engine-sub">Free key from <a class="link" href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">aistudio.google.com</a>, no card needed. Daily limits apply; free-tier prompts may be used by Google to improve its models.</span>
+              <span class="engine-sub">Best quality. Free key from <a class="link" href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">aistudio.google.com</a>, no card needed. Daily limits apply; free-tier prompts may be used by Google to improve its models.</span>
+            </label>
+            <label class="engine-opt ${state.provider === 'puter' ? 'on' : ''}">
+              <input type="radio" name="provider" value="puter" ${state.provider === 'puter' ? raw('checked') : ''}>
+              <span class="engine-name">Puter AI <span class="chip ok">No key</span></span>
+              <span class="engine-sub">Sign in once with a free <a class="link" href="https://puter.com" target="_blank" rel="noopener">Puter</a> account when asked. Your usage counts against your own Puter allowance, never the site's. A third-party service: its free allowance can change.</span>
+            </label>
+            <label class="engine-opt ${state.provider === 'chrome-ai' ? 'on' : ''}">
+              <input type="radio" name="provider" value="chrome-ai" ${state.provider === 'chrome-ai' ? raw('checked') : ''}>
+              <span class="engine-name">Chrome built-in AI <span class="chip muted">On this computer</span></span>
+              <span class="engine-sub">Runs privately on your computer in desktop Chrome, no account or key. Smaller model: fine for questions and summaries, weaker for CV tailoring. First use downloads the model.</span>
             </label>
           </div>
           <div class="engine-form" id="engine-form"></div>
@@ -499,7 +508,7 @@
 
         <section class="panel">
           <div class="panel-head"><h2>Reset</h2></div>
-          <p class="hint">Removes your CVs, profile, applications and API key from this browser. Copies synced to your Claude account are kept.</p>
+          <p class="hint">Removes your CVs, profile, applications and API key from this browser. Copies synced to your account are kept.</p>
           <button class="btn ghost danger" id="clear" type="button">Clear all data</button>
         </section>
       </div>`;
@@ -510,8 +519,8 @@
       chip.className = 'chip ' + (st.state === 'on' ? 'ok' : st.state === 'error' ? 'bad' : 'muted');
       chip.textContent = { on: 'On', syncing: 'Syncing…', error: 'Problem', unavailable: 'Not available here', off: 'Starting…' }[st.state] || st.state;
       txt.textContent = st.state === 'unavailable'
-        ? 'Sync works when Applywise is opened inside claude.ai: your profile, CVs, applications, stories, offers and practice progress are kept in your Claude account and appear on your phone and laptop. On this web address data stays in this browser; use Backup to move it.'
-        : (on ? 'Your profile, CVs, applications, stories, offers and practice progress are saved to your Claude account and appear on every device where you open Applywise in claude.ai.' : '') + (st.last ? ` Last synced ${new Date(st.last).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}.` : '') + (st.error ? ' ' + st.error : '');
+        ? 'Your data is kept privately in this browser on this device and is never sent to a server. To move it to another device, use Export backup here and Import backup there.'
+        : (on ? 'Your profile, CVs, applications, stories, offers and practice progress are saved to your own private area, visible only to you (not to anyone else who opens the same link), and appear on every device where you sign in.' : '') + (st.last ? ` Last synced ${new Date(st.last).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}.` : '') + (st.error ? ' ' + st.error : '');
       const b = $('#sy-now', root); if (b) b.hidden = st.state === 'unavailable';
     };
     drawSync(window.CVT.sync.status());
@@ -525,7 +534,22 @@
 
     const drawEngine = () => {
       const f = $('#engine-form', root), p = state.provider;
-      if (p === 'claude-plan') { f.innerHTML = String(html`<p class="small">Ready. The first time you run the agent, claude.ai asks you to allow this page to use your Claude plan. Choose <strong>Allow</strong>.</p>`); return; }
+      if (p === 'claude-plan') { f.innerHTML = String(html`<p class="small">Ready. The first time you run the agent, you are asked to allow this page to use the built-in AI. Choose <strong>Allow</strong>.</p>`); return; }
+      if (p === 'puter') {
+        f.innerHTML = String(html`<p class="small">Ready. The first time the agent runs, a Puter window asks you to sign in or create a free account.</p><div class="row gap wrap"><button class="btn ghost" id="puter-test" type="button">Sign in and test now</button></div>`);
+        $('#puter-test', root).addEventListener('click', async e => { const b = e.currentTarget; b.disabled = true; $('#key-status', root).textContent = 'Checking…'; try { const pz = await A.loadPuter(); if (pz.auth && !pz.auth.isSignedIn()) await pz.auth.signIn(); const r = await pz.ai.chat('Reply with the word ready.'); $('#key-status', root).textContent = 'Connected: ' + String((r && r.message && r.message.content) || r).slice(0, 40); } catch (err) { $('#key-status', root).textContent = err.message || 'Puter sign-in was cancelled.'; } b.disabled = false; });
+        return;
+      }
+      if (p === 'chrome-ai') {
+        f.innerHTML = String(html`<p class="small" id="cai-state">Checking this browser…</p><div class="row gap wrap"><button class="btn ghost" id="cai-get" type="button" hidden>Download the model</button></div>`);
+        A.chromeAIStatus().then(st => {
+          const el = $('#cai-state', root); if (!el) return;
+          el.textContent = { available: 'Ready on this computer.', downloadable: 'Supported. The model needs a one-time download (a few GB).', downloading: 'Downloading the model…', unavailable: 'Not available in this browser. Use desktop Chrome, or choose Gemini or Puter.' }[st] || st;
+          const g = $('#cai-get', root); if (g) g.hidden = st !== 'downloadable';
+        });
+        $('#cai-get', root).addEventListener('click', async e => { e.currentTarget.disabled = true; $('#cai-state', root).textContent = 'Downloading the model… keep this tab open.'; try { const sess = await window.LanguageModel.create({ monitor(m) { m.addEventListener('downloadprogress', ev => { const el = $('#cai-state', root); if (el) el.textContent = `Downloading the model… ${Math.round((ev.loaded || 0) * 100)}%`; }); } }); sess.destroy(); $('#cai-state', root).textContent = 'Ready on this computer.'; window.CVT.app.refreshKey(); } catch (err) { $('#cai-state', root).textContent = err.message; } });
+        return;
+      }
       const key = state.geminiKey, cur = state.geminiModel;
       f.innerHTML = String(html`<div class="grid-2">
           <label class="field"><span>Gemini API key (free)</span><input id="api-key" type="password" autocomplete="off" placeholder="AIza…" value="${key}"></label>
@@ -607,14 +631,14 @@
         </section>
         <section class="panel">
           <h2>Where jobs come from</h2>
-          <p class="hint">${inClaude ? 'Inside claude.ai, live jobs come from Indeed through your own Indeed connector. Your Claude account runs the search; there is no extra cost.' : 'Live jobs come from Indeed when Applywise is opened inside claude.ai with the Indeed connector.'} When you ask Claude to “run my job robot”, it also searches SimplyHired, Reed, ContractorUK, Jooble and consultancy career pages, removes duplicates and adds new matches here. LinkedIn, Totaljobs, CWJobs and Glassdoor don't allow automated reading, so they open as one-click searches; their free job-alert emails are another way in.</p>
+          <p class="hint">${inClaude ? 'Live jobs come from Indeed through your own Indeed connector, at no extra cost.' : 'Live jobs come from Indeed when Applywise is opened from its app link with the Indeed connector.'} When the owner asks their assistant to “run my job robot”, it also searches SimplyHired, Reed, ContractorUK, Jooble and consultancy career pages, removes duplicates and adds new matches here. LinkedIn, Totaljobs, CWJobs and Glassdoor don't allow automated reading, so they open as one-click searches; their free job-alert emails are another way in.</p>
           <p class="hint mt">The match score is worked out in your browser: it compares the skills named in each advert with your CV and career profile. A “~” means only the job title was checked so far.</p>
         </section>
         <section class="panel">
           <h2>Your data</h2>
           <ul class="tight">
             <li>Your CVs, profile and applications are stored only in this browser (IndexedDB). There is no Applywise server and no account.</li>
-            <li>When you run the agent, the advert and your CV text go to the AI engine you chose: your Claude plan or Google Gemini. Applywise only uses free engines and never a paid API.</li>
+            <li>When you run the agent, the advert and your CV text go to the AI engine you chose: the built-in AI or Google Gemini. Applywise only uses free engines and never a paid API.</li>
             <li>A Gemini key stays in this browser's storage and is sent only to Google.</li>
             <li>Back up or move your data from Settings → Backup. Clearing browser data deletes it.</li>
           </ul>

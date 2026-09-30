@@ -752,7 +752,7 @@
       <div class="apply-grid">
         <div>
           <section class="panel">
-            <div class="panel-head"><h2>Form answers</h2><button class="btn primary small" id="draft" type="button">Draft answers with Claude</button></div>
+            <div class="panel-head"><h2>Form answers</h2><button class="btn primary small" id="draft" type="button">Draft answers with AI</button></div>
             <p class="hint">Autofill uses these plus your Career profile. Edit anything; it saves as you type.</p>
             <label class="field"><span>Why this role / why us</span><textarea data-a="why" rows="5">${ans.why}</textarea></label>
             <div class="grid-2">
@@ -785,7 +785,7 @@
                 <div class="row gap wrap mt">${an ? html`<button class="btn ghost small" id="dl-cv" type="button">Download CV</button>` : ''}${a.letter ? html`<button class="btn ghost small" id="dl-letter" type="button">Download letter</button>` : ''}</div></li>
               <li><strong>You</strong> press Submit. Autofill never submits.</li>
             </ol>
-            <p class="muted small">Prefer hands-off? Open the form in Chrome and ask Claude to fill it from this pack; it will stop before Submit for your approval.</p>
+            <p class="muted small">Prefer hands-off? Open the form in Chrome and ask your AI browser assistant to fill it from this pack; it will stop before Submit for your approval.</p>
           </section>
 
           <section class="panel">

@@ -68,7 +68,7 @@
   // ---------------- pricing ----------------
   const PLANS = [
     { id: 'free', name: 'Free', price: '£0', per: 'forever', tag: 'Available now', cta: 'Current plan', current: true,
-      blurb: 'Everything in Applywise today, running on your own Claude plan or a free Gemini key.',
+      blurb: 'Everything in Applywise today, running on a free AI engine of your choice.',
       feats: ['Unlimited applications and pipeline', 'CV tailoring in your own Word template', 'Cover letters, outreach and form autofill', 'Documents, mind map, Studio and Ask', 'Interview prep, drill cards and story bank', 'Data kept private in your browser'] },
     { id: 'pro', name: 'Pro', price: '£9', per: 'per month', tag: 'Planned', cta: 'Notify me', featured: true,
       blurb: 'For active job seekers who want Applywise to do more of the legwork.',
@@ -79,8 +79,8 @@
   ];
   const ROWS = [
     ['Applications & pipeline', '✓', '✓', '✓'], ['CV tailoring & cover letters', '✓', '✓', '✓'], ['Documents, mind map & Studio', '✓', '✓', '✓'],
-    ['AI engine', 'Your Claude plan or free Gemini key', 'Built in', 'Built in'], ['Job sources', 'Indeed + on request', 'Daily alerts, more boards', 'Daily alerts, more boards'],
-    ['Backup & sync', 'Browser + Claude account', 'Encrypted cloud', 'Encrypted cloud'], ['Multiple candidates', '–', '–', '✓'], ['Support', 'Help centre', 'Priority', 'Dedicated']
+    ['AI engine', 'Free engine of your choice', 'Built in', 'Built in'], ['Job sources', 'Indeed + on request', 'Daily alerts, more boards', 'Daily alerts, more boards'],
+    ['Backup & sync', 'Browser + your account', 'Encrypted cloud', 'Encrypted cloud'], ['Multiple candidates', '–', '–', '✓'], ['Support', 'Help centre', 'Priority', 'Dedicated']
   ];
   async function pricing(root) {
     const wants = (await S.getKV('planInterest', null)) || {};
@@ -101,8 +101,8 @@
       <section class="panel">
         <div class="panel-head"><h2>Questions</h2></div>
         <div class="st-qa">
-          <details><summary>Is Applywise really free today?</summary><p>Yes. Every feature runs on your own Claude plan inside claude.ai, or on a free Google Gemini key. Applywise itself charges nothing.</p></details>
-          <details><summary>Where is my data kept?</summary><p>In your browser on this device. Inside claude.ai it can also sync to your own Claude account. Nothing is submitted to an employer without you pressing Submit.</p></details>
+          <details><summary>Is Applywise really free today?</summary><p>Yes. Every feature runs on a free AI engine you choose in Settings: a Google Gemini key, a Puter sign-in or Chrome's built-in AI. Applywise itself charges nothing.</p></details>
+          <details><summary>Where is my data kept?</summary><p>In your browser on this device. It can also sync privately to your own account, visible only to you. Nothing is submitted to an employer without you pressing Submit.</p></details>
           <details><summary>When will Pro and Team be available?</summary><p>They are planned. Press Notify me and Applywise will remember your interest on this device.</p></details>
           <details><summary>Will the Free plan lose features later?</summary><p>No. The Free plan keeps everything listed on it.</p></details>
         </div>

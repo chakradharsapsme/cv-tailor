@@ -648,6 +648,26 @@ log('submitted?', await form.evaluate(() => !!window.submitted));
 log('panel:', (await form.textContent('#cvt-autofill-panel')).replace(/\s+/g, ' ').slice(0, 220));
 await form.screenshot({ path: `${out}/11-autofill.png`, fullPage: true });
 
+// 11a. Customise the dashboard (move, hide, drag, reset)
+{
+  await page.goto('http://localhost:8765/#/dashboard'); await page.waitForSelector('#dash-custom');
+  const colsOf = () => page.evaluate(() => Object.fromEntries(['d-left', 'd-mid', 'd-right'].map(c => [c, [...document.querySelectorAll('.' + c + ' > [data-sec]')].filter(x => !x.hidden).map(x => x.dataset.sec)])));
+  log('layout default:', JSON.stringify(await colsOf()));
+  await page.click('#dash-custom'); await page.waitForSelector('.sec-tools');
+  await page.click('[data-for="coach"] [data-mv="left"]');
+  await page.click('[data-for="coach"] [data-mv="up"]');
+  await page.click('[data-for="recent"] [data-mv="eye"]');
+  await page.locator('[data-for="prep"] .sec-grip').dragTo(page.locator('[data-sec="profile"]'), { targetPosition: { x: 40, y: 5 } });
+  await shot('29-customise');
+  await page.click('[data-cu="done"]'); await page.waitForTimeout(300);
+  const after = await colsOf();
+  await page.reload(); await page.waitForSelector('#dash-custom'); await page.waitForTimeout(500);
+  log('layout after edits (reloaded):', JSON.stringify(await colsOf()), '| same after reload:', JSON.stringify(after) === JSON.stringify(await colsOf()));
+  await shot('30-custom-layout');
+  await page.click('#dash-custom'); await page.click('[data-cu="reset"]'); await page.click('[data-cu="done"]'); await page.waitForTimeout(300);
+  log('layout after reset:', JSON.stringify(await colsOf()));
+}
+
 // 11b. Top bar search, pricing, shots of the refreshed look
 log('private sync later:', JSON.stringify(await page.evaluate(() => { if (!window.__db) return 'no db here'; const keys = [...window.__db.keys()]; return { shared: keys.filter(k => !k.startsWith('data/users/') && k !== 'robot/latest'), privateApps: keys.filter(k => k.startsWith('data/users/u1/root/apps/')).length, privateOther: keys.filter(k => k.startsWith('data/users/u1/') && !k.includes('/root/')).length }; })));
 log('visible Claude mentions:', JSON.stringify(await page.evaluate(async () => { const out = []; for (const h of ['#/dashboard', '#/settings', '#/help', '#/pricing', '#/prep/mock', '#/jobs']) { await window.CVT.app.go(h); await new Promise(r => setTimeout(r, 400)); const t = document.body.innerText; const m = t.match(/[^\n]{0,40}\bClaude\b[^\n]{0,40}/g); if (m) out.push(h + ': ' + m.join(' | ')); } return out; })));

@@ -31,6 +31,7 @@
         <p class="hint">${reason ? reason + ' ' : ''}This needs an AI engine. ${hasChrome ? 'All three options' : 'Both options'} below are free; pick one once and Applywise remembers it on this device.</p>
         <div class="eng-opts">
           ${hasChrome ? `<button class="eng-opt" type="button" data-e="chrome"><strong>Chrome's built-in AI</strong><span>Runs on this computer. No sign-in, nothing leaves your device. The first use downloads the model.</span></button>` : ''}
+          ${S.local.get('cvt.claudeLink', '') ? `<button class="eng-opt eng-claude" type="button" data-e="claude"><strong>My Claude subscription</strong><span>Opens your own Claude version of Applywise, where the AI runs on your monthly plan with nothing billed on top. Your data there is separate: move it with Settings → Backup.</span></button>` : ''}
           <button class="eng-opt" type="button" data-e="puter"><strong>Puter AI</strong><span>Free. A Puter window opens once to sign in or create a free account.</span></button>
           <div class="eng-opt eng-gemini"><strong>Google Gemini key</strong><span>Free key from Google AI Studio (about a minute, needs a Google account).
             <a class="link" href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">Get a free key</a>, then paste it here.</span>
@@ -47,6 +48,7 @@
         const b = e.target.closest('[data-e]'); if (!b) return;
         const k = b.dataset.e;
         if (k === 'close') return done(false);
+        if (k === 'claude') { window.open(S.local.get('cvt.claudeLink', ''), '_blank', 'noopener'); return done(false); }
         b.disabled = true;
         try {
           if (k === 'chrome') {

@@ -465,6 +465,9 @@
         <section class="panel span-2 engine">
           <div class="panel-head"><h2>AI engine</h2><span class="muted small" id="key-status" aria-live="polite"></span></div>
           <p class="hint">Every engine is free: Applywise never uses paid APIs, and nobody else's account is used.</p>
+          ${inClaude ? '' : html`<details class="claude-link mt" ${S.local.get('cvt.claudeLink', '') ? raw('open') : ''}><summary>I have a Claude subscription</summary>
+            <p class="hint">A website can't use a Claude subscription directly (that would need the paid Claude API, which Applywise never uses). Your subscription works inside your own Claude version of Applywise. Paste its link here and every AI step on this site offers to open it. The link is saved only on this device and works only for your Claude account.</p>
+            <div class="row gap"><input id="cl-link" type="url" placeholder="https://claude.ai/artifact/…" value="${S.local.get('cvt.claudeLink', '')}" aria-label="My Claude version link"><button class="btn small" id="cl-save" type="button">Save</button></div></details>`}
           <div class="engines">
             ${inClaude ? html`<label class="engine-opt ${state.provider === 'claude-plan' ? 'on' : ''}">
               <input type="radio" name="provider" value="claude-plan" ${state.provider === 'claude-plan' ? raw('checked') : ''} ${inClaude ? '' : raw('disabled')}>
@@ -614,6 +617,13 @@
       try { const r = await S.importAll(JSON.parse(await f.text())); state.masterCache.clear(); FL.use(await S.getProfile()); window.CVT.jobs.resetEvidence();
         toast(`Restored ${r.masters} CV(s), ${r.apps} application(s) and ${r.docs || 0} document(s)`); window.CVT.app.rerender(); }
       catch (x) { $('#backup-status', root).textContent = x.message; }
+    });
+    const cl = $('#cl-save', root);
+    if (cl) cl.addEventListener('click', () => {
+      const v = $('#cl-link', root).value.trim();
+      if (v && !/^https:\/\/claude\.ai\/(code\/)?artifact\//.test(v)) return toast('That is not a Claude artifact link', 'warn');
+      if (v) S.local.set('cvt.claudeLink', v); else S.local.del('cvt.claudeLink');
+      toast(v ? 'Saved on this device' : 'Removed');
     });
     $('#clear', root).addEventListener('click', async e => {
       const b = e.currentTarget;

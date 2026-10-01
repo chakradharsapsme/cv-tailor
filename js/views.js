@@ -3,7 +3,7 @@
   const { html, raw, esc, $, $$, toast, download, copy, today, ukDate, longDate, daysBetween, VERDICT, scoreCls, state, masterModel } = window.CVT.ui;
   const S = window.CVT.store, A = window.CVT.agent, D = window.CVT.docx;
   const FL = window.CVT.fields;
-  const VERSION = 'v5.2';
+  const VERSION = 'v5.5';
   const ACTIVE = ['Applied', 'Screening', 'Interview', 'Offer'];
   const REACHED = s => ['Screening', 'Interview', 'Offer', 'Accepted'].includes(s);
 
@@ -125,6 +125,16 @@
     ];
 
     const initials = ((profile.name || '').trim().split(/\s+/).filter(Boolean).map(w => w[0]).slice(0, 2).join('') || 'Me').toUpperCase();
+    // The one thing most worth doing next, with a picture.
+    const ready = apps.filter(a => ['Tailored'].includes(a.status)).sort((x, y) => (y.updated || '').localeCompare(x.updated || ''));
+    const upcoming = apps.filter(a => a.interviewAt && a.interviewAt.slice(0, 10) >= t).sort((x, y) => x.interviewAt.localeCompare(y.interviewAt));
+    const nextStep = !masters.length ? { art: 'cv', title: 'Start with your CV', text: 'Upload one or more Word CVs. Jobs are matched to your real skills and each application starts from the best CV.', href: '#/profile', cta: 'Upload your CVs' }
+      : upcoming.length ? { art: 'interview', title: `Interview at ${upcoming[0].company || 'your next company'} on ${ukDate(upcoming[0].interviewAt)}`, text: 'Practise likely questions, polish your STAR stories and ask the AI anything about the role.', href: `#/app/${upcoming[0].id}/interview`, cta: 'Prepare now' }
+      : overdue.length ? { art: 'calendar', title: `${overdue.length} follow-up${overdue.length > 1 ? 's' : ''} overdue`, text: 'A short, friendly chase often gets the reply. The message is drafted for you.', href: `#/app/${overdue[0].id}/outreach`, cta: 'Send a follow-up' }
+      : ready.length ? { art: 'handshake', title: `Ready to apply: ${ready[0].role || 'your tailored application'}${ready[0].company ? ' at ' + ready[0].company : ''}`, text: 'Your CV is tailored. Check the cover letter, then apply and mark it as applied.', href: `#/app/${ready[0].id}/apply`, cta: 'Review and apply' }
+      : { art: 'search', title: 'Find your next role', text: 'New jobs matched to your titles, skills and country, scored against your CVs.', href: '#/jobs', cta: 'See jobs for you' };
+    const art = n => raw(window.CVT.art ? window.CVT.art.scene(n) : '');
+    const latest = apps.slice().sort((x, y) => (y.updated || '').localeCompare(x.updated || ''))[0];
     root.innerHTML = html`
       <header class="page-head">
         <div><p class="eyebrow">${longDate()}</p><h1>${hello}</h1></div>
@@ -143,6 +153,12 @@
             </div>
             <div class="pcard-strength"><div class="row gap"><span class="small">Profile strength</span><span class="grow-s"></span><strong class="small">${setup.filter(x => x.done).length}/${setup.length}</strong></div><div class="meter" aria-hidden="true"><span style="width:${Math.round(100 * setup.filter(x => x.done).length / setup.length)}%"></span></div></div>
             <nav class="pcard-links"><a href="#/pipeline"><span>My applications</span><strong>${apps.length}</strong></a><a href="#/jobs"><span>Jobs for you</span><strong>›</strong></a><a href="#/prep"><span>Interview prep</span><strong>›</strong></a><a href="#/profile"><span>Career profile</span><strong>›</strong></a></nav>
+          </section>
+          <section class="panel cvs-card" data-sec="cvs" aria-label="Your CVs">
+            <div class="panel-head"><h2>Your CVs</h2><a class="link small" href="#/profile">${masters.length ? 'Add or manage' : 'Add'}</a></div>
+            ${masters.length ? html`<ul class="cv-list" id="cv-list">${masters.map(m => html`<li data-cv="${m.id}"><span class="file-ext">DOCX</span><div><strong>${m.name}</strong>${m.isDefault ? html` <span class="chip muted">Default</span>` : ''}<span class="cv-skills muted small">Reading skills…</span></div></li>`)}</ul>
+              <p class="muted small">${masters.length > 1 ? 'Jobs are matched against all of these; each application starts with the best fit.' : 'Have CVs for different skill sets? Add them all.'}</p>`
+              : html`<p class="hint">Upload one CV per skill set. Jobs are matched against all of them.</p>`}
           </section>
           <section class="kpis kpis-v" data-sec="numbers" aria-label="Your numbers">
         <div class="kpi">
@@ -168,6 +184,17 @@
       </section>
         </aside>
         <div class="d-mid">
+          <section class="panel start-panel" data-sec="start" aria-label="Your next step">
+            <div class="next-hero"><div class="nh-text"><p class="eyebrow">Your next step</p><h2>${nextStep.title}</h2><p class="muted">${nextStep.text}</p>
+              <a class="btn primary" href="${nextStep.href}">${nextStep.cta}</a></div><div class="nh-art">${art(nextStep.art)}</div></div>
+            <div class="quick-tiles">
+              <a class="q-tile" href="#/jobs"><span class="q-art">${art('search')}</span><strong>Find jobs</strong><span class="muted small">Matched to your CVs</span></a>
+              <a class="q-tile" href="#/new"><span class="q-art">${art('cv')}</span><strong>Tailor for an advert</strong><span class="muted small">CV and cover letter</span></a>
+              <a class="q-tile" href="#/prep"><span class="q-art">${art('interview')}</span><strong>Practise interviews</strong><span class="muted small">Questions and feedback</span></a>
+              ${latest ? html`<button class="q-tile" type="button" data-ask="${latest.id}"><span class="q-art">${art('ask')}</span><strong>Ask AI</strong><span class="muted small">About ${latest.company || latest.role || 'your latest application'}</span></button>`
+                : html`<a class="q-tile" href="#/pipeline"><span class="q-art">${art('growth')}</span><strong>Track progress</strong><span class="muted small">Every application</span></a>`}
+            </div>
+          </section>
       ${setup.every(x => x.done) ? '' : html`<section class="panel onboard" data-sec="setup" aria-label="Get started">
         <div class="panel-head"><h2>Get set up in four steps</h2><span class="row gap"><a class="link small" href="#/help">▶ Watch the 3-minute guide</a><span class="muted small">${setup.filter(x => x.done).length} of ${setup.length} done</span></span></div>
         <ol class="onboard-steps">${setup.map((x, i) => html`<li class="${x.done ? 'done' : ''}">
@@ -222,6 +249,13 @@
     drawJobs(root, profile);
     drawPrep(root);
     await window.CVT.layout.dashboard(root);
+    const sp = root.querySelector('.start-panel'); if (sp) sp.addEventListener('click', e => { const b = e.target.closest('[data-ask]'); if (b) window.CVT.assistant.open(b.dataset.ask); });
+    // Top skills found on each CV.
+    window.CVT.jobs.evidence().then(ev => (ev.perCv || []).forEach(c => {
+      const el = root.querySelector(`[data-cv="${c.id}"] .cv-skills`); if (!el) return;
+      const top = [...c.terms].filter(t => !/^(Communication skills|Microsoft Office|Problem solving|Team leadership|Stakeholder management)$/.test(t)).slice(0, 5);
+      el.textContent = top.length ? top.join(' · ') : 'No skills recognised yet';
+    })).catch(() => {});
 
     root.addEventListener('click', async e => {
       const b = e.target.closest('[data-act]'); if (!b) return;
@@ -247,6 +281,7 @@
           <a class="btn primary" href="#/new">New application</a>
         </div>
       </header>
+      ${apps.length ? '' : html`<section class="panel empty-hero"><div class="empty-art">${raw(window.CVT.art ? window.CVT.art.scene('growth') : '')}</div><div><h2>Your pipeline is empty</h2><p class="hint">Start an application from a job you like, or paste any advert. Every step from tailoring to offer is tracked here.</p><div class="row gap wrap"><a class="btn primary" href="#/jobs">Find jobs</a><a class="btn ghost" href="#/new">Paste an advert</a></div></div></section>`}
       <div class="board-wrap"><div class="board" id="board"></div></div>`;
 
     const draw = () => {
@@ -305,7 +340,7 @@
 
       <section class="panel">
         <div class="panel-head"><h2>Master CVs</h2></div>
-        <p class="hint">Keep one Word CV per positioning, for example “team leader” and “specialist”. Each application picks one. Files stay on this device.</p>
+        <p class="hint">Upload one Word CV per skill set or positioning (for example “SAP consultant” and “business analyst”). Jobs are searched and scored against all of them, and each application starts with the CV that fits the advert best. Files stay on this device.</p>
         <div class="masters">${masters.map(m => html`
           <div class="master">
             <span class="file-ext">DOCX</span>
@@ -316,9 +351,9 @@
             <button class="btn ghost small danger" data-mact="remove" data-id="${m.id}" type="button">Remove</button>
           </div>`)}</div>
         <label class="drop" id="m-drop">
-          <input type="file" id="m-file" accept=".docx">
-          <span class="drop-title">${masters.length ? 'Add another master CV (.docx)' : 'Drop your master CV (.docx) here or choose a file'}</span>
-          <span class="drop-sub">Word .docx only. PDFs can't be edited without changing the layout.</span>
+          <input type="file" id="m-file" accept=".docx" multiple>
+          <span class="drop-title">${masters.length ? 'Add more CVs (.docx), one per skill set' : 'Drop your CVs (.docx) here or choose files'}</span>
+          <span class="drop-sub">Word .docx only; you can add several at once. Each job is matched against all of them and the best one is picked.</span>
         </label>
         <p class="row gap wrap small"><button class="btn ghost small" id="m-demo" type="button">Try with a demo CV</button><span class="muted">A fictional CV for your field, handy for a first test run.</span></p>
         <div class="preview-box" id="m-preview" hidden></div>
@@ -406,18 +441,19 @@
       }
     });
 
-    const addFile = async file => {
+    const addFile = async (file, many) => {
       if (!file || !/\.docx$/i.test(file.name)) return toast('Please choose a Word .docx file.', 'warn');
       try {
         const buf = await file.arrayBuffer();
         const model = await D.load(buf.slice(0));
         await S.addMaster(file.name.replace(/\.docx$/i, ''), file.name, buf);
         const editable = model.paras.filter(x => x.text.trim() && !x.locked).length;
-        toast(`Added. ${editable} paragraphs can be tailored.`);
-        window.CVT.app.rerender();
+        toast(`Added ${file.name}. ${editable} paragraphs can be tailored.`);
+        if (!many) window.CVT.app.rerender();
       } catch (err) { toast(err.message, 'bad'); }
     };
-    $('#m-file', root).addEventListener('change', e => addFile(e.target.files[0]));
+    const addFiles = async list => { for (const f of [...(list || [])]) await addFile(f, true); window.CVT.jobs.resetEvidence(); window.CVT.app.rerender(); };
+    $('#m-file', root).addEventListener('change', e => addFiles(e.target.files));
     $('#m-demo', root).addEventListener('click', async () => {
       try { const buf = await window.CVT.demoCv(); await S.addMaster('Demo CV (fictional)', 'demo-cv.docx', buf); toast('Demo CV added. Now press New application.'); window.CVT.app.rerender(); }
       catch (err) { toast(err.message, 'bad'); }
@@ -425,7 +461,7 @@
     const drop = $('#m-drop', root);
     ['dragenter', 'dragover'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add('over'); }));
     ['dragleave', 'drop'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove('over'); }));
-    drop.addEventListener('drop', e => addFile(e.dataTransfer.files[0]));
+    drop.addEventListener('drop', e => addFiles(e.dataTransfer.files));
 
     $('#li-run', root).addEventListener('click', async e => {
       const btn = e.currentTarget, err = $('#li-err', root);

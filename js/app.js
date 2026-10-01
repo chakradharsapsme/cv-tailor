@@ -129,6 +129,7 @@
     window.addEventListener('hashchange', () => { if (location.hash && location.hash !== current) { current = location.hash; route(); } });
     if (window.CVT.shell) window.CVT.shell.initTopbar();
     if (window.CVT.pwa) window.CVT.pwa.init();
+    if (window.CVT.quotes) window.CVT.quotes.init();
     await route();
     refreshBadges();
     // First visit: the 3-step welcome; otherwise the short tour (each only once).

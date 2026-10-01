@@ -229,7 +229,15 @@
     const p = await S.getProfile();
     const roles = (p.targetRoles || []).filter(Boolean).slice(0, 4);
     let skills = [];
-    try { const ev = await evidence(); skills = TERMS.map(t => t.name).filter(n => ev.terms.has(n) && !GENERIC_TERMS.has(n)).slice(0, 4); } catch (_) {}
+    try {
+      const ev = await evidence();
+      const pick = set => TERMS.map(t => t.name).filter(n => set.has(n) && !GENERIC_TERMS.has(n));
+      if (ev.perCv && ev.perCv.length > 1) {
+        // Several CVs: take the strongest skills from each, so every skill set gets searched.
+        const lists = ev.perCv.map(c => pick(c.terms));
+        for (let i = 0; skills.length < 4 && i < 6; i++) lists.forEach(l => { if (l[i] && !skills.includes(l[i]) && skills.length < 4) skills.push(l[i]); });
+      } else skills = pick(ev.terms).slice(0, 4);
+    } catch (_) {}
     if (!roles.length && p.currentTitle) roles.push(p.currentTitle);
     const qs = [...new Set(roles.concat(skills))];
     return withBA((qs.length ? qs : FL().current().titles).slice(0, 6));
@@ -269,12 +277,16 @@
     const [p, masters] = await Promise.all([S.getProfile(), S.listMasters()]);
     FL().use(p); vocab(p.extraSkills);
     const def = masters.find(m => m.isDefault) || masters[0];
-    const sig = termsSig + '|' + (def ? def.id : '') + '|' + p.extraSkills + '|' + (p.achievements || []).join('|') + '|' + p.currentTitle;
+    const sig = termsSig + '|' + masters.map(m => m.id + ':' + ((m.data && m.data.byteLength) || 0)).join(',') + '|' + p.extraSkills + '|' + (p.achievements || []).join('|') + '|' + p.currentTitle;
     if (evidenceCache && evidenceCache.sig === sig) return evidenceCache;
-    let cv = '';
-    try { const mm = def ? await masterModel(def.id) : null; if (mm) cv = D.plainText(mm.model); } catch (_) {}
+    // Every CV counts: someone with an "SAP consultant" CV and a "business analyst" CV is matched on both skill sets.
+    let cv = ''; const perCv = [];
+    for (const m of masters) {
+      try { const mm = await masterModel(m.id); if (mm) { const t = D.plainText(mm.model); cv += '\n' + t; perCv.push({ id: m.id, name: m.name, isDefault: !!m.isDefault, terms: new Set(termsIn(t)) }); } } catch (_) {}
+    }
+    void def;
     const text = [cv, p.extraSkills, (p.achievements || []).join('\n'), p.currentTitle].join('\n');
-    evidenceCache = { sig, text, hasCv: !!cv, terms: new Set(termsIn(text)) };
+    evidenceCache = { sig, text, hasCv: !!cv.trim(), terms: new Set(termsIn(text)), perCv };
     return evidenceCache;
   }
   const resetEvidence = () => { evidenceCache = null; };
@@ -295,7 +307,13 @@
     const age = j.posted ? daysBetween(j.posted) : null;
     if (age != null && age > 30) flags.push({ cls: 'warn', text: `Posted ${age}d ago: may be filled` });
     if (isAgency(j.company)) flags.push({ cls: 'muted', text: 'Agency' });
-    return { score: Math.max(0, Math.min(100, s)), quick: !(j.jd && asked.length >= 3), have, miss, flags, age };
+    // With several CVs: which one covers this advert best.
+    let best = null;
+    if (ev.perCv && ev.perCv.length > 1 && asked.length) {
+      const r = ev.perCv.map(c => ({ c, n: asked.filter(t => c.terms.has(t)).length })).sort((x, y) => y.n - x.n || (y.c.isDefault ? 1 : 0) - (x.c.isDefault ? 1 : 0))[0];
+      if (r && r.n) best = { id: r.c.id, name: r.c.name, n: r.n };
+    }
+    return { score: Math.max(0, Math.min(100, s)), quick: !(j.jd && asked.length >= 3), have, miss, flags, age, best };
   }
 
   /** Pipeline duplicates: same company and similar role, or a similar role via an agency in the last 45 days. */
@@ -405,12 +423,21 @@
   }
 
   const typeMap = t => /contract|fixed/i.test(t || '') ? (/fixed/i.test(t) ? 'Fixed-term' : 'Contract') : /perm|full/i.test(t || '') ? 'Permanent' : '';
+  /** Which of your CVs fits this job best (most of the job's skills shown). */
+  async function bestCv(j) {
+    const ev = await evidence();
+    if (!ev.perCv || !ev.perCv.length) return null;
+    const want = termsIn((j.title || j.role || '') + ' ' + (j.jd || ''));
+    const ranked = ev.perCv.map(c => ({ c, n: want.filter(t => c.terms.has(t)).length })).sort((x, y) => y.n - x.n || (y.c.isDefault ? 1 : 0) - (x.c.isDefault ? 1 : 0));
+    return ranked[0] && (ranked[0].n > 0 || ranked.length === 1) ? Object.assign({ hits: ranked[0].n, of: want.length }, ranked[0].c) : null;
+  }
   async function importJob(key) {
     const feed = await loadFeed();
     const j = feed.items[key]; if (!j) throw new Error('This job is no longer in the feed.');
     if (j.appId && await S.getApp(j.appId)) return j.appId;
     const masters = await S.listMasters();
-    const a = S.newApp((masters.find(m => m.isDefault) || masters[0] || {}).id);
+    const best = masters.length > 1 ? await bestCv(j) : null;
+    const a = S.newApp((best && best.id) || (masters.find(m => m.isDefault) || masters[0] || {}).id);
     const p = parsePay(j.pay);
     Object.assign(a, {
       company: j.company, role: j.title, location: j.location + (j.remote ? ' (remote option)' : ''), url: j.url,
@@ -529,6 +556,7 @@
         <div class="job-srcs">${srcOf(j).map(x => html`<span class="src-badge">${x}</span>`)}${srcOf(j).length > 1 ? html`<span class="chip ok" title="The same job is advertised on several sites, a sign it is live and funded">Seen on ${srcOf(j).length} sites</span>` : ''}${modeOf(j) ? html`<span class="chip muted">${MODE_LABEL[modeOf(j)]}</span>` : ''}</div>
         <div class="job-meta">${j.company || 'Company not shown'}${j.location ? ' · ' + j.location : ''}${j.remote ? ' · remote option' : ''}${j.type ? ' · ' + j.type : ''}${j.pay ? ' · ' + j.pay : ''}${age != null ? html` · <span class="${age > 30 ? 'warn-text' : ''}">${age === 0 ? 'today' : age + 'd ago'}</span>` : ''}</div>
         ${compact ? '' : html`<div class="job-chips">
+          ${sc.best ? html`<span class="chip accent" title="The CV that shows most of this advert's skills; it is picked automatically when you start the application">Best CV: ${sc.best.name}</span>` : ''}
           ${sc.flags.map(f => html`<span class="chip ${f.cls}">${f.text}</span>`)}
           ${dups.length ? html`<span class="chip bad" title="${dups.map(d => d.app.role + ' at ' + d.app.company + ': ' + d.why).join('; ')}">Possible duplicate in pipeline</span>` : ''}
           ${!sc.quick && sc.miss.length ? html`<span class="chip muted" title="${sc.miss.join(', ')}">Gaps: ${sc.miss.slice(0, 4).join(', ')}${sc.miss.length > 4 ? '…' : ''}</span>` : ''}
@@ -668,7 +696,7 @@
       shown = rows;
       const list = $('#jb-list', root);
       if (!Object.keys(f.items).length) {
-        list.innerHTML = String(html`<div class="empty-state"><h2>No jobs yet</h2><p class="hint">Press Find jobs now to search career portals and job boards for your target titles and skills.</p></div>`);
+        list.innerHTML = String(html`<div class="empty-state"><div class="empty-art">${raw(window.CVT.art ? window.CVT.art.scene('search') : '')}</div><h2>No jobs yet</h2><p class="hint">Press Find jobs now to search career portals and job boards for your target titles and skills.</p></div>`);
       } else if (!rows.length) {
         list.innerHTML = String(html`<p class="empty-note">No jobs match these filters. Lower the minimum match or widen the date range.</p>`);
       } else list.innerHTML = rows.map(r => String(jobCard(r.j, r.sc, r.dups))).join('');
@@ -915,5 +943,5 @@
     return { feed, items: items.slice(0, n), newCount: items.filter(r => r.j.status === 'new' && r.sc.score >= 60).length, total: items.length };
   }
 
-  window.CVT.jobs = { isItRole, syncCollected, view, refresh, top, jobCard, details, importJob, setStatus, available, duplicates, companyIntel, intelCard, boards, termsIn, parsePay, parseSearch, parseDetails, rateCalc, resetEvidence, relTime, checkTop, errText };
+  window.CVT.jobs = { bestCv, evidence, isItRole, syncCollected, view, refresh, top, jobCard, details, importJob, setStatus, available, duplicates, companyIntel, intelCard, boards, termsIn, parsePay, parseSearch, parseDetails, rateCalc, resetEvidence, relTime, checkTop, errText };
 })();

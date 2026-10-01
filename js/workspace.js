@@ -138,6 +138,7 @@
         </div>
         <div class="ws-actions">
           <label class="inline-field">Status <select id="ws-status">${opts(S.STATUSES, a.status)}</select></label>
+          <button class="btn primary small ask-btn" id="ws-ask" type="button" title="Ask anything about this job, company or your CV">✦ Ask AI</button>
           <button class="btn ghost small danger" id="ws-delete" type="button">Delete</button>
         </div>
       </header>
@@ -157,6 +158,7 @@
       toast(`Status: ${a.status}` + (a.next ? ` · next: ${a.next.text.toLowerCase()} by ${ukDate(a.next.due)}` : ''));
       window.CVT.app.rerender();
     });
+    $('#ws-ask', root).addEventListener('click', () => window.CVT.assistant.open(a.id));
     $('#ws-delete', root).addEventListener('click', async e => {
       const b = e.currentTarget;
       if (b.dataset.armed !== '1') { b.dataset.armed = '1'; b.textContent = 'Click to delete'; return; }
@@ -184,6 +186,7 @@
   // =====================================================================
   async function tabJob(ctx) {
     const { a, body, masters } = ctx;
+    const best = masters.length > 1 && (a.jd || '').length > 200 ? await window.CVT.jobs.bestCv({ title: a.role, jd: a.jd }).catch(() => null) : null;
     const f = (k, label, type = 'text', ph = '') => html`<label class="field"><span>${label}</span><input data-f="${k}" type="${type}" value="${a[k] || ''}" placeholder="${ph}" autocomplete="off"></label>`;
     body.innerHTML = String(html`
       <div class="job-grid">
@@ -194,16 +197,18 @@
           <label class="field"><span>What to emphasise for this job (treated as true)</span><textarea data-f="emphasis" rows="3" placeholder="e.g. Ran Guided Buying for a regulated utility; can start in 4 weeks">${a.emphasis}</textarea></label>
           <div class="grid-2">
             <label class="field"><span>Master CV to tailor</span>
-              <select data-f="masterId">${masters.length ? masters.map(m => html`<option value="${m.id}" ${(a.masterId ? a.masterId === m.id : m.isDefault) ? raw('selected') : ''}>${m.name}${m.isDefault ? ' (default)' : ''}</option>`) : html`<option value="">No CV yet: add one in Career profile</option>`}</select>
+              <select data-f="masterId">${masters.length ? masters.map(m => html`<option value="${m.id}" ${(a.masterId ? a.masterId === m.id : m.isDefault) ? raw('selected') : ''}>${m.name}${m.isDefault ? ' (default)' : ''}${best && best.id === m.id ? ' · best match for this advert' : ''}</option>`) : html`<option value="">No CV yet: add one in Career profile</option>`}</select>
             </label>
             <label class="field"><span>Cover letter tone</span>
               <select data-f="tone">${opts(['Warm and direct', 'Formal and precise', 'Concise, for a contract role or recruiter'], a.tone)}</select>
             </label>
           </div>
+          ${best && best.id !== (a.masterId || (masters.find(m => m.isDefault) || {}).id) ? html`<p class="hint best-cv">Your CV <strong>${best.name}</strong> shows more of this advert's skills (${best.hits} of ${best.of}). <button class="linkish" type="button" id="use-best" data-id="${best.id}">Use it for this job</button></p>` : ''}
           <div class="row gap wrap">
             <button class="btn primary" id="run" type="button">${a.analysis && !a.analysis.legacy ? 'Re-analyse and re-tailor' : 'Analyse fit and tailor CV'}</button>
             <button class="btn ghost" id="stop" type="button" hidden>Stop</button>
           </div>
+          <label class="check-line small"><input type="checkbox" id="auto-letter" ${S.local.get('cvt.autoLetter', true) ? raw('checked') : ''}> Also write the cover letter automatically (in the tone chosen above)</label>
           <ol class="progress" id="prog" hidden></ol>
           <p class="error" id="err" role="alert" hidden></p>
         </section>
@@ -248,6 +253,8 @@
 
     let ctl = null;
     $('#stop', body).addEventListener('click', () => ctl && ctl.abort());
+    const ub = $('#use-best', body); if (ub) ub.addEventListener('click', async () => { a.masterId = ub.dataset.id; await ctx.saveNow(); toast('CV switched for this job'); window.CVT.app.rerender(); });
+    const al = $('#auto-letter', body); if (al) al.addEventListener('change', () => S.local.set('cvt.autoLetter', al.checked));
     $('#run', body).addEventListener('click', async () => {
       const err = $('#err', body); err.hidden = true;
       if ((a.jd || '').trim().length < 200) { err.textContent = 'Paste the full job description (at least a few paragraphs).'; err.hidden = false; return; }
@@ -264,7 +271,8 @@
         const eb = $('#eng-open', body); if (eb) eb.addEventListener('click', () => $('#run', body).click());
         return;
       }
-      const st = progress($('#prog', body), ['Reading your CV and profile', 'Assessing fit and planning CV changes (30–90 s)', 'Checking every change against your CV']);
+      const autoLetter = $('#auto-letter', body) ? $('#auto-letter', body).checked : true;
+      const st = progress($('#prog', body), ['Reading your CV and profile', 'Assessing fit and planning CV changes (30–90 s)', 'Checking every change against your CV'].concat(autoLetter ? ['Writing your cover letter'] : []));
       const run = $('#run', body), stop = $('#stop', body);
       run.disabled = true; stop.hidden = false; ctl = new AbortController();
       let i = 0;
@@ -287,6 +295,13 @@
         if (a.status === 'Saved') S.setStatus(a, 'Tailored');
         if (!a.next && a.closing) a.next = { text: 'Apply before the closing date', due: a.closing };
         await ctx.saveNow();
+        // Cover letter straight away, unless the advice is to skip this job.
+        const verdict = out.decision && out.decision.verdict;
+        if (autoLetter && verdict !== 'skip') {
+          st.at(i = 3);
+          try { await engine.letter(a, ctx.profile); toast('CV tailored and cover letter written'); }
+          catch (le) { if (le.name === 'AbortError') throw le; toast('CV tailored. The cover letter could not be written: ' + le.message, 'warn'); }
+        }
         st.done();
         ctx.go('fit');
       } catch (x) {

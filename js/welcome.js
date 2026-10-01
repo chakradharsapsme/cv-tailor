@@ -33,6 +33,7 @@
       const steps = ['Your work', 'Where', 'Your CV'];
       wrap.innerHTML = String(html`<div class="wl-card">
         <div class="wl-top"><span class="brand-mark sm" aria-hidden="true">Aw</span><strong>Welcome to Applywise</strong><span class="grow-s"></span><button class="linkish" type="button" data-w="skip">Skip setup</button></div>
+        ${st.step === 0 ? raw(`<div class="wl-art">${window.CVT.art ? window.CVT.art.scene('welcome') : ''}</div>`) : ''}
         <ol class="wl-steps" aria-label="Setup progress">${steps.map((s, i) => html`<li class="${i === st.step ? 'on' : i < st.step ? 'done' : ''}">${s}</li>`)}</ol>
         ${st.step === 0 ? html`
           <h2 id="wl-title">What kind of work are you looking for?</h2>

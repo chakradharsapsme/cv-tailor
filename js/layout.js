@@ -9,14 +9,15 @@
   const KEY = 'dashLayout';
   const COLS = ['left', 'mid', 'right'];
   const COL_LABEL = { left: 'left column', mid: 'middle column', right: 'right column' };
-  const NAMES = { profile: 'Profile card', numbers: 'Your numbers', setup: 'Get set up', jobs: 'New jobs for you', actions: 'Next actions', recent: 'Recent applications', coach: 'Coach notes', prep: 'Interview prep' };
-  const DEFAULT = () => ({ left: ['profile', 'numbers'], mid: ['setup', 'jobs', 'actions', 'recent'], right: ['coach', 'prep'], hidden: [] });
+  const NAMES = { start: 'Your next step', cvs: 'Your CVs', profile: 'Profile card', numbers: 'Your numbers', setup: 'Get set up', jobs: 'New jobs for you', actions: 'Next actions', recent: 'Recent applications', coach: 'Coach notes', prep: 'Interview prep' };
+  const DEFAULT = () => ({ left: ['profile', 'cvs', 'numbers'], mid: ['start', 'setup', 'jobs', 'actions', 'recent'], right: ['coach', 'prep'], hidden: [] });
 
   /** Make sure every known section appears exactly once (new sections land in their default column). */
   function normalise(l) {
     const d = DEFAULT(), out = { left: [], mid: [], right: [], hidden: [] }, seen = new Set();
     COLS.forEach(c => ((l && l[c]) || []).forEach(id => { if (NAMES[id] && !seen.has(id)) { out[c].push(id); seen.add(id); } }));
-    COLS.forEach(c => d[c].forEach(id => { if (!seen.has(id)) { out[c].push(id); seen.add(id); } }));
+    // Sections added in a newer version go where the default layout puts them.
+    COLS.forEach(c => d[c].forEach((id, i) => { if (!seen.has(id)) { out[c].splice(Math.min(i, out[c].length), 0, id); seen.add(id); } }));
     out.hidden = ((l && l.hidden) || []).filter(id => NAMES[id]);
     return out;
   }

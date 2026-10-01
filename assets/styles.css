@@ -1343,3 +1343,6 @@ button.eng-opt { cursor: pointer; }
 button.eng-opt:hover { border-color: var(--accent); background: var(--accent-soft); }
 .eng-opt span { color: var(--muted); font-size: .88rem; }
 .eng-opt input { flex: 1 1 auto; min-width: 0; }
+.eng-claude { border-color: var(--accent); }
+.claude-link summary { cursor: pointer; font-weight: 600; font-size: .9rem; }
+.claude-link input { flex: 1 1 auto; min-width: 0; }

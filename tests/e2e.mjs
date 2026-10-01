@@ -137,6 +137,9 @@ function makeReply(sys, user) {
     else if (/FLASHCARDS/.test(user)) reply = { cards: [R({ front: 'Maverick spend?', back: '22 percent' }, Q3), R({ front: 'UK go-live?', back: 'Q3 2027' }, Q2), R({ front: 'Fake', back: 'x' }, FAKE)] };
     else if (/multiple-choice QUIZ/.test(user)) reply = { questions: [R({ q: 'Which country goes live first?', options: ['Ireland', 'UK', 'France', 'Spain'], answer: 1, explain: 'UK first.' }, Q2), R({ q: 'Maverick spend?', options: ['5%', '10%', '22%', '40%'], answer: 2, explain: '22 percent.' }, Q3)] };
     else if (/AUDIO OVERVIEW/.test(user)) reply = { title: 'Inside Northgate', lines: [R({ host: 'A', text: 'Northgate is replacing legacy procurement with Ariba.' }, Q1), { host: 'B', text: 'Why does that matter?', ref: '', quote: '' }, R({ host: 'A', text: 'Maverick spend is 22 percent.' }, Q3)] };
+  } else if (/personal career assistant/.test(sys)) {
+    calls.chat = user;
+    reply = { answer: 'You are a strong fit because your CV shows **SAP Ariba** delivery.\n- Lead with the Guided Buying rollout\n- Mention fit-to-standard workshops', follow_ups: ['How do I explain the CIG gap?'] };
   } else if (/retrieval-augmented answering/.test(sys)) {
     calls.docAsk = user;
     reply = { answer: 'They are replacing legacy procurement with SAP Ariba and S/4HANA 2023 [D1-P1]. The team is 40 people in Leeds [D1-P1].', found: true, claims: [{ ref: 'D1-P1', quote: 'replace legacy procurement with SAP Ariba and S/4HANA 2023' }, { ref: 'D1-P1', quote: 'a team of 40 people based in Leeds' }], ask_them: 'Is the Integration Suite tenant already provisioned?' };
@@ -289,6 +292,19 @@ await page.waitForSelector('.decision', { timeout: 15000 });
 log('analyse prompt includes achievements:', calls.analyse.includes('4,000 users at a UK water utility'));
 log('fit tab verdict:', await page.textContent('.decision-verdict'), '| coverage:', (await page.textContent('.cov')).trim());
 await shot('03-fit');
+log('cover letter written automatically:', await page.evaluate(async () => { const apps = await window.CVT.store.listApps(); const a = apps.find(x => x.analysis); return !!(a && a.letter && a.letter.length > 100); }));
+{ // Ask AI drawer on the application
+  await page.click('#ws-ask'); await page.waitForSelector('.ask-drawer .chip-btn');
+  log('ask starters:', await page.locator('.ask-drawer .ask-intro .chip-btn').count());
+  await page.locator('.ask-drawer .ask-intro .chip-btn').first().click();
+  await page.waitForFunction(() => /strong fit/.test((document.querySelector('.ask-drawer .ask-log') || {}).textContent || ''), null, { timeout: 15000 });
+  log('ask answer:', (await page.textContent('.ask-drawer .ask-a')).replace(/\s+/g, ' ').slice(0, 120), '| bullets:', await page.locator('.ask-drawer .ask-a li').count(), '| context has advert+CV:', /JOB ADVERT/.test(calls.chat || '') && /CANDIDATE CV/.test(calls.chat || ''));
+  await page.fill('#ask-in', 'What is fit-to-standard?'); await page.keyboard.press('Enter');
+  await page.waitForFunction(() => document.querySelectorAll('.ask-drawer .ask-q').length === 2 && !document.querySelector('.ask-wait'), null, { timeout: 15000 });
+  log('chat saved:', await page.evaluate(async () => (await window.CVT.store.listApps()).find(x => x.chat && x.chat.length === 2) ? 'yes' : 'no'), '| history sent:', /EARLIER IN THIS CHAT/.test(calls.chat || ''));
+  await shot('03b-ask-ai');
+  await page.click('.ask-drawer [data-k="close"]');
+}
 
 // 5. CV tab
 await page.click('.ws-tabs a:has-text("CV")');
@@ -736,7 +752,7 @@ await page.click('#tb-tour'); await page.waitForSelector('.tour-card'); log('tou
 
 // 12. Mobile layout
 await page.setViewportSize({ width: 400, height: 860 });
-const overflow = async () => page.evaluate(() => [...document.querySelectorAll('body *')].filter(e => e.getBoundingClientRect().right > window.innerWidth + 1 && !e.closest('.table-wrap,.preview-box,.board-wrap,.side,.ws-tabs')).slice(0, 6).map(e => e.tagName + '.' + e.className + ' ' + Math.round(e.getBoundingClientRect().right)));
+const overflow = async () => page.evaluate(() => [...document.querySelectorAll('body *')].filter(e => e.getBoundingClientRect().right > window.innerWidth + 1 && !e.closest('.table-wrap,.preview-box,.board-wrap,.side,.ws-tabs,.q-viewport')).slice(0, 6).map(e => e.tagName + '.' + e.className + ' ' + Math.round(e.getBoundingClientRect().right)));
 for (const h of ['#/dashboard', '#/jobs', '#/pipeline', '#/profile', '#/settings', '#/help', '#/prep/mock', '#/prep/stories', '#/prep/drills', '#/prep/offers', '#/autopilot', '#/pricing']) { await page.goto('http://localhost:8765/' + h); await page.waitForTimeout(500); log('overflow', h, JSON.stringify(await overflow())); }
 const appId = await page.evaluate(async () => (await window.CVT.store.listApps())[0].id);
 for (const t of ['job', 'fit', 'cv', 'letter', 'outreach', 'interview', 'docs', 'apply', 'myqs']) { await page.goto(`http://localhost:8765/#/app/${appId}/${t}`); await page.waitForTimeout(600); log('overflow', t, JSON.stringify(await overflow())); }

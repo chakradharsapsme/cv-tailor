@@ -110,14 +110,22 @@
     const session = await L.create({ initialPrompts: [{ role: 'system', content: system.slice(0, 3000) }], signal });
     try {
       // The on-device model has a small context window: keep the request short.
-      const out = await session.prompt(user.length > 9000 ? user.slice(0, 9000) + '\n[... shortened for the on-device model]' : user, { signal });
+      // Never leave the screen spinning: give up after 2 minutes.
+      const t = new AbortController(); const timer = setTimeout(() => t.abort(), 120000);
+      if (signal) signal.addEventListener('abort', () => t.abort(), { once: true });
+      let out;
+      try { out = await session.prompt(user.length > 9000 ? user.slice(0, 9000) + '\n[... shortened for the on-device model]' : user, { signal: t.signal }); }
+      catch (e) { if (signal && signal.aborted) throw e; throw new Error("Chrome's built-in AI took too long. Try again, or choose Puter, a free Gemini key or your Claude version in Settings."); }
+      finally { clearTimeout(timer); }
       return parseJSON(out);
     } finally { try { session.destroy(); } catch (_) {} }
   }
 
   async function ask(opts) {
     // No engine yet: offer the free options right here instead of failing.
-    if (window.CVT.ai && !window.CVT.ai.ready() && !(await window.CVT.ai.ensure())) throw new Error('This needs the AI. Choose one of the free engines (Settings → AI engine).');
+    // Big jobs (tailoring, letters, interview prep, documents) need more than Chrome's on-device model can hold.
+    const big = (opts.maxTokens || 0) > 3000 || String(opts.user || '').length > 7000;
+    if (window.CVT.ai && !(await window.CVT.ai.ensure('', { big }))) throw new Error(big && P().provider === 'chrome-ai' ? "Chrome's built-in AI is too small for this step. Choose Puter, a free Gemini key or your Claude version (Settings → AI engine)." : 'This needs the AI. Choose one of the free engines (Settings → AI engine).');
     // Speak for the user's own field and country ({{WHO}}, {{MARKET}}, ... in the prompts).
     const fill = window.CVT.fields ? window.CVT.fields.fill : x => x;
     opts = { ...opts, system: fill(opts.system), user: fill(opts.user) };

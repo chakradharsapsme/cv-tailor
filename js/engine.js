@@ -18,17 +18,20 @@
   }
 
   /** Resolves true once an AI engine is ready (at once if it already is), false if the person closes the dialog. */
-  function ensure(reason) {
-    if (ready()) return Promise.resolve(true);
+  // Chrome's on-device model only holds a few pages of text: fine for short questions, too small to read a whole CV and advert.
+  const tooSmall = big => big && st().provider === 'chrome-ai';
+  function ensure(reason, opts = {}) {
+    if (ready() && !tooSmall(opts.big)) return Promise.resolve(true);
     if (inClaude()) { use('claude-plan'); if (ready()) return Promise.resolve(true); }
     if (pending) return pending;
+    const small = tooSmall(opts.big);
     pending = new Promise(resolve => {
-      const hasChrome = typeof window.LanguageModel !== 'undefined';
+      const hasChrome = typeof window.LanguageModel !== 'undefined' && !small;
       const d = document.createElement('dialog');
       d.className = 'modal engine-modal'; d.setAttribute('aria-labelledby', 'eng-title');
       d.innerHTML = `<div class="modal-body">
-        <h2 id="eng-title">Switch on the free AI</h2>
-        <p class="hint">${reason ? reason + ' ' : ''}This needs an AI engine. ${hasChrome ? 'All three options' : 'Both options'} below are free; pick one once and Applywise remembers it on this device.</p>
+        <h2 id="eng-title">${small ? 'This step needs a bigger AI' : 'Switch on the free AI'}</h2>
+        <p class="hint">${small ? "Chrome's built-in AI runs on your computer and is too small for this step: it can't read your whole CV and the advert at once, so it stalls or gives poor results. Pick one of these free options instead; Applywise will use it from now on." : (reason ? reason + ' ' : '') + `This needs an AI engine. ${hasChrome ? 'All three options' : 'Both options'} below are free; pick one once and Applywise remembers it on this device.`}</p>
         <div class="eng-opts">
           ${hasChrome ? `<button class="eng-opt" type="button" data-e="chrome"><strong>Chrome's built-in AI</strong><span>Runs on this computer. No sign-in, nothing leaves your device. The first use downloads the model.</span></button>` : ''}
           ${S.local.get('cvt.claudeLink', '') ? `<button class="eng-opt eng-claude" type="button" data-e="claude"><strong>My Claude subscription</strong><span>Opens your own Claude version of Applywise, where the AI runs on your monthly plan with nothing billed on top. Your data there is separate: move it with Settings → Backup.</span></button>` : ''}

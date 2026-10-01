@@ -254,11 +254,11 @@
       if (!a.masterId && masters.length) a.masterId = (masters.find(m => m.isDefault) || masters[0]).id;
       const mm = await masterModel(a.masterId);
       if (!mm) { err.innerHTML = 'Add your master CV in <a class="link" href="#/profile">Career profile</a> first.'; err.hidden = false; return; }
-      if (!(await window.CVT.ai.ensure('Analysing fit and tailoring your CV uses AI.'))) {
+      if (!(await window.CVT.ai.ensure('Analysing fit and tailoring your CV uses AI.', { big: true }))) {
         // Still useful without AI: which of the advert's skills your CV already shows.
         const J = window.CVT.jobs, want = [...new Set(J.termsIn(a.jd))], have = new Set(J.termsIn(D.plainText(mm.model)));
         const hit = want.filter(t => have.has(t)), miss = want.filter(t => !have.has(t));
-        err.innerHTML = String(html`<strong>The AI is off, so the CV wasn't tailored.</strong> <button class="linkish" type="button" id="eng-open">Switch on free AI</button>
+        err.innerHTML = String(html`<strong>${state.provider === 'chrome-ai' && state.key ? "Chrome's built-in AI is too small to tailor a CV, so it wasn't tailored." : "The AI is off, so the CV wasn't tailored."}</strong> <button class="linkish" type="button" id="eng-open">Choose a free AI</button>
           ${want.length ? html`<br>Quick check without AI: your CV shows <strong>${hit.length} of ${want.length}</strong> skills this advert asks for.${miss.length ? html` Not found on your CV: ${miss.slice(0, 10).join(', ')}.` : ''}` : ''}`);
         err.hidden = false;
         const eb = $('#eng-open', body); if (eb) eb.addEventListener('click', () => $('#run', body).click());

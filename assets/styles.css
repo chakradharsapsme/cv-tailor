@@ -1597,3 +1597,11 @@ h1, h2, h3, .pcard-name, .kpi-num, .wl-card h2, .tour-card h2 { font-family: var
 @media (max-width: 560px) { .grid-3 { grid-template-columns: minmax(0, 1fr); } }
 .wd-h { font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 16px 0 8px; font-weight: 700; }
 #wd-panel .grid-2 { margin-top: 10px; }
+/* career profile: work experience cards */
+.xp-list { display: grid; gap: 12px; margin: 8px 0 12px; }
+.xp-card { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; background: var(--surface-2); min-width: 0; }
+.xp-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; min-width: 0; }
+.xp-head strong { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.xp-cur { align-self: end; padding-bottom: 10px; }
+.xp-card input[type="month"] { font: inherit; width: 100%; padding: 9px 11px; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); color: var(--ink); }
+.xp-card input[type="month"]:disabled { opacity: .55; }

@@ -34,6 +34,9 @@
       // Safe insertions backed by the CV or profile start ticked; rewrites and unproven skills wait for you.
       a.decisions['e' + e.id] = { on: e.insertOnly && e.basis !== 'unconfirmed', text: t };
     });
+    // New bullets go after an unlocked bullet; ones backed by the CV or profile start ticked.
+    r.new_bullets = (r.new_bullets || []).filter(b => { const p = paraById(mm, Number(b.after)); return p && !p.locked && p.isList && String(b.text || '').trim(); });
+    r.new_bullets.forEach((b, i) => { b.after = Number(b.after); a.decisions['n' + i] = { on: b.basis === 'cv' || b.basis === 'profile', text: String(b.text).trim() }; });
     r.reorder.forEach((o, i) => { a.decisions['o' + i] = { on: false }; });
     r.remove.forEach(x => { a.decisions['r' + x.id] = { on: false }; });
   }
@@ -47,8 +50,9 @@
       if (!x.manual && Array.isArray(e.segments) && e.segments.length === p.segments.length) edits.push({ id: e.id, segments: e.segments });
       else edits.push({ id: e.id, text: x.text });
     });
+    const adds = (r.new_bullets || []).map((b, i) => ({ b, x: d['n' + i] })).filter(o => o.x && o.x.on && String(o.x.text || '').trim()).map(o => ({ after: o.b.after, text: o.x.text.trim() }));
     return {
-      edits,
+      edits, adds,
       reorder: (r.reorder || []).filter((o, i) => d['o' + i] && d['o' + i].on).map(o => o.ids),
       remove: (r.remove || []).filter(x => d['r' + x.id] && d['r' + x.id].on).map(x => x.id)
     };
@@ -257,7 +261,7 @@
     $('#stop', body).addEventListener('click', () => T.stop(a.id));
     const ub = $('#use-best', body); if (ub) ub.addEventListener('click', async () => { a.masterId = ub.dataset.id; await ctx.saveNow(); toast('CV switched for this job'); window.CVT.app.rerender(); });
     const al = $('#auto-letter', body); if (al) al.addEventListener('change', () => S.local.set('cvt.autoLetter', al.checked));
-    const STEPS = ['Reading your CV and profile', 'Assessing fit and planning CV changes (30–90 s)', 'Checking every change against your CV', 'Writing your cover letter'];
+    const STEPS = ['Reading your CV and profile', 'Senior CV writer fitting the job into your CV (1–2 min)', 'Recruiter review: fit, realism and your own voice', 'Writing your cover letter'];
     const shortHint = e => { const h = $('#short-hint', body); if (h) { const n = ((e && e.target ? e.target.value : a.jd) || '').trim().length; h.hidden = !(n > 0 && n < 600); } };
     $('#jd', body).addEventListener('input', shortHint); shortHint();
     // Shows the background run (if any) for this job, and keeps it up to date while you stay on this page.
@@ -307,7 +311,7 @@
         work: async t => {
           t.step(0);
           t.step(1);
-          const out = await engine.analyse(a, ctx.profile, t.signal);
+          const out = await engine.analyse(a, ctx.profile, t.signal, s => { if (s === 'review' || s === 'humanise') t.step(2); });
           const title = `${a.role || 'This job'}${a.company ? ' at ' + a.company : ''}`; t.title(title);
           t.step(2);
           const verdict = out.decision && out.decision.verdict;
@@ -401,7 +405,9 @@
     const t = an ? await tailored(a, mm) : null;
     const ats = await D.atsReport(t ? t.model : mm.model);
     const r = an || { edits: [], reorder: [], remove: [] };
-    const total = r.edits.length + r.reorder.length + r.remove.length;
+    const nb = r.new_bullets || [];
+    const total = r.edits.length + nb.length + r.reorder.length + r.remove.length;
+    const BASIS = { cv: ['ok', 'Already shown in your CV'], profile: ['ok', 'From your career profile'], unconfirmed: ['warn', 'Not in your CV: tick only if you really did this'] };
     const flagCtx = {
       known: termsOf(D.plainText(mm.model) + '\n' + (profile.achievements || []).join('\n') + '\n' + (a.emphasis || '')),
       jd: termsOf(a.jd || '')
@@ -415,7 +421,8 @@
           <section class="panel">
             <div class="panel-head"><h2>Requirements added to your CV <span class="muted">· ${total}</span></h2>
               <div class="row gap"><button class="btn ghost small" id="all-on" type="button">Accept all</button><button class="btn ghost small" id="all-off" type="button">Reject all</button></div></div>
-            <p class="hint">Your own wording stays exactly as it is. Each item inserts a job requirement into the paragraph where it fits best (highlighted in green). Items marked “tick only if you really have this” start unticked. They let you show skills that aren't on your CV yet.</p>
+            <p class="hint">Your own wording stays exactly as it is. Insertions add a job requirement to the paragraph where it fits best (in green); <strong>new bullets</strong> add the job's main duties under your most recent roles, in your own style. A senior CV writer drafted them, a recruiter-reviewer checked fit and realism${an.reviewed ? '' : ' (skipped this time)'}, and lines that sounded machine-written were rewritten. Items marked “tick only if you really did this” start unticked.</p>
+            ${(an.review_notes || []).length ? html`<details class="small"><summary>What the reviewer changed (${an.review_notes.length})</summary><ul class="tight">${an.review_notes.map(x => html`<li>${x}</li>`)}</ul></details>` : ''}
             <div class="edits">${total ? '' : html`<p class="empty-note">No changes proposed. Your CV already fits this role well.</p>`}
               ${r.edits.map(e => { const p = paraById(mm, e.id), d = a.decisions['e' + e.id] || { on: false, text: p.text }; const fl = flagsFor(p.text, d.text, flagCtx);
                 const ins = d.manual ? insertOnly(p.text, d.text) : e.insertOnly !== false;
@@ -427,7 +434,19 @@
                     ${diffHtml(p.text, d.text)}
                     <div class="edit-tools"><button class="linkish" data-edit="e${e.id}" type="button">Edit wording</button></div>
                     ${e.reason ? html`<p class="reason">${e.reason}</p>` : ''}
-                    ${fl.length ? html`<div class="flags">${fl.map(x => html`<span class="chip ${x.cls}">${x.text}</span>`)}</div>` : ''}
+                    ${fl.length || (e.tells || []).length ? html`<div class="flags">${fl.map(x => html`<span class="chip ${x.cls}">${x.text}</span>`)}${(d.manual ? [] : e.tells || []).map(x => html`<span class="chip warn">${x}</span>`)}</div>` : ''}
+                  </div></div>`; })}
+              ${nb.map((b, i) => { const p = paraById(mm, b.after), d = a.decisions['n' + i] || { on: false, text: b.text }; if (!p) return '';
+                const fl = flagsFor('', d.text, flagCtx).filter(x => !/^Longer than/.test(x.text)), basis = BASIS[b.basis], tells = window.CVT.agent.aiTells ? window.CVT.agent.aiTells(d.text) : [];
+                return html`<div class="edit ${d.on ? '' : 'off'} ${b.basis === 'unconfirmed' ? 'confirm' : ''}" data-key="n${i}">
+                  <input type="checkbox" data-toggle="n${i}" ${d.on ? raw('checked') : ''} aria-label="Include this new bullet">
+                  <div class="edit-main">
+                    <div class="edit-meta"><span class="kind">New bullet</span>${b.requirement ? html`<span class="chip accent">${b.requirement}</span>` : ''}${basis ? html`<span class="chip ${basis[0]}">${basis[1]}</span>` : ''}<span>${b.role ? b.role + ' · ' : ''}after ¶${p.id}</span></div>
+                    <div class="diff nb-after">• ${p.text.length > 110 ? p.text.slice(0, 110) + '…' : p.text}</div>
+                    <div class="diff">• <ins>${d.text}</ins></div>
+                    <div class="edit-tools"><button class="linkish" data-edit="n${i}" type="button">Edit wording</button></div>
+                    ${b.reason ? html`<p class="reason">${b.reason}</p>` : ''}
+                    ${fl.length || tells.length ? html`<div class="flags">${fl.map(x => html`<span class="chip ${x.cls}">${x.text}</span>`)}${tells.map(x => html`<span class="chip warn">${x}</span>`)}</div>` : ''}
                   </div></div>`; })}
               ${r.reorder.map((o, i) => { const d = a.decisions['o' + i] || { on: false }; return html`<div class="edit ${d.on ? '' : 'off'}">
                   <input type="checkbox" data-toggle="o${i}" ${d.on ? raw('checked') : ''} aria-label="Include this change">
@@ -516,16 +535,25 @@
       const slots = g.map(id => order.indexOf(id)).sort((x, y) => x - y);
       g.forEach((id, i) => { if (order[slots[i]] !== id) moved.add(id); order[slots[i]] = id; });
     });
-    return order.map(id => paraById(mm, id)).filter(p => p && p.text.trim()).map(p => {
+    const addsAfter = new Map();
+    (plan.adds || []).filter(x => !skipped.has('n' + x.after)).forEach(x => { if (!addsAfter.has(x.after)) addsAfter.set(x.after, []); addsAfter.get(x.after).push(x.text); });
+    const rowsOut = [];
+    order.map(id => paraById(mm, id)).filter(p => p && p.text.trim()).forEach(p => {
+      rowsOut.push(rowOf(p));
+      (addsAfter.get(p.id) || []).forEach(t => rowsOut.push({ p: { id: p.id, isList: true, text: '' }, before: '', after: t, kind: 'added', heading: false }));
+    });
+    return rowsOut;
+    function rowOf(p) {
       const e = edits.get(p.id);
       const after = removed.has(p.id) ? '' : e ? editText(e, p) : p.text;
       const kind = removed.has(p.id) ? 'removed' : (e && after !== p.text) ? (moved.has(p.id) ? 'edited moved' : 'edited') : moved.has(p.id) ? 'moved' : 'same';
       const heading = /heading|title/i.test(p.style) || (!p.isList && p.text.length < 40 && p.text === p.text.toUpperCase() && /[A-Z]/.test(p.text));
       return { p, before: p.text, after, kind, heading };
-    });
+    }
   }
   function sideHtml(r, side) {
     const pre = r.p.isList ? '• ' : '';
+    if (r.kind === 'added') return side === 'a' ? html`<span class="cmp-gone">New bullet</span>` : html`${pre}<ins>${r.after}</ins>`;
     if (r.kind === 'removed') return side === 'a' ? html`${pre}<del>${r.before}</del>` : html`<span class="cmp-gone">Removed from the tailored CV</span>`;
     if (!/edited/.test(r.kind)) return html`${pre}${side === 'a' ? r.before : r.after}`;
     const parts = wordDiff(r.before, r.after);
@@ -542,7 +570,7 @@
     const t = await tailored(a, mm);
     const rows = compareRows(a, mm, t);
     const ch = rows.filter(r => r.kind !== 'same');
-    const addedWords = rows.reduce((n, r) => n + (/edited/.test(r.kind) ? wordDiff(r.before, r.after).filter(x => x.t === 'ins').reduce((k, x) => k + (x.s.match(/\S+/g) || []).length, 0) : 0), 0);
+    const addedWords = rows.reduce((n, r) => n + (r.kind === 'added' ? (r.after.match(/\S+/g) || []).length : /edited/.test(r.kind) ? wordDiff(r.before, r.after).filter(x => x.t === 'ins').reduce((k, x) => k + (x.s.match(/\S+/g) || []).length, 0) : 0), 0);
     const kws = an.keywords || [];
     const before = D.keywordCoverage(D.plainText(mm.model), kws), after = D.keywordCoverage(t.text, kws);
     const gained = after.hit.filter(k => !before.hit.includes(k));
@@ -558,6 +586,7 @@
           <a class="btn primary small" href="#/app/${a.id}/cv">Accept or reject changes</a></div></div>
         <div class="cmp-stats">
           <div><b>${n('edited')}</b><span>paragraphs updated</span></div>
+          <div><b>${n('added')}</b><span>new bullets</span></div>
           <div><b>${addedWords}</b><span>words added</span></div>
           <div><b>${n('moved')}</b><span>moved</span></div>
           <div><b>${n('removed')}</b><span>removed</span></div>
@@ -943,13 +972,13 @@ What you'll bring
   // ENGINE: the same steps as the buttons, without the UI (used by Autopilot)
   // =====================================================================
   const engine = {
-    async analyse(a, profile, signal) {
+    async analyse(a, profile, signal, onStage) {
       if ((a.jd || '').trim().length < 15 && !(a.role || '').trim()) throw new Error('Needs the job title or a few lines of the advert');
       const masters = await S.listMasters();
       if (!a.masterId && masters.length) a.masterId = (masters.find(m => m.isDefault) || masters[0]).id;
       const mm = await masterModel(a.masterId);
       if (!mm) throw new Error('Add your master CV in Career profile first');
-      const out = await A.analyse({ key: state.key, model: state.model, signal, app: a, profile, paras: D.forModel(mm.model) });
+      const out = await A.analyse({ key: state.key, model: state.model, signal, onStage, app: a, profile, paras: D.forModel(mm.model) });
       // You may have edited this application while the AI worked: build on the latest saved copy.
       const fresh = await S.getApp(a.id);
       if (fresh && fresh !== a) Object.assign(a, fresh);

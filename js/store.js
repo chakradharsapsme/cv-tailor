@@ -57,7 +57,11 @@
     currentTitle: '', currentCompany: '',
     targetRoles: [], targetLocations: ['United Kingdom'], workPreference: 'Both',
     salary: '', dayRate: '', notice: '', eligibility: '', weeklyGoal: 5,
-    achievements: [], extraSkills: '', neverClaim: ''
+    achievements: [], extraSkills: '', neverClaim: '',
+    // Application forms (Workday and similar)
+    legalFirst: '', middleName: '', legalLast: '', preferredName: '', phoneType: 'Mobile', phoneCode: '', address1: '', address2: '', county: '',
+    hearAbout: '', rightToWork: '', sponsorship: '', relocate: '', travel: '', startDate: '', currentSalary: '', previouslyWorked: 'No', drivingLicence: '',
+    school: '', degree: '', fieldOfStudy: '', eduFrom: '', eduTo: '', grade: '', languages: '', certifications: ''
   };
   async function getProfile() {
     const r = await get('kv', 'profile');

@@ -1,7 +1,35 @@
 {
-  "searches": ["SAP Ariba", "SAP S2P", "SAP P2P", "S/4HANA Procurement", "SAP MM Consultant", "Procurement Solution Architect"],
+  "searches": [
+    "SAP Ariba",
+    "SAP S2P",
+    "SAP P2P",
+    "S/4HANA Procurement",
+    "SAP MM Consultant",
+    "Procurement Solution Architect",
+    "IT Business Analyst",
+    "SAP Business Analyst"
+  ],
   "location": "United Kingdom",
   "max_days_old": 21,
   "keep_days": 45,
-  "exclude": ["graduate", "apprentice", "trainee", "internship"]
+  "exclude": [
+    "graduate",
+    "apprentice",
+    "trainee",
+    "internship"
+  ],
+  "jooble": {
+    "requests_per_day": 1,
+    "lifetime_limit": 480,
+    "_note": "Free Jooble keys allow 500 requests in total; this uses 1 a day and stops at 480."
+  },
+  "apify": {
+    "actor": "johnvc~google-jobs-scraper---pay-per-result",
+    "country": "uk",
+    "google_domain": "google.co.uk",
+    "searches_per_day": 1,
+    "results_per_search": 10,
+    "monthly_results_cap": 300,
+    "_note": "Google Jobs costs about $10 per 1,000 results on Apify. 300 results a month is about $3, inside Apify's free $5 monthly credit."
+  }
 }

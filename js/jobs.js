@@ -609,6 +609,7 @@
       </header>
       ${cfg.queries.length ? '' : html`<section class="panel callout warn-callout"><h2>Tell us what you're looking for</h2><p class="hint">Add your target job titles and your field in <a class="link" href="#/profile">Career profile</a>, or type searches in the Searches box. Applywise then finds matching jobs in your country.</p></section>`}
       <section class="panel callout jobs-intro" ${cfg.queries.length ? '' : raw('hidden')}>
+        <div class="ji-art" aria-hidden="true">${raw(window.CVT.art ? window.CVT.art.scene('match') : '')}</div>
         <h2>Matched to your target titles and CV</h2>
         ${feed.searches && feed.searches.updatedFromCv && daysBetween(feed.searches.updatedFromCv) <= 3 ? html`<p class="chip ok">Searches updated from your latest CV ${relTime(feed.searches.updatedFromCv)}</p>` : ''}
         <p class="hint">Find jobs now searches ${avail ? 'Indeed, ' : ''}The Muse, company career portals and remote job boards for: <strong>${cfg.queries.join(' · ')}</strong>, in <strong>${CO().get(cfg.country).flag} ${CO().get(cfg.country).name}</strong> (plus remote roles open to it) <button class="linkish" type="button" id="jb-country">change country</button>. Only roles that match these titles or several skills on your CV are kept, then scored against your CV.${feed.webRun ? ` Last run found ${Object.entries(feed.webRun.bySource || {}).filter(([, n]) => n).map(([k, n]) => `${n} on ${k}`).join(', ') || 'no new matches'}.` : ''} Big boards such as LinkedIn and ${CO().get(cfg.country).boards('x', '').filter(b => b.name !== 'LinkedIn' && b.name !== 'Google Jobs').slice(0, 2).map(b => b.name).join(' and ')} don't allow other sites to read them: use the one-click searches below for those.</p>
@@ -806,6 +807,7 @@
       } catch (e2) { prog.hidden = true; err.textContent = errText(e2); err.hidden = false; rb.disabled = false; rb.textContent = 'Find jobs now'; }
     });
 
+    if (window.CVT._autoFind && rb) { window.CVT._autoFind = false; setTimeout(() => rb.click(), 50); }
     $('#f-toggle', root).addEventListener('click', e => { const f = e.currentTarget.closest('.filters'); f.classList.toggle('open'); e.currentTarget.setAttribute('aria-expanded', f.classList.contains('open')); });
     $('#jb-more', root).addEventListener('click', e => { const box = e.target.closest('.jobs-intro'); box.classList.toggle('open'); e.target.textContent = box.classList.contains('open') ? 'Show less' : 'Show details'; });
     // Straight after first-run setup: start the first search automatically.
@@ -845,13 +847,17 @@
       if (bad.length) toast(`Skipped ${bad.length} link${bad.length > 1 ? 's' : ''} that isn't a careers page Applywise can read`, 'warn');
       if (!f.searches.queries.length) { toast('Add at least one search', 'warn'); return; }
       dirty(false);
-      await saveFeed(f); toast(moved ? `Now searching ${CO().get(country).name}. Press Find jobs now.` : 'Searches saved. Press Find jobs now.'); window.CVT.app.rerender();
+      await saveFeed(f);
+      // Run the new searches straight away, so the list matches what you just saved.
+      window.CVT._autoFind = true;
+      toast(moved ? `Now searching ${CO().get(country).name}…` : 'Searches saved. Finding jobs for them now…');
+      window.CVT.app.rerender();
     }
     $('#s-auto', root).addEventListener('click', async () => {
       const f = await loadFeed(); resetEvidence();
       const qs = await defaultSearches();
       f.searches = Object.assign({}, f.searches || {}, { queries: qs, auto: true, cvSig: await cvSig() });
-      await saveFeed(f); toast('Searches rebuilt from your target titles and CV'); window.CVT.app.rerender();
+      await saveFeed(f); window.CVT._autoFind = true; toast('Searches rebuilt from your target titles and CV. Finding jobs now…'); window.CVT.app.rerender();
     });
 
     // ---- careers sites linked to your CV ----

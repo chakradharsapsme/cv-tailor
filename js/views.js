@@ -311,6 +311,7 @@
     const [p, masters] = await Promise.all([S.getProfile(), S.listMasters()]);
     const lines = arr => (arr || []).join('\n');
     const field = (key, label, attrs = {}) => html`<label class="field"><span>${label}</span><input data-p="${key}" type="${attrs.type || 'text'}" value="${p[key] ?? ''}" placeholder="${attrs.ph || ''}" autocomplete="off"></label>`;
+    const sel = (key, label, opts) => html`<label class="field"><span>${label}</span><select data-p="${key}">${opts.map(o => html`<option value="${o}" ${String(p[key] ?? '') === o ? raw('selected') : ''}>${o || 'Choose…'}</option>`)}</select></label>`;
 
     root.innerHTML = html`
       <header class="page-head">
@@ -371,6 +372,54 @@
         </section>
       </div>
 
+      <section class="panel" id="wd-panel">
+        <div class="panel-head"><h2>Application forms (Workday and similar)</h2><button class="btn ghost small" id="wd-copy" type="button">Copy all for pasting</button></div>
+        <p class="hint">Many employers ask you to fill in your details on Workday (or Taleo, SuccessFactors, iCIMS) before they can send an interview invitation. Fill these in once: the autofill bookmark uses them, and <strong>Copy all for pasting</strong> gives you a tidy list to copy from section by section. Workday asks you to create an account on each employer's site: use the same email every time. Your password stays with you and is never stored here.</p>
+        <h3 class="wd-h">Legal name and contact</h3>
+        <div class="grid-3">
+          ${field('legalFirst', 'Legal first name', { ph: 'As on your passport' })}
+          ${field('middleName', 'Middle name(s)')}
+          ${field('legalLast', 'Legal last name')}
+          ${field('preferredName', 'Preferred name', { ph: 'If different' })}
+          ${sel('phoneType', 'Phone device type', ['Mobile', 'Home', 'Work'])}
+          ${field('phoneCode', 'Country phone code', { ph: 'e.g. +44' })}
+        </div>
+        <h3 class="wd-h">Address</h3>
+        <div class="grid-3">
+          ${field('address1', 'Address line 1')}
+          ${field('address2', 'Address line 2')}
+          ${field('county', 'County / region')}
+          ${field('country', 'Country')}
+          ${field('website', 'Website or portfolio', { type: 'url' })}
+        </div>
+        <h3 class="wd-h">Questions most forms ask</h3>
+        <div class="grid-3">
+          ${field('hearAbout', 'How did you hear about us?', { ph: 'e.g. LinkedIn, job board, recruiter' })}
+          ${sel('rightToWork', 'Right to work in this country?', ['', 'Yes', 'No'])}
+          ${sel('sponsorship', 'Need visa sponsorship (now or future)?', ['', 'No', 'Yes'])}
+          ${sel('relocate', 'Willing to relocate?', ['', 'Yes', 'No', 'Open to discuss'])}
+          ${field('travel', 'Willing to travel', { ph: 'e.g. Up to 50%' })}
+          ${field('startDate', 'Earliest start date', { ph: 'e.g. 1 December 2026' })}
+          ${field('currentSalary', 'Current salary / rate (if asked)', { ph: 'Leave blank to answer case by case' })}
+          ${sel('previouslyWorked', 'Default: worked for this employer before?', ['No', 'Yes – I will check each time'])}
+          ${sel('drivingLicence', 'Driving licence', ['', 'Full UK licence', 'Provisional', 'None', 'Other country licence'])}
+        </div>
+        <h3 class="wd-h">Education, languages and certifications</h3>
+        <div class="grid-3">
+          ${field('school', 'University / school')}
+          ${field('degree', 'Degree / qualification', { ph: 'e.g. MTech' })}
+          ${field('fieldOfStudy', 'Field of study', { ph: 'e.g. CAD/CAM' })}
+          ${field('eduFrom', 'Education from (year)')}
+          ${field('eduTo', 'Education to (year)')}
+          ${field('grade', 'Grade (if asked)')}
+        </div>
+        <div class="grid-2">
+          <label class="field"><span>Languages (one per line, with level)</span><textarea data-p="languages" rows="3" placeholder="English – Fluent&#10;Hindi – Native">${p.languages || ''}</textarea></label>
+          <label class="field"><span>Certifications (one per line, with year)</span><textarea data-p="certifications" rows="3" placeholder="PMP – 2015">${p.certifications || ''}</textarea></label>
+        </div>
+        <p class="muted small">Equal-opportunity questions (gender, ethnicity, disability, veteran status) are optional on these forms: answer them yourself on each site, or choose “Prefer not to say”. Work history comes from your CV: Workday's “Autofill with resume” reads it when you upload the tailored CV.</p>
+      </section>
+
       <section class="panel">
         <div class="panel-head"><h2>Achievements bank</h2><button class="btn ghost small" id="ach-add" type="button">Add achievement</button></div>
         <p class="hint">True, specific results the agent may quote. Format: what you did, scale, result. Example: “Led a team of 8 through a system change for 2,000 customers; cut complaints by 30%.”</p>
@@ -400,6 +449,23 @@
       else if (t.dataset.mname) { clearTimeout(t._t); t._t = setTimeout(async () => { const m = await S.getMaster(t.dataset.mname); m.name = t.value.trim() || 'CV'; await S.saveMaster(m); }, 400); }
     });
     root.addEventListener('change', e => { if (e.target.tagName === 'SELECT' && e.target.dataset.p) { p[e.target.dataset.p] = e.target.value; save(); } });
+    $('#wd-copy', root).addEventListener('click', e => {
+      const parts = (p.name || '').trim().split(/\s+/);
+      const rows = [
+        ['LEGAL NAME AND CONTACT'], ['First name', p.legalFirst || parts[0]], ['Middle name', p.middleName], ['Last name', p.legalLast || (parts.length > 1 ? parts[parts.length - 1] : '')], ['Preferred name', p.preferredName],
+        ['Email', p.email], ['Phone device type', p.phoneType || 'Mobile'], ['Country phone code', p.phoneCode], ['Phone number', p.phone], ['LinkedIn', p.linkedin], ['Website', p.website],
+        ['ADDRESS'], ['Address line 1', p.address1], ['Address line 2', p.address2], ['Town / city', p.city], ['County / region', p.county], ['Postcode', p.postcode], ['Country', p.country],
+        ['APPLICATION QUESTIONS'], ['How did you hear about us', p.hearAbout], ['Previously worked here', p.previouslyWorked || 'No'], ['Right to work', p.rightToWork], ['Visa sponsorship needed', p.sponsorship], ['Work eligibility', p.eligibility],
+        ['Willing to relocate', p.relocate], ['Willing to travel', p.travel], ['Earliest start date', p.startDate], ['Notice period', p.notice], ['Current salary / rate', p.currentSalary], ['Salary expectation', p.salary], ['Day rate', p.dayRate], ['Driving licence', p.drivingLicence],
+        ['CURRENT JOB'], ['Job title', p.currentTitle], ['Employer', p.currentCompany],
+        ['EDUCATION'], ['University / school', p.school], ['Degree', p.degree], ['Field of study', p.fieldOfStudy], ['From', p.eduFrom], ['To', p.eduTo], ['Grade', p.grade],
+        ['LANGUAGES'], ['', p.languages], ['CERTIFICATIONS'], ['', p.certifications]
+      ];
+      const out = []; let head = '';
+      rows.forEach(r => { if (r.length === 1) { head = r[0]; return; } const v = String(r[1] || '').trim(); if (!v) return; if (head) { out.push((out.length ? '\n' : '') + head); head = ''; } out.push(r[0] ? `${r[0]}: ${v}` : v); });
+      if (!out.length) { toast('Fill in a few fields first', 'warn'); return; }
+      copy(out.join('\n'), e.currentTarget);
+    });
     $('#ach-add', root).addEventListener('click', async () => { p.achievements = (p.achievements || []).concat(''); await S.saveProfile(p); await window.CVT.app.rerender(); const all = $$('[data-ach]'); if (all.length) all[all.length - 1].focus(); });
 
     root.addEventListener('click', async e => {

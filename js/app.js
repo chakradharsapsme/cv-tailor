@@ -78,7 +78,7 @@
     const [, view, id, tab] = hash.split('/');
     const main = $('#main');
     const root = document.createElement('div');
-    root.className = 'view';
+    root.className = 'view' + (window.CVT._keepScroll ? '' : ' page-in');
     main.replaceChildren(root);
     const navKey = view === 'app' ? 'pipeline' : view === 'autopilot' ? 'dashboard' : (view || 'dashboard');
     $$('.nav a').forEach(a => { if (a.dataset.nav === navKey) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
@@ -132,8 +132,8 @@
     if (window.CVT.quotes) window.CVT.quotes.init();
     await route();
     refreshBadges();
-    // First visit: the 3-step welcome; otherwise the short tour (each only once).
-    setTimeout(async () => { let shown = false; try { shown = window.CVT.welcome ? await window.CVT.welcome.open(false) : false; } catch (_) {} if (!shown && window.CVT.shell) window.CVT.shell.tour(false); }, 400);
+    // First visit: the 3-step welcome (once). The guided tour never pops up by itself; it's under the ? button.
+    setTimeout(async () => { try { if (window.CVT.welcome) await window.CVT.welcome.open(false); } catch (_) {} }, 400);
     window.CVT.sync.onChange(st => { const n = $('#data-note'); if (n && st.state === 'on') n.textContent = 'Private to you and synced to your own account. Nothing is submitted without you.'; });
     // Pull newer data from your other devices (inside claude.ai), then redraw if anything changed.
     try {

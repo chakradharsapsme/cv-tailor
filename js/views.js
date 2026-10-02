@@ -61,7 +61,7 @@
           <div class="empty-state slim"><p class="hint">Find roles that match your target job titles and the skills on your CV, from company career portals and job boards, scored against your CV.</p>
           <button class="btn primary" id="dj-run" type="button">Find jobs now</button></div>
           <p class="small muted mt">Or search the big boards in one click:</p>
-          <div class="search-rows">${roles.slice(0, 4).map(r => html`<div class="search-row"><span class="search-role">${r}</span><span class="search-links">${J.boards(r, '', window.CVT.countries.current()).slice(0, 6).map(l => html`<a class="pill-link" href="${l.href}" target="_blank" rel="noopener">${l.name}</a>`)}</span></div>`)}</div>`);
+          <div class="search-rows">${roles.slice(0, 4).map(r => html`<div class="search-row"><span class="search-role">${r}</span><span class="search-links">${J.boards(r, (profile.targetLocations || [])[0] || '', window.CVT.countries.current()).slice(0, 6).map(l => html`<a class="pill-link" href="${l.href}" target="_blank" rel="noopener">${l.name}</a>`)}</span></div>`)}</div>`);
       } else {
         box.innerHTML = String(html`${head(`<span class="muted small">${note || 'Updated ' + J.relTime(t.feed.lastRun)}</span>`)}
           <div class="job-list compact">${t.items.map(r => J.jobCard(r.j, r.sc, r.dups, true))}</div>
@@ -102,27 +102,14 @@
     const hour = new Date().getHours();
     const hello = (hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening') + (profile.name ? ', ' + profile.name.split(' ')[0] : '');
 
-    // Coach notes: rule-based, most important first.
-    const notes = [];
-    if (!masters.length) notes.push({ cls: 'bad', text: 'Upload your master CV so the agent has something to tailor.', href: '#/profile', cta: 'Career profile' });
-    if (!state.key) notes.push({ cls: 'bad', text: 'Switch the AI on: a free Gemini key, a free Puter sign-in or Chrome\'s built-in AI.', href: '#/settings', cta: 'Settings' });
-    if (overdue.length) notes.push({ cls: 'warn', text: `${overdue.length} follow-up${overdue.length > 1 ? 's are' : ' is'} overdue. A short chase doubles the chance of a reply.`, href: '#/pipeline', cta: 'Pipeline' });
-    if ((profile.achievements || []).filter(Boolean).length < 5) notes.push({ cls: 'accent', text: 'Add at least 5 achievements with numbers. The agent may quote them, which makes tailoring stronger without inventing anything.', href: '#/profile', cta: 'Achievements' });
-    if (week.length < goal) notes.push({ cls: 'muted', text: `${goal - week.length} more application${goal - week.length > 1 ? 's' : ''} to reach this week's goal of ${goal}. Quality beats volume: aim for roles that score 70+.` });
-    if (applied.length >= 10 && rate !== null && rate < 10) notes.push({ cls: 'warn', text: `Response rate is ${rate}%. Tighten targeting to 70+ fits and message the recruiter or hiring manager the same day you apply.` });
-    const stale = apps.filter(a => ['Saved', 'Tailored'].includes(a.status) && daysBetween(a.updated) > 5);
-    if (stale.length) notes.push({ cls: 'muted', text: `${stale.length} prepared application${stale.length > 1 ? 's have' : ' has'} sat for over 5 days. Roles often close within two weeks.`, href: '#/pipeline', cta: 'Review' });
-    const needPrep = apps.filter(a => ['Screening', 'Interview'].includes(a.status) && !a.interview);
-    needPrep.slice(0, 2).forEach(a => notes.push({ cls: 'accent', text: `Prepare for ${a.company || 'your'} ${a.status.toLowerCase()}: questions, STAR answers and a 90-day plan.`, href: `#/app/${a.id}/interview`, cta: 'Interview prep' }));
-    if (!(profile.targetRoles || []).length) notes.push({ cls: 'muted', text: 'Add your target job titles so the job feed searches for them.', href: '#/profile', cta: 'Targets' });
-
     const feedRun = !!((await S.getKV('feed', null)) || {}).lastRun;
     const setup = [
-      { done: masters.length > 0, title: 'Add your master CV', text: 'Upload the Word CV you use today. Its layout is never changed.', href: '#/profile', cta: 'Upload CV' },
-      { done: !!state.key, title: 'Switch on the AI agent', text: 'Free options: a Gemini key, a Puter sign-in or Chrome\'s built-in AI.', href: '#/settings', cta: 'Choose engine' },
-      { done: (profile.targetRoles || []).length > 0 || feedRun, title: 'Tell it what you want', text: 'Target roles, locations and skills not on your CV. Jobs are matched against these.', href: '#/profile', cta: 'Set targets' },
-      { done: apps.length > 0, title: 'Tailor your first application', text: 'Pick a job from the feed or paste any advert.', href: '#/jobs', cta: 'Find a job' }
+      { done: masters.length > 0, art: 'cv', title: 'Add your CV', text: 'Upload the Word CV you use today (one per skill set if you have several). Its layout is never changed.', href: '#/profile', cta: 'Upload CV' },
+      { done: (profile.targetRoles || []).length > 0 || feedRun, art: 'search', title: 'Tell us the jobs you want', text: 'Job titles, your town or city and country. Jobs near you come first.', href: '#/profile', cta: 'Set targets' },
+      { done: !!state.key, art: 'ask', title: 'Switch on a free AI', text: 'Pick one free option. It writes your tailored CV and cover letters.', href: '#/settings', cta: 'Choose a free AI' },
+      { done: apps.length > 0, art: 'handshake', title: 'Tailor your first application', text: 'Pick a job from the list or paste any advert, even a short one.', href: '#/jobs', cta: 'Find a job' }
     ];
+    const setupDone = setup.every(x => x.done), firstTodo = setup.find(x => !x.done);
 
     const initials = ((profile.name || '').trim().split(/\s+/).filter(Boolean).map(w => w[0]).slice(0, 2).join('') || 'Me').toUpperCase();
     // The one thing most worth doing next, with a picture.
@@ -135,10 +122,16 @@
       : { art: 'search', title: 'Find your next role', text: 'New jobs matched to your titles, skills and country, scored against your CVs.', href: '#/jobs', cta: 'See jobs for you' };
     const art = n => raw(window.CVT.art ? window.CVT.art.scene(n) : '');
     const latest = apps.slice().sort((x, y) => (y.updated || '').localeCompare(x.updated || ''))[0];
+    // Shortcuts that aren't already the next step or a panel on this page.
+    const tiles = [
+      { href: '#/new', art: 'cv', title: 'Tailor for an advert', sub: 'CV and cover letter' },
+      latest ? { ask: latest.id, art: 'ask', title: 'Ask AI', sub: 'About ' + (latest.company || latest.role || 'your latest application') } : null,
+      { href: '#/pipeline', art: 'growth', title: 'Track applications', sub: apps.length ? apps.length + ' so far' : 'Every application' }
+    ].filter(q => q && q.href !== nextStep.href);
     root.innerHTML = html`
       <header class="page-head">
         <div><p class="eyebrow">${longDate()}</p><h1>${hello}</h1></div>
-        <div class="row gap wrap"><button class="btn ghost" id="dash-custom" type="button" title="Move, hide or reset the sections on this page">⚙ Customise</button><a class="btn primary" href="#/autopilot">Run autopilot</a><a class="btn ghost" href="#/new">New application</a></div>
+        <div class="row gap wrap"><button class="btn ghost small" id="dash-custom" type="button" title="Move, hide or reset the sections on this page">⚙ Customise</button></div>
       </header>
 
       <div class="dash3">
@@ -149,14 +142,13 @@
             <div class="pcard-body">
               <strong class="pcard-name">${profile.name || 'Your profile'}</strong>
               <span class="pcard-head">${profile.currentTitle || (profile.targetRoles || [])[0] || 'Add your headline'}</span>
-              <span class="muted small">${(profile.targetLocations || [])[0] || 'United Kingdom'}</span>
+              <span class="muted small">${[(profile.targetLocations || [])[0], window.CVT.countries.get(window.CVT.countries.current()).name].filter((x, i, l) => x && l.indexOf(x) === i).join(', ')}</span>
             </div>
-            <div class="pcard-strength"><div class="row gap"><span class="small">Profile strength</span><span class="grow-s"></span><strong class="small">${setup.filter(x => x.done).length}/${setup.length}</strong></div><div class="meter" aria-hidden="true"><span style="width:${Math.round(100 * setup.filter(x => x.done).length / setup.length)}%"></span></div></div>
-            <nav class="pcard-links"><a href="#/pipeline"><span>My applications</span><strong>${apps.length}</strong></a><a href="#/jobs"><span>Jobs for you</span><strong>›</strong></a><a href="#/prep"><span>Interview prep</span><strong>›</strong></a><a href="#/profile"><span>Career profile</span><strong>›</strong></a></nav>
+            <a class="btn ghost small pcard-edit" href="#/profile">Edit profile</a>
           </section>
           <section class="panel cvs-card" data-sec="cvs" aria-label="Your CVs">
             <div class="panel-head"><h2>Your CVs</h2><a class="link small" href="#/profile">${masters.length ? 'Add or manage' : 'Add'}</a></div>
-            ${masters.length ? html`<ul class="cv-list" id="cv-list">${masters.map(m => html`<li data-cv="${m.id}"><span class="file-ext">DOCX</span><div><strong>${m.name}</strong>${m.isDefault ? html` <span class="chip muted">Default</span>` : ''}<span class="cv-skills muted small">Reading skills…</span></div></li>`)}</ul>
+            ${masters.length ? html`<ul class="cv-list" id="cv-list">${masters.map(m => html`<li data-cv="${m.id}"><span class="file-ext">DOCX</span><div class="cv-meta"><div class="cv-name"><strong title="${m.name}">${m.name}</strong>${m.isDefault ? html`<span class="chip muted">Default</span>` : ''}</div><span class="cv-skills muted small">Reading skills…</span></div></li>`)}</ul>
               <p class="muted small">${masters.length > 1 ? 'Jobs are matched against all of these; each application starts with the best fit.' : 'Have CVs for different skill sets? Add them all.'}</p>`
               : html`<p class="hint">Upload one CV per skill set. Jobs are matched against all of them.</p>`}
           </section>
@@ -184,25 +176,19 @@
       </section>
         </aside>
         <div class="d-mid">
-          <section class="panel start-panel" data-sec="start" aria-label="Your next step">
-            <div class="next-hero"><div class="nh-text"><p class="eyebrow">Your next step</p><h2>${nextStep.title}</h2><p class="muted">${nextStep.text}</p>
+          <section class="panel start-panel" data-sec="start" aria-label="${setupDone ? 'Your next step' : 'Get started'}">
+            ${setupDone ? html`<div class="next-hero"><div class="nh-text"><p class="eyebrow">Your next step</p><h2>${nextStep.title}</h2><p class="muted">${nextStep.text}</p>
               <a class="btn primary" href="${nextStep.href}">${nextStep.cta}</a></div><div class="nh-art">${art(nextStep.art)}</div></div>
-            <div class="quick-tiles">
-              <a class="q-tile" href="#/jobs"><span class="q-art">${art('search')}</span><strong>Find jobs</strong><span class="muted small">Matched to your CVs</span></a>
-              <a class="q-tile" href="#/new"><span class="q-art">${art('cv')}</span><strong>Tailor for an advert</strong><span class="muted small">CV and cover letter</span></a>
-              <a class="q-tile" href="#/prep"><span class="q-art">${art('interview')}</span><strong>Practise interviews</strong><span class="muted small">Questions and feedback</span></a>
-              ${latest ? html`<button class="q-tile" type="button" data-ask="${latest.id}"><span class="q-art">${art('ask')}</span><strong>Ask AI</strong><span class="muted small">About ${latest.company || latest.role || 'your latest application'}</span></button>`
-                : html`<a class="q-tile" href="#/pipeline"><span class="q-art">${art('growth')}</span><strong>Track progress</strong><span class="muted small">Every application</span></a>`}
-            </div>
+            <div class="quick-tiles">${tiles.map(q => q.ask ? html`<button class="q-tile" type="button" data-ask="${q.ask}"><span class="q-art">${art(q.art)}</span><strong>${q.title}</strong><span class="muted small">${q.sub}</span></button>`
+              : html`<a class="q-tile" href="${q.href}"><span class="q-art">${art(q.art)}</span><strong>${q.title}</strong><span class="muted small">${q.sub}</span></a>`)}</div>`
+            : html`<div class="next-hero"><div class="nh-text"><p class="eyebrow">Get started · ${setup.filter(x => x.done).length} of ${setup.length} done</p><h2>${setup.some(x => x.done) ? 'Nearly there' : 'Welcome to Applywise'}</h2><p class="muted">Four quick steps to your first tailored CV and cover letter. Do them in any order.</p></div><div class="nh-art">${art('welcome')}</div></div>
+            <ol class="onboard-steps">${setup.map((x, i) => html`<li class="${x.done ? 'done' : x === firstTodo ? 'now' : ''}">
+              <span class="step-num" aria-hidden="true">${x.done ? '✓' : i + 1}</span>
+              <div><strong>${x.title}</strong><p class="muted small">${x.text}</p></div>
+              ${x.done ? html`<span class="chip ok">Done</span>` : html`<a class="btn small ${x === firstTodo ? 'primary' : 'ghost'}" href="${x.href}">${x.cta}</a>`}
+            </li>`)}</ol>
+            <p class="small muted mt"><a class="link" href="#/help">▶ Watch the 3-minute guide</a></p>`}
           </section>
-      ${setup.every(x => x.done) ? '' : html`<section class="panel onboard" data-sec="setup" aria-label="Get started">
-        <div class="panel-head"><h2>Get set up in four steps</h2><span class="row gap"><a class="link small" href="#/help">▶ Watch the 3-minute guide</a><span class="muted small">${setup.filter(x => x.done).length} of ${setup.length} done</span></span></div>
-        <ol class="onboard-steps">${setup.map((x, i) => html`<li class="${x.done ? 'done' : ''}">
-          <span class="step-num" aria-hidden="true">${x.done ? '✓' : i + 1}</span>
-          <div><strong>${x.title}</strong><p class="muted small">${x.text}</p></div>
-          ${x.done ? html`<span class="chip ok">Done</span>` : html`<a class="btn small" href="${x.href}">${x.cta}</a>`}
-        </li>`)}</ol>
-      </section>`}
           <section class="panel wide" id="dash-jobs" data-sec="jobs" aria-busy="true">
           <div class="panel-head"><h2>New jobs for you</h2><a class="link" href="#/jobs">All jobs</a></div>
           <p class="muted small">Loading…</p>
@@ -236,12 +222,6 @@
         </section>
         </div>
         <aside class="d-right">
-          <section class="panel" data-sec="coach">
-          <div class="panel-head"><h2>Coach notes</h2></div>
-          ${notes.length ? html`<ul class="notes">${notes.slice(0, 5).map(n => html`
-            <li class="note ${n.cls}"><span>${n.text}</span>${n.href ? html`<a class="link" href="${n.href}">${n.cta}</a>` : ''}</li>`)}</ul>`
-            : html`<p class="empty-note">You're on track. Keep going.</p>`}
-        </section>
           <section class="panel wide" id="dash-prep" data-sec="prep"></section>
         </aside>
       </div>`;
@@ -675,7 +655,11 @@
   // =====================================================================
   async function help(root) {
     const inClaude = window.CVT.app.inClaude();
-    root.addEventListener('click', e => { if (e.target.closest('#help-tour')) window.CVT.shell.tour(true); if (e.target.closest('#help-setup')) window.CVT.welcome.open(true); });
+    root.addEventListener('click', async e => {
+      if (e.target.closest('#help-tour')) window.CVT.shell.tour(true); if (e.target.closest('#help-setup')) window.CVT.welcome.open(true);
+      const ck = e.target.closest('#help-check'); if (ck) { ck.disabled = true; ck.textContent = 'Checking…'; try { await window.CVT.selftest.run($('#help-check-out', root)); } finally { ck.disabled = false; ck.textContent = 'Run the check again'; } }
+    });
+    const lastCheck = await S.getKV('selftest', null);
     root.innerHTML = String(html`
       <header class="page-head"><div><p class="eyebrow">Applywise ${VERSION}</p><h1>Help and privacy</h1></div><div class="row gap"><button class="btn ghost" type="button" id="help-setup">Run setup again</button><button class="btn ghost" type="button" id="help-tour">Take the tour</button><a class="btn ghost" href="#/pricing">Plans and pricing</a><a class="btn ghost" href="privacy.html" target="_blank" rel="noopener">Privacy policy</a><a class="btn ghost" href="terms.html" target="_blank" rel="noopener">Terms</a></div></header>
       ${inClaude ? html`<section class="panel mb">
@@ -683,6 +667,11 @@
         <video class="help-video" controls preload="none" playsinline poster="/_blob/f007580ce716ede25ce4271f3ee9c15e" src="/_blob/dbb74236c941ca767f19c6e9ddb2e69f"></video>
         <p class="muted small mt">The demo uses a fictional CV and fictional jobs.</p>
       </section>` : ''}
+      <section class="panel mb" id="help-check-panel">
+        <div class="panel-head"><h2>Check every feature</h2><button class="btn ghost small" type="button" id="help-check">${lastCheck ? 'Run the check again' : 'Run the check'}</button></div>
+        <p class="hint">Runs one fictional application through every AI feature with your chosen engine: tailoring, cover letter, messages, interview prep, Ask AI, a short advert, documents, mind map, Studio and interview practice. It uses the AI about 30 times (a few minutes) and removes the fictional data at the end.</p>
+        <div id="help-check-out">${lastCheck ? raw(`<p class="small muted">Last run ${esc(new Date(lastCheck.at).toLocaleString('en-GB'))}: ${lastCheck.rows.filter(r => r.ok).length} passed, ${lastCheck.rows.filter(r => r.ok === false).length} failed.</p>`) : ''}</div>
+      </section>
       <div class="help-grid">
         <section class="panel">
           <h2>How it works</h2>

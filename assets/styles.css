@@ -1713,3 +1713,13 @@ a.tb-chip:hover { transform: translateY(-1px); border-color: var(--accent); }
 .q-art .photo { aspect-ratio: 16 / 10; border-radius: 10px; }
 .q-tile strong { font-size: .92rem; line-height: 1.25; }
 .q-tile:hover .q-art .photo img { transform: scale(1.05); }
+/* quick tiles: keep the photo, put the title and line on the bottom of the image */
+.q-tile:has(.photo) { display: grid; grid-template: 1fr / 1fr; padding: 6px; gap: 0; overflow: hidden; }
+.q-tile:has(.photo) > * { grid-area: 1 / 1; }
+.q-tile:has(.photo) .q-art { margin: 0; }
+.q-tile:has(.photo) .q-art .photo { aspect-ratio: 16 / 11; border-radius: 10px; }
+.q-tile:has(.photo) .q-art .photo::before { content: ''; position: absolute; inset: 0; z-index: 1; border-radius: inherit; pointer-events: none;
+  background: linear-gradient(180deg, transparent 38%, rgba(10, 12, 30, .55) 66%, rgba(10, 12, 30, .86)); }
+.q-tile:has(.photo) strong, .q-tile:has(.photo) > .muted { position: relative; z-index: 2; align-self: end; color: #fff; padding: 0 12px; text-shadow: 0 1px 3px rgba(0, 0, 0, .45); pointer-events: none; }
+.q-tile:has(.photo) strong { margin-bottom: 30px; font-size: .95rem; }
+.q-tile:has(.photo) > .muted { margin-bottom: 11px; color: rgba(255, 255, 255, .88) !important; font-size: .78rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

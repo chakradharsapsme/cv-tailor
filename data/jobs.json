@@ -1,9 +1,13 @@
 {
- "updated": "2026-10-01T11:36:00+00:00",
+ "updated": "2026-10-02T07:25:02+00:00",
  "sources": [],
  "added": 0,
  "errors": [
-  "No API keys set. Add REED_API_KEY and/or ADZUNA_APP_ID + ADZUNA_APP_KEY as GitHub secrets."
+  "Google Jobs \"S/4HANA Procurement\": HTTP Error 400: Bad Request"
  ],
+ "usage": {
+  "apify_month": "2026-10",
+  "apify_results": 0
+ },
  "jobs": []
 }

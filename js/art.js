@@ -282,7 +282,10 @@
   function photo(name, fb) {
     const p = PH[name]; if (!p) return (S[fb || name] || S.search)();
     const [id, alt] = p;
-    return `<figure class="photo" data-fb="${fb || name}"><img src="${src(id, 640, 416)}" srcset="${src(id, 640, 416)} 1x, ${src(id, 1100, 715)} 2x" alt="${alt}" width="640" height="416" loading="lazy" decoding="async" referrerpolicy="no-referrer" onload="this.parentNode.classList.add('in')" onerror="window.CVT.art._fb(this)"></figure>`;
+    // A copy of the app that cannot reach Unsplash (e.g. a Claude page) can supply its own stored photos.
+    const local = (window.CVT_PHOTO_URLS || {})[id];
+    const set = local ? `src="${local}"` : `src="${src(id, 640, 416)}" srcset="${src(id, 640, 416)} 1x, ${src(id, 1100, 715)} 2x"`;
+    return `<figure class="photo" data-fb="${fb || name}"><img ${set} alt="${alt}" width="640" height="416" loading="lazy" decoding="async" referrerpolicy="no-referrer" onload="this.parentNode.classList.add('in')" onerror="window.CVT.art._fb(this)"></figure>`;
   }
   function _fb(img) { const f = img.closest('.photo'); if (!f) return; const k = f.dataset.fb; f.outerHTML = (S[k] || S.search)(); }
 

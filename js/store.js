@@ -61,7 +61,7 @@
     // Application forms (Workday and similar)
     legalFirst: '', middleName: '', legalLast: '', preferredName: '', phoneType: 'Mobile', phoneCode: '', address1: '', address2: '', county: '',
     hearAbout: '', rightToWork: '', sponsorship: '', relocate: '', travel: '', startDate: '', currentSalary: '', previouslyWorked: 'No', drivingLicence: '',
-    school: '', degree: '', fieldOfStudy: '', eduFrom: '', eduTo: '', grade: '', languages: '', certifications: ''
+    school: '', degree: '', fieldOfStudy: '', eduFrom: '', eduTo: '', grade: '', languages: '', certifications: '', experience: []
   };
   async function getProfile() {
     const r = await get('kv', 'profile');

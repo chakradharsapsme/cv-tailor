@@ -156,10 +156,16 @@
   const COLLECTED_URL = 'https://chakradharsapsme.github.io/cv-tailor/data/jobs.json';
   const REPO_URL = 'https://github.com/chakradharsapsme/cv-tailor';
   let collectedAt = 0, collectedInfo = null;
+  /** A job found by a search you have since removed. */
+  function isExcluded(feed, j) {
+    const ex = (feed.searches && feed.searches.excluded) || [];
+    const q = String(j.query || '').toLowerCase();
+    return !!q && ex.some(x => x && (q === x || q.startsWith(x + ' ')));
+  }
   function mergeCollected(feed, data) {
     let added = 0;
     for (const c of data.jobs || []) {
-      if (!c || !c.title) continue;
+      if (!c || !c.title || isExcluded(feed, c)) continue;
       const k = keyOf(c);
       const old = feed.items[k];
       if (old) {
@@ -281,7 +287,7 @@
     const p = await S.getProfile();
     if (feed.searches && feed.searches.queries && feed.searches.queries.length) {
       const loc = placeIn(code, feed.searches.location || (p.targetLocations || [])[0]);
-      return Object.assign({}, feed.searches, { country: code, location: loc, near: setNear(code, [loc].concat(p.targetLocations || [])), queries: withBA(feed.searches.queries) });
+      return Object.assign({}, feed.searches, { country: code, location: loc, near: setNear(code, [loc].concat(p.targetLocations || [])), queries: feed.searches.auto ? withBA(feed.searches.queries) : feed.searches.queries.slice(0, 6) });
     }
     const loc = placeIn(code, (p.targetLocations || [])[0]);
     return { country: code, queries: await defaultSearches(), location: loc, near: setNear(code, [loc].concat(p.targetLocations || [])), remote: true, type: p.workPreference === 'Contract' ? 'contract' : '' };
@@ -609,7 +615,7 @@
       </header>
       ${cfg.queries.length ? '' : html`<section class="panel callout warn-callout"><h2>Tell us what you're looking for</h2><p class="hint">Add your target job titles and your field in <a class="link" href="#/profile">Career profile</a>, or type searches in the Searches box. Applywise then finds matching jobs in your country.</p></section>`}
       <section class="panel callout jobs-intro" ${cfg.queries.length ? '' : raw('hidden')}>
-        <div class="ji-art" aria-hidden="true">${raw(window.CVT.art ? window.CVT.art.scene('match') : '')}</div>
+        <div class="ji-art" aria-hidden="true">${raw(window.CVT.art ? window.CVT.art.scene('phone') : '')}</div>
         <h2>Matched to your target titles and CV</h2>
         ${feed.searches && feed.searches.updatedFromCv && daysBetween(feed.searches.updatedFromCv) <= 3 ? html`<p class="chip ok">Searches updated from your latest CV ${relTime(feed.searches.updatedFromCv)}</p>` : ''}
         <p class="hint">Find jobs now searches ${avail ? 'Indeed, ' : ''}The Muse, company career portals and remote job boards for: <strong>${cfg.queries.join(' · ')}</strong>, in <strong>${CO().get(cfg.country).flag} ${CO().get(cfg.country).name}</strong> (plus remote roles open to it) <button class="linkish" type="button" id="jb-country">change country</button>. Only roles that match these titles or several skills on your CV are kept, then scored against your CV.${feed.webRun ? ` Last run found ${Object.entries(feed.webRun.bySource || {}).filter(([, n]) => n).map(([k, n]) => `${n} on ${k}`).join(', ') || 'no new matches'}.` : ''} Big boards such as LinkedIn and ${CO().get(cfg.country).boards('x', '').filter(b => b.name !== 'LinkedIn' && b.name !== 'Google Jobs').slice(0, 2).map(b => b.name).join(' and ')} don't allow other sites to read them: use the one-click searches below for those.</p>
@@ -832,6 +838,7 @@
     async function saveSearches() {
       const f = await loadFeed();
       const country = $('#s-country', root).value, ps = readPortals();
+      const prevExcl = (f.searches && f.searches.excluded) || [];
       f.searches = {
         country,
         queries: $('#s-q', root).value.split('\n').map(s => s.trim()).filter(Boolean).slice(0, 6),
@@ -841,6 +848,14 @@
       };
       const auto = f.searches.queries.join('|') === (await defaultSearches()).join('|');
       Object.assign(f.searches, { auto, cvSig: auto ? await cvSig() : '' });
+      // Searches you deleted: forget their jobs (unless you saved or imported one) and keep the job robot from adding them back.
+      const lc = x => String(x || '').toLowerCase().trim();
+      const kept = new Set(f.searches.queries.map(lc));
+      const removed = cfg.queries.map(lc).filter(q => q && !kept.has(q));
+      f.searches.excluded = [...new Set(prevExcl.map(lc).filter(q => !kept.has(q)).concat(removed))].slice(0, 30);
+      let dropped = 0;
+      Object.keys(f.items || {}).forEach(k => { const j = f.items[k]; if (j && isExcluded(f, j) && (j.status === 'new' || j.status === 'seen')) { delete f.items[k]; dropped++; } });
+      if (dropped) f.droppedNote = `${dropped} job${dropped > 1 ? 's' : ''} from removed searches cleared`;
       const moved = country !== cfg.country;
       CO().remember(country);
       const bad = f.searches.portals.filter(u => !window.CVT.websources.detect(u));
@@ -850,13 +865,14 @@
       await saveFeed(f);
       // Run the new searches straight away, so the list matches what you just saved.
       window.CVT._autoFind = true;
-      toast(moved ? `Now searching ${CO().get(country).name}…` : 'Searches saved. Finding jobs for them now…');
+      toast(moved ? `Now searching ${CO().get(country).name}…` : `Searches saved${dropped ? `; ${dropped} job${dropped > 1 ? 's' : ''} from removed searches cleared` : ''}. Finding jobs for them now…`);
       window.CVT.app.rerender();
     }
     $('#s-auto', root).addEventListener('click', async () => {
       const f = await loadFeed(); resetEvidence();
       const qs = await defaultSearches();
-      f.searches = Object.assign({}, f.searches || {}, { queries: qs, auto: true, cvSig: await cvSig() });
+      const ql = qs.map(x => String(x).toLowerCase().trim());
+      f.searches = Object.assign({}, f.searches || {}, { queries: qs, auto: true, cvSig: await cvSig(), excluded: ((f.searches || {}).excluded || []).filter(x => !ql.includes(x)) });
       await saveFeed(f); window.CVT._autoFind = true; toast('Searches rebuilt from your target titles and CV. Finding jobs now…'); window.CVT.app.rerender();
     });
 

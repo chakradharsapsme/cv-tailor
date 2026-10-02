@@ -8,6 +8,16 @@
   const REACHED = s => ['Screening', 'Interview', 'Offer', 'Accepted'].includes(s);
 
   // ---------- shared bits ----------
+  /** A notice with an Undo button (stays 6 seconds). */
+  function undoToast(msg, undo) {
+    let box = document.getElementById('toasts');
+    if (!box) { box = document.createElement('div'); box.id = 'toasts'; box.setAttribute('role', 'status'); document.body.append(box); }
+    const el = document.createElement('div'); el.className = 'toast ok with-link';
+    el.innerHTML = `<span>${esc(msg)}</span> <button type="button" class="toast-link linkish">Undo</button>`;
+    el.querySelector('button').addEventListener('click', async () => { el.remove(); await undo(); toast('Restored'); });
+    box.append(el);
+    setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 300); }, 6000);
+  }
   const fitChip = a => a.analysis && a.analysis.fit && a.analysis.fit.score != null
     ? html`<span class="chip ${scoreCls(a.analysis.fit.score)}" title="Fit score">${a.analysis.fit.score}</span>` : '';
   const verdictChip = a => {
@@ -273,7 +283,8 @@
         return html`<section class="col" aria-label="${col.title}">
           <header class="col-head"><h2>${col.title}</h2><span class="count">${items.length}</span></header>
           <div class="col-body">${items.length ? items.map(a => html`
-            <article class="card-app">
+            <article class="card-app" data-card="${a.id}">
+              <button class="card-del" type="button" data-del="${a.id}" aria-label="Delete this application" title="Delete (stop tracking)">×</button>
               <a class="card-title" href="${openHref(a)}">${a.role || 'Untitled role'}</a>
               <div class="card-co">${a.company || '—'}${a.location ? html` <span class="muted">· ${a.location}</span>` : ''}</div>
               <div class="card-chips">${fitChip(a)}${verdictChip(a)}${a.contractType ? html`<span class="chip muted">${a.contractType}</span>` : ''}${a.appliedAt ? html`<span class="chip muted">${daysBetween(a.appliedAt)}d since applied</span>` : ''}</div>
@@ -294,6 +305,28 @@
       S.setStatus(a, sel.value); await S.saveApp(a);
       toast(`Moved to ${sel.value}` + (a.next ? ` · next: ${a.next.text.toLowerCase()}` : ''));
       draw();
+    });
+    // Delete a tile you no longer want to track: click ×, then confirm. Undo is offered for a few seconds.
+    root.addEventListener('click', async e => {
+      const b = e.target.closest('[data-del]'); if (!b) return;
+      const card = b.closest('.card-app');
+      if (!card.classList.contains('confirm-del')) {
+        $$('.card-app.confirm-del', root).forEach(c => c.classList.remove('confirm-del'));
+        card.classList.add('confirm-del'); b.textContent = 'Delete?'; b.setAttribute('aria-label', 'Click again to delete');
+        setTimeout(() => { if (card.isConnected && card.classList.contains('confirm-del')) { card.classList.remove('confirm-del'); b.textContent = '×'; } }, 4000);
+        return;
+      }
+      const i = apps.findIndex(x => x.id === b.dataset.del); if (i < 0) return;
+      const [gone] = apps.splice(i, 1);
+      card.classList.add('leaving');
+      await S.removeApp(gone.id);
+      setTimeout(draw, 220);
+      const eb = $('.page-head .eyebrow', root); if (eb) eb.textContent = `${apps.length} application${apps.length === 1 ? '' : 's'}`;
+      undoToast(`Deleted “${gone.role || 'application'}${gone.company ? ' · ' + gone.company : ''}”`, async () => {
+        await S.saveApp(gone); apps.splice(Math.min(i, apps.length), 0, gone); draw();
+        if (eb) eb.textContent = `${apps.length} application${apps.length === 1 ? '' : 's'}`;
+      });
+      if (window.CVT.app.refreshBadges) window.CVT.app.refreshBadges();
     });
     $('#pl-csv', root).addEventListener('click', () => {
       const cols = ['created', 'company', 'role', 'location', 'contractType', 'pay', 'status', 'appliedAt', 'fit', 'decision', 'recruiter', 'agency', 'url', 'nextAction', 'nextDue', 'notes'];

@@ -233,6 +233,7 @@
   };
   const RAILS = { dashboard: ['writer', 'robot'], jobs: ['robot', 'match'], profile: ['forms', 'writer'], app: ['writer', 'prep'], pipeline: ['track', 'prep'], prep: ['prep', 'ask'], settings: ['forms', 'robot'] };
   const TIPS = ['Tailor the CV for every application: recruiters spend seconds on the first page.', 'Apply within 3 days of a job being posted: early applicants get read first.', 'Follow up 5 working days after applying, briefly and politely.', 'Keep one CV per skill set: Applywise picks the best one for each job.', 'Tick a new bullet only if you really did that work: it will come up at interview.', 'A short, specific cover letter beats a long generic one.'];
+  const PH_RAIL = { writer: 'aiwriter', robot: 'search', match: 'match', forms: 'seeker', prep: 'interview', track: 'celebrate', ask: 'ask' };
   function rails(view) {
     const pair = RAILS[view] || ['writer', 'match'];
     const tip = TIPS[(new Date().getDate() + pair[0].length) % TIPS.length];
@@ -240,7 +241,7 @@
       const [scene, title, text, cta, href] = CARDS[k];
       const el = document.createElement('aside');
       el.className = 'rail ' + (i ? 'rail-r' : 'rail-l'); el.setAttribute('aria-label', title);
-      el.innerHTML = `<div class="rail-card"><div class="rail-art">${S[scene]()}</div><h3>${title}</h3><p>${text}</p><a class="btn ghost small" href="${href}">${cta}</a></div>`
+      el.innerHTML = `<div class="rail-card"><div class="rail-art">${photo(PH_RAIL[k] || scene, scene)}</div><h3>${title}</h3><p>${text}</p><a class="btn ghost small" href="${href}">${cta}</a></div>`
         + (i ? '' : `<div class="rail-tip"><span class="rail-tip-h">Tip of the day</span><p>${tip}</p></div>`);
       return el;
     });
@@ -249,8 +250,44 @@
   window.CVT = window.CVT || {};
   /** A person illustration for each page's header. */
   const HEAD = { dashboard: 'team', jobs: 'searcher', pipeline: 'winner', prep: 'interviewer', profile: 'formfill', settings: 'writer2', help: 'team', autopilot: 'searcher' };
-  function headArt(view) { const k = HEAD[view]; return k ? S[k]() : ''; }
-  // The welcome / getting-started picture uses the detailed people too.
+  // ---- real photographs (free Unsplash licence: free to use, no payment, no sign-up) ----
+  // Loaded from Unsplash's image CDN without sending which page you are on. If a photo cannot load
+  // (offline, blocked), the drawn illustration of the same scene takes its place automatically.
+  const PH = {
+    team: ['1739298061757-7a3339cee982', 'A group of smiling colleagues standing together'],
+    searcher: ['1730210730648-4c0618bb3e11', 'A man looking through job adverts on his laptop'],
+    winner: ['1600880292203-757bb62b4baf', 'Two colleagues giving a high five at their desk'],
+    interviewer: ['1698047682091-782b1e5c6536', 'A candidate shaking hands at an interview'],
+    formfill: ['1686984096026-23d6e82f9749', 'A man filling in an application on his laptop'],
+    writer2: ['1648412868424-9bee5023a257', 'A smiling woman working on her laptop in an office'],
+    welcome: ['1713947505775-4e3af92a4ee7', 'A man celebrating good news at his laptop'],
+    search: ['1612299273045-362a39972259', 'A smiling man browsing on his laptop'],
+    growth: ['1576267423048-15c0040fec78', 'A happy team celebrating around a laptop'],
+    aiwriter: ['1562071707-7249ab429b2a', 'A woman writing on her laptop'],
+    match: ['1573164574572-cb89e39749b4', 'A team meeting around a table in a bright office'],
+    robot: ['1570215171424-f74325192b55', 'Someone checking results on a laptop'],
+    shield: ['1615791242458-caf8ff6245ac', 'A professional working calmly at a desk'],
+    seeker: ['1590650153855-d9e808231d41', 'A woman working at her laptop'],
+    phone: ['1577864662891-c7b77f10f638', 'A man on a video call on his phone'],
+    coach: ['1758518727077-ffb66ffccced', 'A mentor talking with two colleagues'],
+    celebrate: ['1758691737492-48e8fdd336f7', 'Colleagues celebrating together in the office'],
+    help: ['1616587226960-4a03badbe8bf', 'A man on a video call at his laptop'],
+    interview: ['1686771416282-3888ddaf249b', 'An interviewer and a candidate shaking hands'],
+    handshake: ['1521791136064-7986c2920216', 'Two people shaking hands'],
+    cv: ['1434030216411-0b793f4b4173', 'Someone writing notes at a desk'],
+    calendar: ['1488190211105-8b0e65b80b4e', 'A notebook and laptop on a desk'],
+    ask: ['1586985564150-11ee04838034', 'Two people talking on a video call']
+  };
+  const src = (id, w, h) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&crop=faces,entropy&w=${w}&h=${h}&q=72`;
+  function photo(name, fb) {
+    const p = PH[name]; if (!p) return (S[fb || name] || S.search)();
+    const [id, alt] = p;
+    return `<figure class="photo" data-fb="${fb || name}"><img src="${src(id, 640, 416)}" srcset="${src(id, 640, 416)} 1x, ${src(id, 1100, 715)} 2x" alt="${alt}" width="640" height="416" loading="lazy" decoding="async" referrerpolicy="no-referrer" onload="this.parentNode.classList.add('in')" onerror="window.CVT.art._fb(this)"></figure>`;
+  }
+  function _fb(img) { const f = img.closest('.photo'); if (!f) return; const k = f.dataset.fb; f.outerHTML = (S[k] || S.search)(); }
+
+  function headArt(view) { const k = HEAD[view]; return k ? photo(view === 'help' ? 'help' : view === 'autopilot' ? 'robot' : k, k) : ''; }
+  // The welcome / getting-started picture uses the drawn people when offline.
   S.welcome = S.winner;
-  window.CVT.art = { scene: name => (S[name] || S.search)(), names: Object.keys(S), rails, headArt };
+  window.CVT.art = { scene: name => photo(name), drawn: name => (S[name] || S.search)(), names: Object.keys(S), rails, headArt, photo, _fb };
 })();

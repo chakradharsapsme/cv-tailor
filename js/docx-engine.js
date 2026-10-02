@@ -174,6 +174,26 @@
     p.segments.forEach((s, i) => setSegmentText(s, parts[i]));
   }
 
+  /**
+   * Add a new bullet right after an existing one, as a copy of it (same list style, indent, fonts),
+   * holding the new text. Labels in multi-format bullets (e.g. a bold "Client:") are left empty.
+   */
+  function insertAfter(model, anchor, text, after) {
+    if (!anchor || anchor.locked) throw new Error('Paragraph ' + (anchor && anchor.id) + ' cannot take a new bullet.');
+    if (!anchor.isList) throw new Error('Paragraph ' + anchor.id + ' is not a bullet.');
+    const el = anchor.el.cloneNode(true);
+    // Drop bookmarks and comment anchors so ids stay unique.
+    ['bookmarkStart', 'bookmarkEnd', 'commentRangeStart', 'commentRangeEnd', 'proofErr'].forEach(t => qAll(el, t).forEach(n => n.parentNode.removeChild(n)));
+    const info = paragraphInfo(el, -1, model.body);
+    if (!info.segments.length) throw new Error('Paragraph ' + anchor.id + ' has no text to copy.');
+    let target = 0;
+    info.segments.forEach((sg, i) => { if (sg.text.length > info.segments[target].text.length) target = i; });
+    info.segments.forEach((sg, i) => setSegmentText(sg, i === target ? text : ''));
+    const ref = after || anchor.el;
+    ref.parentNode.insertBefore(el, ref.nextSibling);
+    return el;
+  }
+
   function canRemove(p) {
     if (p.locked || !p.isList) return false;
     const cell = nearest(p.el, 'tc');
@@ -203,7 +223,7 @@
 
   /**
    * Build the tailored CV.
-   * plan = { edits:[{id,text|segments}], remove:[id], reorder:[[ids]] }
+   * plan = { edits:[{id,text|segments}], adds:[{after,text}], remove:[id], reorder:[[ids]] }
    * Returns { blob, applied, skipped:[{id,why}] }
    */
   async function buildTailored(arrayBuffer, plan) {
@@ -215,6 +235,13 @@
       const p = byId.get(e.id);
       try { if (!p) throw new Error('not found'); applyEdit(p, e); applied++; }
       catch (err) { skipped.push({ id: e.id, why: err.message }); }
+    }
+    // New bullets: several after the same bullet keep their order.
+    const lastAfter = new Map();
+    for (const x of plan.adds || []) {
+      const p = byId.get(x.after);
+      try { if (!p) throw new Error('not found'); lastAfter.set(x.after, insertAfter(model, p, String(x.text || '').trim(), lastAfter.get(x.after))); applied++; }
+      catch (err) { skipped.push({ id: 'n' + x.after, why: err.message }); }
     }
     for (const group of plan.reorder || []) {
       try { applyReorder(model, group); applied++; }

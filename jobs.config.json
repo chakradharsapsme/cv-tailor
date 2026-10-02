@@ -24,12 +24,13 @@
     "_note": "Free Jooble keys allow 500 requests in total; this uses 1 a day and stops at 480."
   },
   "apify": {
-    "actor": "johnvc~google-jobs-scraper---pay-per-result",
+    "actor": "farside~google-jobs-scraper",
     "country": "uk",
-    "google_domain": "google.co.uk",
-    "searches_per_day": 1,
+    "searches_per_day": 2,
     "results_per_search": 10,
-    "monthly_results_cap": 300,
-    "_note": "Google Jobs costs about $10 per 1,000 results on Apify. 300 results a month is about $3, inside Apify's free $5 monthly credit."
+    "posted_within_days": 7,
+    "max_charge_per_run_usd": 0.1,
+    "monthly_budget_usd": 3.5,
+    "_note": "Google Jobs costs about $0.003 per job. 2 searches x 10 jobs a day is about $2 a month. The robot reads your real Apify usage and pauses at $3.50, below the free $5."
   }
 }

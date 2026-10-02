@@ -1605,3 +1605,34 @@ h1, h2, h3, .pcard-name, .kpi-num, .wl-card h2, .tour-card h2 { font-family: var
 .xp-cur { align-self: end; padding-bottom: 10px; }
 .xp-card input[type="month"] { font: inherit; width: 100%; padding: 9px 11px; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); color: var(--ink); }
 .xp-card input[type="month"]:disabled { opacity: .55; }
+/* ---- wide screens: illustrated side rails ---- */
+.rail { display: none; }
+@media (min-width: 1640px) {
+  .main { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1280px) minmax(0, 1fr); column-gap: 28px; align-items: start; }
+  .main > .view { grid-column: 2; grid-row: 1; width: 100%; max-width: none; margin: 0; }
+  .rail { display: grid; gap: 14px; grid-row: 1; position: sticky; top: 76px; width: min(270px, 100%); animation: rise .6s var(--ease) both .2s; }
+  .rail-l { grid-column: 1; justify-self: end; }
+  .rail-r { grid-column: 3; justify-self: start; }
+}
+.rail-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg, 16px); box-shadow: var(--shadow); padding: 16px; display: grid; gap: 8px; text-align: left; }
+.rail-card h3 { margin: 0; font-size: 1rem; font-weight: 700; }
+.rail-card p { margin: 0; color: var(--muted); font-size: .86rem; line-height: 1.45; }
+.rail-card .btn { justify-self: start; }
+.rail-art { background: linear-gradient(160deg, var(--accent-soft), transparent 80%); border-radius: 12px; padding: 6px; }
+.rail-art .art { width: 100%; height: auto; display: block; animation: bob 7s ease-in-out infinite; }
+.rail-tip { border: 1px dashed color-mix(in srgb, var(--accent) 35%, var(--line)); border-radius: 12px; padding: 12px 14px; background: color-mix(in srgb, var(--surface) 70%, transparent); }
+.rail-tip-h { font-size: .7rem; text-transform: uppercase; letter-spacing: .08em; font-weight: 700; color: var(--accent); }
+.rail-tip p { margin: 4px 0 0; font-size: .85rem; color: var(--ink); line-height: 1.45; }
+@media print { .rail { display: none !important; } }
+@media (prefers-reduced-motion: reduce) { .rail, .rail-art .art { animation: none !important; } }
+/* jobs page intro: illustration on the right */
+.jobs-intro { position: relative; }
+.ji-art { display: none; }
+@media (min-width: 900px) {
+  .jobs-intro { padding-right: min(36%, 330px); min-height: 170px; }
+  .ji-art { display: block; position: absolute; right: 18px; top: 50%; transform: translateY(-50%); width: min(32%, 290px); pointer-events: none; }
+  .ji-art .art { width: 100%; height: auto; display: block; }
+}
+/* tailoring: new bullets */
+.nb-after { color: var(--muted); font-size: .85rem; }
+.cmp-row.k-added .cmp-b { background: color-mix(in srgb, var(--ok, #2FA37C) 10%, transparent); }

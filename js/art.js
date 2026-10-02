@@ -233,7 +233,7 @@
   };
   const RAILS = { dashboard: ['writer', 'robot'], jobs: ['robot', 'match'], profile: ['forms', 'writer'], app: ['writer', 'prep'], pipeline: ['track', 'prep'], prep: ['prep', 'ask'], settings: ['forms', 'robot'] };
   const TIPS = ['Tailor the CV for every application: recruiters spend seconds on the first page.', 'Apply within 3 days of a job being posted: early applicants get read first.', 'Follow up 5 working days after applying, briefly and politely.', 'Keep one CV per skill set: Applywise picks the best one for each job.', 'Tick a new bullet only if you really did that work: it will come up at interview.', 'A short, specific cover letter beats a long generic one.'];
-  const PH_RAIL = { writer: 'aiwriter', robot: 'search', match: 'match', forms: 'seeker', prep: 'interview', track: 'celebrate', ask: 'ask' };
+  const PH_RAIL = { writer: 'aiwriter', robot: 'robot', match: 'match', forms: 'seeker', prep: 'interview', track: 'celebrate', ask: 'ask' };
   function rails(view) {
     const pair = RAILS[view] || ['writer', 'match'];
     const tip = TIPS[(new Date().getDate() + pair[0].length) % TIPS.length];

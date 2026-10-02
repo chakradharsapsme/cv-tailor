@@ -4,12 +4,12 @@
  * Libraries and fonts from CDNs: cached copy first, refreshed in the background.
  * Job sites, AI engines and anything else: always live, never cached.
  */
-const VERSION = 'aw-5.9.2';
+const VERSION = 'aw-5.9.3';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './assets/styles.css', './assets/icon-192.png', './assets/icon-512.png', './assets/icon-maskable-512.png',
   './privacy.html', './terms.html',
   ...['agent', 'app', 'autofill', 'autopilot', 'countries', 'demo', 'docs', 'docx-engine', 'drills', 'employers', 'fields', 'jobs', 'layout', 'mindmap', 'myqs', 'prep', 'shell', 'store',
     'studio', 'sync', 'ui', 'views', 'websources', 'welcome', 'pwa', 'engine', 'art', 'quotes', 'assistant', 'workspace', 'tasks', 'selftest'].map(n => `./js/${n}.js`)];
-const CDN = /^https:\/\/(cdnjs\.cloudflare\.com|cdn\.jsdelivr\.net|fonts\.googleapis\.com|fonts\.gstatic\.com)\//;
+const CDN = /^https:\/\/(cdnjs\.cloudflare\.com|cdn\.jsdelivr\.net|fonts\.googleapis\.com|fonts\.gstatic\.com|images\.unsplash\.com)\//;
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(VERSION).then(c => Promise.all(SHELL.map(u => c.add(new Request(u, { cache: 'reload' })).catch(() => {})))));

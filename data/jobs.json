@@ -1,13 +1,167 @@
 {
- "updated": "2026-10-02T07:25:02+00:00",
- "sources": [],
- "added": 0,
- "errors": [
-  "Google Jobs \"S/4HANA Procurement\": HTTP Error 400: Bad Request"
+ "updated": "2026-10-02T07:28:14+00:00",
+ "sources": [
+  "Google Jobs"
  ],
+ "added": 8,
+ "errors": [],
  "usage": {
   "apify_month": "2026-10",
-  "apify_results": 0
+  "apify_results": 10
  },
- "jobs": []
+ "jobs": [
+  {
+   "title": "SAP MM & Procurement Consultant for S/4HANA (6m)",
+   "company": "Whitehall Resources Ltd",
+   "location": "United Kingdom",
+   "pay": "",
+   "url": "https://www.jobleads.com/gb/job/sap-mm-procurement-consultant-for-s-4hana-6m--united-kingdom--ea6875c1f49e14341fde044477506423f?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "",
+   "source": "Google Jobs · JobLeads",
+   "sourceId": "eyJqb2JfdGl0bGUiOiJTQVAgTU0gXHUwMDI2IFByb2N1cmVtZW50IENvbnN1bHRhbnQgZm9yIFMvNEhBTkEgKDZtKSIsImNvbXBhbnlfbmFtZSI6IldoaXRl",
+   "snippet": "Whitehall Resources Ltd is seeking a highly specialised SAP MM/Procurement Functional Consultant for a UK-based contract role, initially 6 months. You will advise, configure, and maintain our procurement and materials management fabric, and work hands-on to support the ECC to S/4HANA transformation across manufacturing, maintenance and design operations. The role requires delivering fit-to-standard workshops, driving a robust inventory architecture, and deploying standard procurement solutions",
+   "type": "",
+   "query": "S/4HANA Procurement",
+   "key": "sapmmprocurementconsultantfors4hana6m|whitehallresources",
+   "firstSeen": "2026-10-02T07:28:14+00:00",
+   "lastSeen": "2026-10-02T07:28:14+00:00",
+   "sources": [
+    "Google Jobs · JobLeads"
+   ]
+  },
+  {
+   "title": "SAP S/4HANA Transformation Analyst – Finance & Procurement",
+   "company": "MAG (Airports Group)",
+   "location": "",
+   "pay": "",
+   "url": "https://www.jobleads.com/gb/job/sap-s-4hana-transformation-analyst-finance-procurement--manchester--greater-london--east-midlands--e80ca16c8e1aca4ad37c1a6dcabe9030f?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "",
+   "source": "Google Jobs · JobLeads",
+   "sourceId": "eyJqb2JfdGl0bGUiOiJTQVAgUy80SEFOQSBUcmFuc2Zvcm1hdGlvbiBBbmFseXN0IOKAkyBGaW5hbmNlIFx1MDAyNiBQcm9jdXJlbWVudCIsImNvbXBhbnlf",
+   "snippet": "MAG (Airports Group) is seeking a SAP Systems Analyst to drive the S/4HANA transformation as part of the Finance Programme. The role focuses on configuring S/4HANA across Finance and Procurement, partnering with Finance, Product, Solution Architects and partners to deliver a modern SAP landscape. You’ll contribute through fit-to-standard workshops, design reviews, testing, training and go-live support. This hands-on position requires strong analytical skills and a collaborative mindset within",
+   "type": "",
+   "query": "S/4HANA Procurement",
+   "key": "saps4hanatransformationanalystfinanceprocurement|magairports",
+   "firstSeen": "2026-10-02T07:28:14+00:00",
+   "lastSeen": "2026-10-02T07:28:14+00:00",
+   "sources": [
+    "Google Jobs · JobLeads",
+    "Google Jobs · Jobijoba UK"
+   ]
+  },
+  {
+   "title": "SAP S/4HANA MM / Procurement Consultant",
+   "company": "Maslow - SAP & ERP Talent",
+   "location": "Stockport",
+   "pay": "",
+   "url": "https://talents.studysmarter.co.uk/companies/maslow-sap-erp-talent-2/stockport/sap-s-4hana-mm-procurement-consultant-35334322/?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "",
+   "source": "Google Jobs · Talents By StudySmarter",
+   "sourceId": "eyJqb2JfdGl0bGUiOiJTQVAgUy80SEFOQSBNTSAvIFByb2N1cmVtZW50IENvbnN1bHRhbnQiLCJjb21wYW55X25hbWUiOiJNYXNsb3cgLSBTQVAgXHUwMDI2",
+   "snippet": "SAP S/4HANA MM / Procurement Consultant EU or UK Remote | Travel for key project phases Permanent Employment €80,000 or GBP equivalent. Maslow are working exclusively with a global start-up, backed by a multi-billion manufacturing group, rolling out S/4HANA across multiple international sites. They’re looking for an experienced MM / Procurement consultant to take a hands-on role in shaping and delivering the Sourcing and Procurement solution. This is a delivery-focused role, not support. You’ll be involved from early design through to go-live, working closely with the business and other SAP workstreams. The role Deliver the MM implementations across a global S/4HANA implementationWork with stakeholders to design end-to-end procurement processes (direct and indirect)Configure core MM functionality within S/4HANASupport workshops, blueprinting, testing and deployment phasesHelp standardise processes across multiple sitesWhat we’re looking for Strong end-to-end S/4HANA Procurement / MM implementation experienceHands-on across core MM areasKey areas of experience: Material Master and data lifecycle managementPurchasing, subcontracting and inventory managementInvoice verificationSourcing and Procurement processes (direct and indirect)Supplier lifecycle and performance managementIntegration with 3rd party procurement tools or 3PL providersEmbedded analytics within S/4Integration knowledge: FI (invoice and financial postings)EWM (warehouse processes)SD (order and supply alignment)TM",
+   "type": "",
+   "query": "S/4HANA Procurement",
+   "key": "saps4hanammprocurementconsultant|maslowsaperptalent",
+   "firstSeen": "2026-10-02T07:28:14+00:00",
+   "lastSeen": "2026-10-02T07:28:14+00:00",
+   "sources": [
+    "Google Jobs · Talents By StudySmarter"
+   ]
+  },
+  {
+   "title": "SAP S/4HANA Finance & Sales/Procurement Advisor - UK Travel",
+   "company": "KES EU",
+   "location": "United Kingdom",
+   "pay": "",
+   "url": "https://talents.studysmarter.co.uk/companies/kes-eu/sap-s-4hana-finance-sales-procurement-advisor-uk-travel-54385107/?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "",
+   "source": "Google Jobs · Talents By StudySmarter",
+   "sourceId": "eyJqb2JfdGl0bGUiOiJTQVAgUy80SEFOQSBGaW5hbmNlIFx1MDAyNiBTYWxlcy9Qcm9jdXJlbWVudCBBZHZpc29yIC0gVUsgVHJhdmVsIiwiY29tcGFueV9u",
+   "snippet": "KES EU invites applications for SAP S/4HANA Finance Advisor and Sales/Procurement Advisor positions in England. The roles involve working closely with the client’s SAP Functional Team to ensure successful adoption and implementation of the S/4HANA solution, including data preparation and end-user education. Travel to client sites in Wiltshire and the northern Home Counties is required. Applicants should have experience in SAP S/4HANA and a proven ability to collaborate with stakeholders to drive #J-18808-Ljbffr",
+   "type": "",
+   "query": "S/4HANA Procurement",
+   "key": "saps4hanafinancesalesprocurementadvisortravel|keseu",
+   "firstSeen": "2026-10-02T07:28:14+00:00",
+   "lastSeen": "2026-10-02T07:28:14+00:00",
+   "sources": [
+    "Google Jobs · Talents By StudySmarter"
+   ]
+  },
+  {
+   "title": "SAP S/4HANA Public Cloud Procurement Specialist",
+   "company": "CBSbutler Holdings Limited trading as CBSbutler",
+   "location": "Nottingham",
+   "pay": "",
+   "url": "https://talents.studysmarter.co.uk/companies/cbsbutler-holdings-limited-trading-as-cbsbutler/nottingham/sap-s-4hana-public-cloud-procurement-specialist-32494214/?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "",
+   "source": "Google Jobs · Talents By StudySmarter",
+   "sourceId": "eyJqb2JfdGl0bGUiOiJTQVAgUy80SEFOQSBQdWJsaWMgQ2xvdWQgUHJvY3VyZW1lbnQgU3BlY2lhbGlzdCIsImNvbXBhbnlfbmFtZSI6IkNCU2J1dGxlciBI",
+   "snippet": "A global IT Consultancy is seeking an experienced SAP S/4HANA Public Cloud Procurement Consultant to focus on configuring procurement processes. You will support system integration testing and ensure that procurement functionality aligns with the approved solution design. The role involves collaborating with stakeholders and maintaining documentation. This position offers a daily rate of 675, and a hybrid working pattern with at least 2 days on-site in Nottingham. #J-18808-Ljbffr",
+   "type": "",
+   "query": "S/4HANA Procurement",
+   "key": "saps4hanapubliccloudprocurementspecialist|cbsbutlerholdingstradingascbsbutler",
+   "firstSeen": "2026-10-02T07:28:14+00:00",
+   "lastSeen": "2026-10-02T07:28:14+00:00",
+   "sources": [
+    "Google Jobs · Talents By StudySmarter"
+   ]
+  },
+  {
+   "title": "SAP S/4HANA Procure to Pay Consultant",
+   "company": "Manchester Digital",
+   "location": "United Kingdom",
+   "pay": "",
+   "url": "https://talents.studysmarter.co.uk/companies/manchester-digital/sap-s-4hana-procure-to-pay-consultant-3612979/?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "",
+   "source": "Google Jobs · Talents By StudySmarter",
+   "sourceId": "eyJqb2JfdGl0bGUiOiJTQVAgUy80SEFOQSBQcm9jdXJlIHRvIFBheSBDb25zdWx0YW50IiwiY29tcGFueV9uYW1lIjoiTWFuY2hlc3RlciBEaWdpdGFsIiwi",
+   "snippet": "Job Title: SAP S/4HANA Procure to Pay ConsultantAbout the job you’re consideringThe SAP S/4HANA Procurement & Supply Chain Consultant will be responsible for helping drive growth, shaping, delivering and development of our SAP S4/HANA Procurement & Supply Chain opportunities and projects in the UK. Working alongside Capgemini’s team of specialists in SAP S/4HANA Procurement & Supply Chain, you will help to both develop our opportunity pipeline, bringing your deep expertise, knowledge, and experience, as well as delivering innovative projects to our existing and new clients. You will have broad capabilities in designing and delivering complex SAP S/4HANA Procurement & Supply Chain solutions, in several different industry sectors with diverse challenges and requirements. You should be able to demonstrate how you have steered clients in quickly understanding and then shaping their business needs into SAP solutions that drive positive outcomes. You will have delivery experience of working in large, complex, multi-stream projects and have broad awareness across a range of supply chain process areas. Your roleUsing your experience to provide Functional Consulting within SAP S/4HANA MM projectsBe part of and be able to lead a team that solves problems and provides solutions for large, corporate clients in multiple sectors, working in cross-discipline, agile and distributed teams, across multiple areas of Supply Chain Management, depending on project scope and at various stages of th",
+   "type": "",
+   "query": "S/4HANA Procurement",
+   "key": "saps4hanaprocuretopayconsultant|manchesterdigital",
+   "firstSeen": "2026-10-02T07:28:14+00:00",
+   "lastSeen": "2026-10-02T07:28:14+00:00",
+   "sources": [
+    "Google Jobs · Talents By StudySmarter"
+   ]
+  },
+  {
+   "title": "SAP Ariba S/4HANA Product Sourcing Consultant",
+   "company": "Masentó Group",
+   "location": "Manchester",
+   "pay": "",
+   "url": "https://talents.studysmarter.co.uk/companies/masento-group/manchester/sap-ariba-s-4hana-product-sourcing-consultant-29203793/?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "",
+   "source": "Google Jobs · Talents By StudySmarter",
+   "sourceId": "eyJqb2JfdGl0bGUiOiJTQVAgQXJpYmEgUy80SEFOQSBQcm9kdWN0IFNvdXJjaW5nIENvbnN1bHRhbnQiLCJjb21wYW55X25hbWUiOiJNYXNlbnTDsyBHcm91",
+   "snippet": "Masentó are working with a consultancy that requires a SAP Ariba S/4HANA with specific Product Sourcing experience to join their team. This will be an initial 3-month contract, with the opportunity to extend. You will bridge strategic sourcing and direct procurement, utilising Ariba’s upstream capabilities to manage direct material sourcing, Bill of Materials (BOM) data, and supplier collaboration. There will be a hybrid working model, with some workshops with the customer based in Manchester and London. Key Responsibilities & Capabilities Hands on knowledge of Integrating BOMs from PLM/S/4HANA into Ariba, managing hierarchical structures, parts, and plants. Execute sourcing events for direct materials, including complex cost breakdown templates (CBD) to analyze supplier cost drivers. Drive early supplier involvement in New Product Development (NPD), negotiate, and use scenario-based awarding to finalize contracts. Ensure seamless data flow (via CIG) between Ariba and S/4HANA MM for purchasing, contract management, and, to some extent, manufacturing execution. Required Skills & Experience 8+ years in SAP Ariba and S/4HANA Direct Procurement (MM), specifically with manufacturing (OEM/Tier-1/Tier-2). Deep understanding of S/4HANA Strategic Sourcing, Ariba Upstream, and integration technologies. Expert in RFP/RFQ, BOM management, and Cost Breakdown Templates. Strong project management, negotiation, and stakeholder communication. #J-18808-Ljbffr Experience: 5 years required",
+   "type": "",
+   "query": "S/4HANA Procurement",
+   "key": "saparibas4hanaproductsourcingconsultant|masent",
+   "firstSeen": "2026-10-02T07:28:14+00:00",
+   "lastSeen": "2026-10-02T07:28:14+00:00",
+   "sources": [
+    "Google Jobs · Talents By StudySmarter"
+   ]
+  },
+  {
+   "title": "Direct Procurement SAP Deployment",
+   "company": "ECS Resource Group",
+   "location": "Manchester",
+   "pay": "",
+   "url": "https://talents.studysmarter.co.uk/companies/ecs-resource-group/direct-procurement-sap-deployment-6694455/?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "",
+   "source": "Google Jobs · Talents By StudySmarter",
+   "sourceId": "eyJqb2JfdGl0bGUiOiJEaXJlY3QgUHJvY3VyZW1lbnQgU0FQIERlcGxveW1lbnQiLCJjb21wYW55X25hbWUiOiJFQ1MgUmVzb3VyY2UgR3JvdXAiLCJodGlk",
+   "snippet": "SAP S/4HANA Deployment Analyst (Direct Procurement) Location: United Kingdom Rate: £33–34.00 per hour (PAYE) Contract: 12 Months I am looking for an experienced SAP S/4 Hana Deployment Analyst with experience in Direct Procurement, to join my client, a global Medical Device organisation. With a strong technical background in SAP procurement modules and the E2E procurement process (direct & indirect) The Source-to-Pay (S2P) SAP S/4HANA Deployment Analyst will support the end-to-end implementation of the SAP S/4HANA procurement system. The role will ensure smooth deployment across planning, configuration, testing, and go-live phases. This position works closely with the Global S2P Deployment Lead and cross-functional teams to drive successful outcomes. Key Responsibilities: Collaborate with the Global S2P Deployment Lead to support full-cycle deployment of the SAP S/4HANA procurement solution.Contribute to project planning, system configuration, integration testing, training, and go-live support.Manage timelines, resources, and deliverables to ensure project success within scope and budget.Work cross-functionally with IT, Finance, and Procurement teams to align processes and system functionality.Design and deliver training for end-users and provide post-implementation support and troubleshooting.Assist in data migration activities, ensuring data integrity and accuracy throughout the transition.Identify and recommend opportunities for process optimisation and system enhancements",
+   "type": "",
+   "query": "S/4HANA Procurement",
+   "key": "directprocurementsapdeployment|ecsresource",
+   "firstSeen": "2026-10-02T07:28:14+00:00",
+   "lastSeen": "2026-10-02T07:28:14+00:00",
+   "sources": [
+    "Google Jobs · Talents By StudySmarter"
+   ]
+  }
+ ]
 }

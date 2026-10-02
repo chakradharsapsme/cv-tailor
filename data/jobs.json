@@ -1,16 +1,16 @@
 {
- "updated": "2026-10-02T08:02:43+00:00",
+ "updated": "2026-10-02T11:13:26+00:00",
  "sources": [
   "Jooble",
   "Google Jobs"
  ],
- "added": 0,
+ "added": 2,
  "errors": [],
  "usage": {
   "apify_month": "2026-10",
-  "apify_results": 40,
-  "apify_spent_usd": 0.69,
-  "jooble_requests": 2
+  "apify_results": 50,
+  "apify_spent_usd": 0.72,
+  "jooble_requests": 3
  },
  "jobs": [
   {
@@ -294,9 +294,10 @@
    "query": "SAP Business Analyst in the last week",
    "key": "businessanalystsapupgradeprogramme|universityofsheffield",
    "firstSeen": "2026-10-02T07:37:19+00:00",
-   "lastSeen": "2026-10-02T07:37:19+00:00",
+   "lastSeen": "2026-10-02T11:13:26+00:00",
    "sources": [
-    "Google Jobs · Jobs.ac.uk"
+    "Google Jobs · Jobs.ac.uk",
+    "Google Jobs · Sheffield Jobs"
    ]
   },
   {
@@ -313,7 +314,7 @@
    "query": "SAP Business Analyst in the last week",
    "key": "sapfundsgrantsbusinessanalyst|sanderson",
    "firstSeen": "2026-10-02T07:37:19+00:00",
-   "lastSeen": "2026-10-02T07:37:19+00:00",
+   "lastSeen": "2026-10-02T11:13:26+00:00",
    "sources": [
     "Google Jobs · IT JobServe"
    ]
@@ -332,7 +333,7 @@
    "query": "SAP Business Analyst in the last week",
    "key": "principalbusinesssystemsanalystsapotc|mksinstruments",
    "firstSeen": "2026-10-02T07:37:19+00:00",
-   "lastSeen": "2026-10-02T07:37:19+00:00",
+   "lastSeen": "2026-10-02T11:13:26+00:00",
    "sources": [
     "Google Jobs · Jobrapido"
    ]
@@ -354,6 +355,25 @@
    "lastSeen": "2026-10-02T07:56:57+00:00",
    "sources": [
     "Google Jobs · ACCA Careers - ACCA Global"
+   ]
+  },
+  {
+   "title": "SAP Systems Analyst",
+   "company": "Siemens Healthineers",
+   "location": "Eynsham",
+   "pay": "",
+   "url": "https://uk.linkedin.com/jobs/view/sap-systems-analyst-at-siemens-healthineers-4472987049?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "2026-10-01",
+   "source": "Google Jobs · LinkedIn",
+   "sourceId": "v0xCffZeFPv_GBfNAAAAAA==",
+   "snippet": "Job Requirements Do you want to use your SAP expertise to help shape the future of healthcare? Join Siemens Healthineers and become part of our world-leading MRI development and manufacturing business. Working within our Center of Excellence for Digitalisation, you will help us unlock the full potential of digital technology across our existing operations and our new, state-of-the-art manufacturi ng facility. About The Role As our SAP System Analyst, you will play an influential role in the continued development of our digital manufacturing landscape. You will take technical ownership of SAP Extended Warehouse Management and support our broader SAP ecosystem, working alongside knowledgeable colleagues and key business users. You will help establish sustainable business knowledge, strong system ownership, and technical excellence while preparing the organisation for future developments, including SAP S/4HANA and SAP Digital Manufacturing. This is an opportunity to combine hands-on technical problem-solving with longer-term transformation. You will have the freedom to contribute ideas, build trusted relationships, and help create solutions that deliver meaningful benefits for our people, our manufacturing operations, and healthcare customers worldwide. What You’ll Be Doing • Taking technical lead responsibility for the configuration and support of SAP EWM. • Working collaboratively with colleagues and key business users to understand needs and deliver effective solutions. • Sup",
+   "type": "",
+   "query": "SAP Business Analyst in the last week",
+   "key": "sapsystemsanalyst|siemenshealthineers",
+   "firstSeen": "2026-10-02T11:13:26+00:00",
+   "lastSeen": "2026-10-02T11:13:26+00:00",
+   "sources": [
+    "Google Jobs · LinkedIn"
    ]
   },
   {
@@ -427,7 +447,7 @@
    "query": "SAP Business Analyst in the last week",
    "key": "sapdataqualitybusinessanalystoctstartmarketratedayinsideir359monthshybrid|bluewaveselect",
    "firstSeen": "2026-10-02T07:37:19+00:00",
-   "lastSeen": "2026-10-02T07:37:19+00:00",
+   "lastSeen": "2026-10-02T11:13:26+00:00",
    "sources": [
     "Google Jobs · ComputerJobs"
    ]
@@ -446,7 +466,7 @@
    "query": "SAP Business Analyst in the last week",
    "key": "strategicleadbusinessanalystsapprocesstransformation|cmsdistribution",
    "firstSeen": "2026-10-02T07:37:19+00:00",
-   "lastSeen": "2026-10-02T07:37:19+00:00",
+   "lastSeen": "2026-10-02T11:13:26+00:00",
    "sources": [
     "Google Jobs · JobLeads"
    ]
@@ -560,7 +580,7 @@
    "query": "SAP Business Analyst in the last week",
    "key": "hybridfinancetransformationbaforsaps4hana|greaterlondonauthority",
    "firstSeen": "2026-10-02T07:37:19+00:00",
-   "lastSeen": "2026-10-02T07:37:19+00:00",
+   "lastSeen": "2026-10-02T11:13:26+00:00",
    "sources": [
     "Google Jobs · JobLeads"
    ]
@@ -579,9 +599,28 @@
    "query": "SAP Business Analyst in the last week",
    "key": "hybriderpsystemsanalystsapb1sqlreports|centrictalent",
    "firstSeen": "2026-10-02T07:37:19+00:00",
-   "lastSeen": "2026-10-02T07:37:19+00:00",
+   "lastSeen": "2026-10-02T11:13:26+00:00",
    "sources": [
     "Google Jobs · Jobijoba UK"
+   ]
+  },
+  {
+   "title": "Senior Business Analyst: SAP & Change Governance",
+   "company": "ScottishPower",
+   "location": "Glasgow",
+   "pay": "£36,000-£44,000 per year",
+   "url": "https://www.jobleads.com/gb/job/senior-business-analyst-sap-change-governance--glasgow--e149b9d1be85da420dfd7e841931e2fe1?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "2026-09-26",
+   "source": "Google Jobs · JobLeads",
+   "sourceId": "Hl6kauw0aBoLps_oAAAAAA==",
+   "snippet": "ScottishPower HQ, Glasgow (Hybrid) is seeking a Senior Business Analyst to strengthen operational governance, improve collaboration and ensure our business-critical systems and services are delivered effectively and efficiently. You'll work across business, technology and supplier teams, supporting operational readiness, service improvements and the introduction of emerging technologies including AI-enabled solutions.",
+   "type": "",
+   "query": "SAP Business Analyst in the last week",
+   "key": "seniorbusinessanalystsapchangegovernance|scottishpower",
+   "firstSeen": "2026-10-02T11:13:26+00:00",
+   "lastSeen": "2026-10-02T11:13:26+00:00",
+   "sources": [
+    "Google Jobs · JobLeads"
    ]
   }
  ]

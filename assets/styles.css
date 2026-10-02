@@ -1708,3 +1708,8 @@ a.tb-chip:hover { transform: translateY(-1px); border-color: var(--accent); }
   .ph-art .photo { height: 150px; -webkit-mask-image: linear-gradient(180deg, #000 60%, transparent); mask-image: linear-gradient(180deg, #000 60%, transparent); }
 }
 @media (prefers-reduced-motion: reduce) { .photo, .photo img { animation: none; transition: none; transform: none; } }
+/* quick tiles with photos: picture on top, title and line underneath */
+.q-art:has(.photo) { height: auto; margin-bottom: 8px; }
+.q-art .photo { aspect-ratio: 16 / 10; border-radius: 10px; }
+.q-tile strong { font-size: .92rem; line-height: 1.25; }
+.q-tile:hover .q-art .photo img { transform: scale(1.05); }

@@ -103,6 +103,11 @@
       else if (view === 'profile') await V.profile(root);
       else if (view === 'settings') await V.settings(root);
       else await V.dashboard(root);
+      // Every main page opens with an illustrated header showing people at work on their job search.
+      try {
+        const ph = root.querySelector(':scope > .page-head'), art = window.CVT.art && window.CVT.art.headArt ? window.CVT.art.headArt(view || 'dashboard') : '';
+        if (ph && art && !ph.querySelector('.ph-art')) { ph.classList.add('hero-head'); ph.insertAdjacentHTML('beforeend', `<div class="ph-art" aria-hidden="true">${art}</div>`); }
+      } catch (_) {}
       const T = ({ app: 'Application', pipeline: 'Pipeline', jobs: 'Jobs', prep: 'Interview prep', autopilot: 'Autopilot', help: 'Help and privacy', profile: 'Career profile', settings: 'Settings', pricing: 'Plans and pricing' }[view] || 'Dashboard');
       document.title = T + ' · Applywise';
       if (window.CVT.shell) window.CVT.shell.refresh(T);

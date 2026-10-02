@@ -18,6 +18,24 @@
     "trainee",
     "internship"
   ],
+  "title_must_include_any": [
+    "sap",
+    "ariba",
+    "s/4",
+    "s4hana",
+    "p2p",
+    "s2p",
+    "procure-to-pay",
+    "source-to-pay",
+    "purchase-to-pay",
+    "procurement system",
+    "business analyst",
+    "systems analyst",
+    "business systems",
+    "erp",
+    "guided buying",
+    "coupa"
+  ],
   "jooble": {
     "requests_per_day": 1,
     "lifetime_limit": 480,

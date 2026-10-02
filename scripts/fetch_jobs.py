@@ -152,29 +152,40 @@ def jooble(query, cfg, key):
 
 
 # ---------------------------------------------------------------- Google Jobs via Apify (pay per result, hard-capped)
-def apify_google(query, cfg, token, max_items):
+def apify_spent(token):
+    """This month's Apify usage in US dollars (everything on the account, not just this robot)."""
+    d = http_json('https://api.apify.com/v2/users/me/limits', {'Authorization': 'Bearer ' + token}).get('data', {})
+    return float((d.get('current') or {}).get('monthlyUsageUsd') or 0), float((d.get('limits') or {}).get('maxMonthlyUsageUsd') or 5)
+
+
+def apify_google(queries, cfg, token, per_query):
     a = cfg.get('apify', {})
-    actor = a.get('actor', 'johnvc~google-jobs-scraper---pay-per-result')
-    loc = cfg.get('location', '') or 'United Kingdom'
-    body = {'query': query, 'location': loc if ',' in loc or re.fullmatch(r'(?i)united kingdom|uk', loc) else loc + ', United Kingdom',
-            'country': a.get('country', 'uk'), 'language': 'en', 'google_domain': a.get('google_domain', 'google.co.uk'),
-            'num_results': max_items, 'max_pagination': 1}
-    # maxItems makes Apify stop charging after that many results, whatever the actor does.
+    actor = a.get('actor', 'farside~google-jobs-scraper')
+    loc = cfg.get('location', '')
+    body = {'queries': queries, 'countryCode': a.get('country', 'uk'), 'maxResultsPerQuery': per_query,
+            'postedWithinDays': a.get('posted_within_days', 7)}
+    if loc and not re.fullmatch(r'(?i)united kingdom|uk', loc):
+        body['location'] = loc
+    # maxTotalChargeUsd and maxItems make Apify stop charging at that point, whatever the actor does.
     url = (f'https://api.apify.com/v2/acts/{actor}/run-sync-get-dataset-items?'
-           + urllib.parse.urlencode({'maxItems': max_items, 'timeout': 180}))
-    data = http_json(url, {'Authorization': 'Bearer ' + token}, body=body, timeout=200)
+           + urllib.parse.urlencode({'maxItems': per_query * len(queries), 'maxTotalChargeUsd': a.get('max_charge_per_run_usd', 0.1), 'timeout': 240}))
+    data = http_json(url, {'Authorization': 'Bearer ' + token}, body=body, timeout=270)
     out = []
-    for j in (data if isinstance(data, list) else [])[:max_items]:
-        ext = j.get('detected_extensions') or {}
-        links = j.get('apply_options') or j.get('related_links') or []
-        link = (links[0].get('link') if links and isinstance(links[0], dict) else '') or j.get('share_link') or j.get('url') or ''
+    for j in (data if isinstance(data, list) else []):
+        if not isinstance(j, dict) or j.get('isRunReport') or not j.get('title'):
+            continue
+        links = [l for l in (j.get('applyLinks') or []) if isinstance(l, dict)]
+        link = next((l.get('url') or l.get('link') or l.get('href') for l in links if l.get('url') or l.get('link') or l.get('href')), '') or j.get('shareUrl') or ''
+        lo, hi = j.get('salaryMin'), j.get('salaryMax')
+        per = {'day': 'day', 'hour': 'hour', 'week': 'week', 'month': 'month'}.get(str(j.get('salaryType') or '').lower(), 'year')
+        pay = money(lo, hi, per) if (j.get('salaryCurrency') or 'GBP') == 'GBP' else ''
         via = re.sub(r'(?i)^via\s+', '', str(j.get('via') or '')).strip()
-        hl = ' '.join(' '.join(h.get('items', [])) for h in (j.get('job_highlights') or []) if isinstance(h, dict))
         out.append({
-            'title': clean(j.get('title'), 200), 'company': j.get('company_name', '') or '', 'location': j.get('location', '') or '',
-            'pay': clean(ext.get('salary') or j.get('salary'), 80), 'url': link, 'posted': ago(ext.get('posted_at') or j.get('posted_at')),
-            'source': 'Google Jobs' + (f' · {via}' if via else ''), 'sourceId': str(j.get('job_id', ''))[:120],
-            'snippet': clean(j.get('description') or hl), 'type': ext.get('schedule_type', '') or '', 'query': query
+            'title': clean(j.get('title'), 200), 'company': j.get('company') or '', 'location': j.get('location') or '',
+            'pay': pay or clean(j.get('salaryRaw'), 80), 'url': link, 'posted': ago(j.get('postedAt') or j.get('postedRelative')),
+            'source': 'Google Jobs' + (f' \u00b7 {via}' if via else ''), 'sourceId': str(j.get('jobId') or '')[:120],
+            'snippet': clean(j.get('description') or j.get('descriptionSnippet')), 'type': j.get('employmentType') or '',
+            'query': j.get('query') or ''
         })
     return out
 
@@ -233,29 +244,29 @@ def main():
         if left <= 0:
             errors.append('Jooble: the free key has used its 480 requests. Ask Jooble for a new free key to continue.')
 
-    # Google Jobs through Apify: pay per result, so a strict monthly cap keeps it inside the free credit.
+    # Google Jobs through Apify: pay per result. Two guards keep it free: the robot checks the account's real
+    # spending this month and stops below the budget, and every run carries its own maximum charge.
     if apify_token:
         ac = cfg.get('apify', {})
-        month = NOW.strftime('%Y-%m')
-        if usage.get('apify_month') != month:
-            usage['apify_month'], usage['apify_results'] = month, 0
-        left = int(ac.get('monthly_results_cap', 300)) - int(usage.get('apify_results', 0))
-        per = int(ac.get('results_per_search', 10))
-        for q in todays(cfg.get('searches', []), int(ac.get('searches_per_day', 1))):
-            n = min(per, left)
-            if n <= 0:
-                errors.append(f'Google Jobs: this month\'s free cap of {ac.get("monthly_results_cap", 300)} results is used; it starts again next month.')
-                break
-            try:
-                got = apify_google(q, cfg, apify_token, n)
-                found += got
-                if 'Google Jobs' not in sources:
+        budget = float(ac.get('monthly_budget_usd', 3.5))
+        try:
+            spent, limit = apify_spent(apify_token)
+        except Exception as e:
+            spent, limit = None, 5
+            errors.append(f'Google Jobs: could not read Apify usage, skipped to be safe ({e})')
+        if spent is not None:
+            usage['apify_spent_usd'] = round(spent, 2)
+            if spent >= min(budget, limit - 0.5):
+                errors.append(f'Google Jobs: paused for this month (Apify usage ${spent:.2f} of the ${budget:.2f} budget). It restarts next month.')
+            else:
+                qs = todays(cfg.get('searches', []), int(ac.get('searches_per_day', 2)))
+                try:
+                    got = apify_google(qs, cfg, apify_token, int(ac.get('results_per_search', 10)))
+                    found += got
                     sources.append('Google Jobs')
-            except Exception as e:
-                got = []
-                errors.append(f'Google Jobs "{q}": {e}')
-            usage['apify_results'] = int(usage.get('apify_results', 0)) + max(len(got), 0)
-            left -= len(got)
+                    usage['apify_results'] = int(usage.get('apify_results', 0)) + len(got)
+                except Exception as e:
+                    errors.append(f'Google Jobs {qs}: {e}')
 
     exclude = [w.lower() for w in cfg.get('exclude', [])]
     stamp = NOW.isoformat(timespec='seconds')

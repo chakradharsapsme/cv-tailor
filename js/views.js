@@ -115,7 +115,7 @@
     const feedRun = !!((await S.getKV('feed', null)) || {}).lastRun;
     const setup = [
       { done: masters.length > 0, art: 'cv', title: 'Add your CV', text: 'Upload the Word CV you use today (one per skill set if you have several). Its layout is never changed.', href: '#/profile', cta: 'Upload CV' },
-      { done: (profile.targetRoles || []).length > 0 || feedRun, art: 'search', title: 'Tell us the jobs you want', text: 'Job titles, your town or city and country. Jobs near you come first.', href: '#/profile', cta: 'Set targets' },
+      { done: (profile.targetRoles || []).length > 0 || feedRun || (masters.length > 0 && apps.length > 0), art: 'search', title: 'Tell us the jobs you want', text: 'Job titles, your town or city and country. Jobs near you come first.', href: '#/profile', cta: 'Set targets' },
       { done: !!state.key, art: 'ask', title: 'Switch on a free AI', text: 'Pick one free option. It writes your tailored CV and cover letters.', href: '#/settings', cta: 'Choose a free AI' },
       { done: apps.length > 0, art: 'handshake', title: 'Tailor your first application', text: 'Pick a job from the list or paste any advert, even a short one.', href: '#/jobs', cta: 'Find a job' }
     ];
@@ -135,9 +135,12 @@
     // Shortcuts that aren't already the next step or a panel on this page.
     const tiles = [
       { href: '#/new', art: 'cv', title: 'Tailor for an advert', sub: 'CV and cover letter' },
-      latest ? { ask: latest.id, art: 'ask', title: 'Ask AI', sub: 'About ' + (latest.company || latest.role || 'your latest application') } : null,
+      latest ? { ask: latest.id, art: 'ask', title: 'Ask AI', sub: 'About ' + (latest.company || latest.role || 'your latest application') } : { href: '#/prep', art: 'interview', title: 'Interview prep', sub: 'Questions and mock interviews' },
       { href: '#/pipeline', art: 'growth', title: 'Track applications', sub: apps.length ? apps.length + ' so far' : 'Every application' }
     ].filter(q => q && q.href !== nextStep.href);
+    // Picture tiles with their names on the photo. Shown before and after setup.
+    const quick = html`<div class="quick-tiles">${tiles.map(q => q.ask ? html`<button class="q-tile" type="button" data-ask="${q.ask}"><span class="q-art">${art(q.art)}</span><strong>${q.title}</strong><span class="muted small">${q.sub}</span></button>`
+      : html`<a class="q-tile" href="${q.href}"><span class="q-art">${art(q.art)}</span><strong>${q.title}</strong><span class="muted small">${q.sub}</span></a>`)}</div>`;
     root.innerHTML = html`
       <header class="page-head">
         <div><p class="eyebrow">${longDate()}</p><h1>${hello}</h1></div>
@@ -189,14 +192,14 @@
           <section class="panel start-panel" data-sec="start" aria-label="${setupDone ? 'Your next step' : 'Get started'}">
             ${setupDone ? html`<div class="next-hero"><div class="nh-text"><p class="eyebrow">Your next step</p><h2>${nextStep.title}</h2><p class="muted">${nextStep.text}</p>
               <a class="btn primary" href="${nextStep.href}">${nextStep.cta}</a></div><div class="nh-art">${art(nextStep.art)}</div></div>
-            <div class="quick-tiles">${tiles.map(q => q.ask ? html`<button class="q-tile" type="button" data-ask="${q.ask}"><span class="q-art">${art(q.art)}</span><strong>${q.title}</strong><span class="muted small">${q.sub}</span></button>`
-              : html`<a class="q-tile" href="${q.href}"><span class="q-art">${art(q.art)}</span><strong>${q.title}</strong><span class="muted small">${q.sub}</span></a>`)}</div>`
+            ${quick}`
             : html`<div class="next-hero"><div class="nh-text"><p class="eyebrow">Get started · ${setup.filter(x => x.done).length} of ${setup.length} done</p><h2>${setup.some(x => x.done) ? 'Nearly there' : 'Welcome to Applywise'}</h2><p class="muted">Four quick steps to your first tailored CV and cover letter. Do them in any order.</p></div><div class="nh-art">${art('welcome')}</div></div>
             <ol class="onboard-steps">${setup.map((x, i) => html`<li class="${x.done ? 'done' : x === firstTodo ? 'now' : ''}">
               <span class="step-num" aria-hidden="true">${x.done ? '✓' : i + 1}</span>
               <div><strong>${x.title}</strong><p class="muted small">${x.text}</p></div>
               ${x.done ? html`<span class="chip ok">Done</span>` : html`<a class="btn small ${x === firstTodo ? 'primary' : 'ghost'}" href="${x.href}">${x.cta}</a>`}
             </li>`)}</ol>
+            ${quick}
             <p class="small muted mt"><a class="link" href="#/help">▶ Watch the 3-minute guide</a></p>`}
           </section>
           <section class="panel wide" id="dash-jobs" data-sec="jobs" aria-busy="true">
@@ -342,6 +345,19 @@
   // =====================================================================
   async function profile(root) {
     const [p, masters] = await Promise.all([S.getProfile(), S.listMasters()]);
+    // The very first time a CV is added, copy the details and every job from it into the empty fields
+    // (no AI). This happens ONCE only: after that, your application details stay exactly as they are,
+    // whatever CVs you add, change or remove, until you edit them yourself (or press "Fill from my CV").
+    const defM = masters.find(m => m.isDefault) || masters[0];
+    let autoFilled = [];
+    if (defM && !p.cvAutoFilled && window.CVT.cvparse) {
+      try {
+        const mm = await masterModel(defM.id);
+        autoFilled = window.CVT.cvparse.fillProfile(p, window.CVT.cvparse.parse(D.plainText(mm.model)));
+        p.cvAutoFilled = defM.id; await S.saveProfile(p); state.profile = p;
+      } catch (_) {}
+    }
+    if (autoFilled.length) setTimeout(() => toast(`Filled ${autoFilled.includes('experience') ? 'your work experience and ' : ''}${autoFilled.filter(k => k !== 'experience').length} details from your CV. Change anything you like.`), 400);
     const lines = arr => (arr || []).join('\n');
     const field = (key, label, attrs = {}) => html`<label class="field"><span>${label}</span><input data-p="${key}" type="${attrs.type || 'text'}" value="${p[key] ?? ''}" placeholder="${attrs.ph || ''}" autocomplete="off"></label>`;
     const sel = (key, label, opts) => html`<label class="field"><span>${label}</span><select data-p="${key}">${opts.map(o => html`<option value="${o}" ${String(p[key] ?? '') === o ? raw('selected') : ''}>${o || 'Choose…'}</option>`)}</select></label>`;
@@ -406,7 +422,7 @@
       </div>
 
       <section class="panel" id="wd-panel">
-        <div class="panel-head"><h2>Application forms (Workday and similar)</h2><button class="btn ghost small" id="wd-copy" type="button">Copy all for pasting</button></div>
+        <div class="panel-head"><h2>Application forms (Workday and similar)</h2><span class="row gap wrap"><span class="chip" id="wd-state" hidden></span><button class="btn ghost small" id="wd-copy" type="button">Copy all for pasting</button><button class="btn primary small" data-wd-save type="button">Save</button></span></div>
         <p class="hint">Many employers ask you to fill in your details on Workday (or Taleo, SuccessFactors, iCIMS) before they can send an interview invitation. Fill these in once: the autofill bookmark uses them, and <strong>Copy all for pasting</strong> gives you a tidy list to copy from section by section. Workday asks you to create an account on each employer's site: use the same email every time. Your password stays with you and is never stored here.</p>
         <h3 class="wd-h">Legal name and contact</h3>
         <div class="grid-3">
@@ -451,7 +467,7 @@
           <label class="field"><span>Certifications (one per line, with year)</span><textarea data-p="certifications" rows="3" placeholder="PMP – 2015">${p.certifications || ''}</textarea></label>
         </div>
         <div class="panel-head mt"><h3 class="wd-h" style="margin:0">Work experience</h3><span class="row gap wrap"><button class="btn ghost small" id="xp-cv" type="button">Fill from my CV</button><button class="btn primary small" id="xp-add" type="button">+ Add experience</button></span></div>
-        <p class="hint">Add each job as Workday asks for it: newest first. <strong>Fill from my CV</strong> reads your default CV with the AI and adds the jobs it finds (check them before you use them).</p>
+        <p class="hint">Add each job as Workday asks for it: newest first. Your jobs were copied from your CV once, newest first. They now stay exactly as they are, even if you change or replace your CV, until you edit them. <strong>Fill from my CV</strong> adds a missing job only when you press it.</p>
         <p class="error" id="xp-err" hidden></p>
         <div class="xp-list" id="xp-list">${(p.experience || []).length ? (p.experience || []).map((x, i) => html`
           <div class="xp-card">
@@ -469,6 +485,7 @@
             <label class="field"><span>Role description</span><textarea data-xp="${i}" data-k="desc" rows="3" placeholder="What you did and achieved (Workday allows about 2,000 characters)">${x.desc || ''}</textarea></label>
           </div>`) : html`<p class="muted small" id="xp-empty">No jobs added yet. Press <strong>+ Add experience</strong> or <strong>Fill from my CV</strong>.</p>`}</div>
         <p class="muted small">Equal-opportunity questions (gender, ethnicity, disability, veteran status) are optional on these forms: answer them yourself on each site, or choose “Prefer not to say”. Workday's “Autofill with resume” can also read your work history when you upload the tailored CV; check it against the list above.</p>
+        <div class="wd-save-row"><span class="muted small" id="wd-saved-note">Changes also save as you type. Press Save to be sure.</span><button class="btn primary" data-wd-save type="button">Save application form details</button></div>
       </section>
 
       <section class="panel">
@@ -500,6 +517,21 @@
       else if (t.dataset.mname) { clearTimeout(t._t); t._t = setTimeout(async () => { const m = await S.getMaster(t.dataset.mname); m.name = t.value.trim() || 'CV'; await S.saveMaster(m); }, 400); }
     });
     root.addEventListener('change', e => { if (e.target.tagName === 'SELECT' && e.target.dataset.p) { p[e.target.dataset.p] = e.target.value; save(); } });
+    // Application forms: explicit Save (fields still autosave), with an "Unsaved changes" chip while you edit.
+    const wdState = (txt, cls) => { const c = $('#wd-state', root); if (!c) return; c.hidden = !txt; c.textContent = txt || ''; c.className = 'chip ' + (cls || ''); };
+    root.addEventListener('input', e => { if (e.target.closest('#wd-panel')) wdState('Unsaved changes', 'warn'); });
+    root.addEventListener('change', e => { if (e.target.closest('#wd-panel')) wdState('Unsaved changes', 'warn'); });
+    root.addEventListener('click', async e => {
+      const b = e.target.closest('[data-wd-save]'); if (!b) return;
+      clearTimeout(timer);
+      $$('#wd-panel [data-p]', root).forEach(t => { p[t.dataset.p] = t.hasAttribute('data-list') ? t.value.split('\n').map(x => x.trim()).filter(Boolean) : t.type === 'checkbox' ? t.checked : t.value; });
+      $$('#wd-panel [data-xp]', root).forEach(t => { const x = (p.experience || [])[Number(t.dataset.xp)]; if (x && t.dataset.k) x[t.dataset.k] = t.type === 'checkbox' ? t.checked : t.value; });
+      await S.saveProfile(p); state.profile = p;
+      const at = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      wdState('✓ Saved ' + at, 'ok'); const n = $('#wd-saved-note', root); if (n) n.textContent = 'All application form details saved at ' + at + '.';
+      toast('Application form details saved');
+    });
+    root.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's' && e.target.closest('#wd-panel')) { e.preventDefault(); const b = $('[data-wd-save]', root); if (b) b.click(); } });
     $('#wd-copy', root).addEventListener('click', e => {
       const parts = (p.name || '').trim().split(/\s+/);
       const rows = [
@@ -548,6 +580,18 @@
       const mm = await masterModel();
       if (!mm) { err.textContent = 'Upload a master CV first.'; err.hidden = false; return; }
       btn.disabled = true; btn.textContent = 'Reading your CV…';
+      // Free and instant: read the CV directly. The AI is only asked if no jobs could be found this way.
+      try {
+        const d = window.CVT.cvparse ? window.CVT.cvparse.parse(D.plainText(mm.model)) : { experience: [] };
+        if (d.experience.length) {
+          const before = (p.experience || []).filter(x => x && (x.title || x.company)).length;
+          const filled = window.CVT.cvparse.fillProfile(p, d, { mergeJobs: true });
+          const added = (p.experience || []).length - before;
+          await xpSave();
+          toast(added ? `Added ${added} job${added > 1 ? 's' : ''} from your CV${filled.length > 1 ? ' and filled ' + (filled.length - (added ? 1 : 0)) + ' empty details' : ''}. Check and edit anything.` : 'Your work experience already matches your CV');
+          return window.CVT.app.rerender();
+        }
+      } catch (_) {}
       try {
         const out = await A.cvHistory({ key: state.key, model: state.model, cvText: D.plainText(mm.model) });
         const ym = v => { const m = String(v || '').match(/(\d{4})(?:-(\d{1,2}))?/); return m ? `${m[1]}-${String(m[2] || '01').padStart(2, '0')}` : ''; };

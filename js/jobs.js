@@ -198,7 +198,7 @@
     // 2. GitHub robot (optional)
     const onPages = /github\.io$/.test(location.hostname);
     // The site owner's robot collects UK IT / business-analysis roles only: other visitors don't get them.
-    const itUk = FL().current().id === 'it' && (window.CVT.countries ? window.CVT.countries.current() === 'GB' : true);
+    const itUk = ['it', 'any'].includes(FL().current().id) && (window.CVT.countries ? window.CVT.countries.current() === 'GB' : true);
     for (const url of !itUk ? [] : onPages ? ['data/jobs.json', COLLECTED_URL] : [COLLECTED_URL]) {
       try {
         const r = await fetch(url + '?t=' + Math.floor(Date.now() / 600e3), { cache: 'no-store' });

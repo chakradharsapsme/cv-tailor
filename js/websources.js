@@ -161,9 +161,11 @@
   }
 
   /** The Muse: a free public jobs API covering every profession (strongest in the US and UK). */
-  async function muse(cats, cc) {
+  async function muse(cats, cc, city) {
     const c = K().get(cc), out = [];
-    const locs = (c.muse || []).map(l => '&location=' + encodeURIComponent(l)).join('');
+    // Your city first (The Muse names places "City, Country"), then the country's main cities.
+    const mine = city && cc !== 'US' ? [city.replace(/\b\w/g, x => x.toUpperCase()) + ', ' + c.name] : [];
+    const locs = [...new Set(mine.concat(c.muse || []))].map(l => '&location=' + encodeURIComponent(l)).join('');
     for (const cat of cats.length ? cats : ['']) {
       for (let page = 0; page < 3; page++) {
         const d = await getJSON(`https://www.themuse.com/api/public/jobs?page=${page}${cat ? '&category=' + encodeURIComponent(cat) : ''}${locs}`);
@@ -207,7 +209,7 @@
    * Search every source. relevant(job) decides what is kept (title/skill match against your searches).
    * onStep(label) reports progress. Returns { jobs, errors, bySource }.
    */
-  async function search({ queries, portals, extraPortals, relevant, onStep, country, field }) {
+  async function search({ queries, portals, extraPortals, relevant, onStep, country, field, city }) {
     const cc = K().list[country] ? country : 'GB';
     const out = [], errors = [], bySource = {};
     const add = (list, source) => { const keep = list.filter(j => j && j.title && relevant(j)); keep.forEach(j => { j.source = source; j.sources = [source]; j.country = cc; }); out.push(...keep); bySource[source] = (bySource[source] || 0) + keep.length; };
@@ -236,7 +238,7 @@
     const cats = (window.CVT.fields ? window.CVT.fields.get(field || window.CVT.fields.current().id) : { muse: [] }).muse || [];
     if ((K().get(cc).muse || []).length || cc === 'US') {
       onStep && onStep(`Searching The Muse in ${K().get(cc).name}`);
-      try { add(await muse(cats, cc), 'The Muse'); } catch (e) { errors.push(`The Muse: ${e.message}`); }
+      try { add(await muse(cats, cc, city), 'The Muse'); } catch (e) { errors.push(`The Muse: ${e.message}`); }
     }
     if (cc === 'DE') {
       onStep && onStep('Searching Arbeitnow (Germany)');

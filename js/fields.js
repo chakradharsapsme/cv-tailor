@@ -152,15 +152,22 @@
   let cur = null;
   const cached = () => { try { return JSON.parse(localStorage.getItem('cvt.field') || 'null'); } catch (_) { return null; } };
   /** Guess a field from what someone wrote about themselves. */
-  // Your saved job searches and CV names: used only while the profile has no target roles.
-  let hint = '';
-  const setHint = t => { hint = String(t || ''); };
+  // Hints used only while the profile is blank: 'main' = your saved job searches and CV names, 'cv' = the text of your loaded CVs.
+  const hints = {};
+  const setHint = (t, slot = 'main') => { hints[slot] = String(t || ''); };
+  const IT_WORDS = /\b(sap|ariba|erp|s\/?4\s?hana|business analyst|it business|functional consultant|servicenow|salesforce|workday)\b/gi;
   function infer(p) {
-    const txt = [...(p.targetRoles || []), p.currentTitle || '', p.extraSkills || '', (p.targetRoles || []).length ? '' : hint].join(' \n ');
-    if (!txt.trim()) return 'any';
+    const noRoles = !(p.targetRoles || []).filter(Boolean).length, noSkills = !String(p.extraSkills || '').trim();
+    const txt = [...(p.targetRoles || []), p.currentTitle || '', p.extraSkills || '', noRoles ? (hints.main || '') : ''].join(' \n ');
+    // No target roles and no skills typed in: read the CVs you loaded instead.
+    const cvTxt = noRoles && noSkills ? (hints.cv || '') : '';
+    if (!txt.trim() && !cvTxt.trim()) return 'any';
     if (/\b(sap|ariba|erp|s\/?4\s?hana|business analyst|it business|functional consultant|servicenow|salesforce|workday)\b/i.test(txt)) return 'it';
+    // A CV can mention SAP once in passing: it takes several SAP / IT mentions to count as the IT field.
+    if ((cvTxt.match(IT_WORDS) || []).length >= 3) return 'it';
     let best = 'any', score = 0;
-    Object.values(F).forEach(f => { if (!f.role) return; const n = (txt.match(new RegExp(f.role.source, 'gi')) || []).length; if (n > score) { score = n; best = f.id; } });
+    const all = txt + ' \n ' + cvTxt;
+    Object.values(F).forEach(f => { if (!f.role) return; const n = (all.match(new RegExp(f.role.source, 'gi')) || []).length; if (n > score) { score = n; best = f.id; } });
     return best;
   }
   const idOf = p => (p && F[p.field] ? p.field : p ? infer(p) : (cached() && F[cached()] ? cached() : 'any'));

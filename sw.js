@@ -4,7 +4,7 @@
  * Libraries and fonts from CDNs: cached copy first, refreshed in the background.
  * Job sites, AI engines and anything else: always live, never cached.
  */
-const VERSION = 'aw-5.8.1';
+const VERSION = 'aw-5.8.2';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './assets/styles.css', './assets/icon-192.png', './assets/icon-512.png', './assets/icon-maskable-512.png',
   './privacy.html', './terms.html',
   ...['agent', 'app', 'autofill', 'autopilot', 'countries', 'demo', 'docs', 'docx-engine', 'drills', 'employers', 'fields', 'jobs', 'layout', 'mindmap', 'myqs', 'prep', 'shell', 'store',

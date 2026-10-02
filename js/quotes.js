@@ -44,19 +44,18 @@
   }
   function init() {
     const host = document.querySelector('.work'); if (!host || document.querySelector('.quote-bar')) return;
-    if (S().local.get(KEY, '') === new Date().toISOString().slice(0, 10)) return;
+    try { S().local.set(KEY, ''); } catch (_) {}
     const list = shuffled();
     const bar = document.createElement('div');
     bar.className = 'quote-bar'; bar.setAttribute('role', 'note'); bar.setAttribute('aria-label', 'Encouragement');
     const track = list.map(q => `<span class="q-item">✦ ${q}</span>`).join('');
     bar.innerHTML = `<div class="q-viewport" aria-hidden="true"><div class="q-track">${track}${track}</div></div>
-      <p class="q-static">${list[0]}</p>
-      <button class="q-close" type="button" aria-label="Hide encouragement for today" title="Hide for today">×</button>`;
+      <p class="q-static">${list[0]}</p>`;
     const top = host.querySelector('.topbar');
     if (top) top.after(bar); else host.prepend(bar);
     // Read slowly: about 18 seconds per line.
     bar.querySelector('.q-track').style.animationDuration = (list.length * 18) + 's';
-    bar.querySelector('.q-close').addEventListener('click', () => { S().local.set(KEY, new Date().toISOString().slice(0, 10)); bar.remove(); });
+    // Always on: the line keeps scrolling (there is no hide button).
     // For screen readers and reduced motion: one line, changing every 20 seconds.
     let i = 0; setInterval(() => { const p = bar.querySelector('.q-static'); if (p) p.textContent = list[(++i) % list.length]; }, 20000);
   }

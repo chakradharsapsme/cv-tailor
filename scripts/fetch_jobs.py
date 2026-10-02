@@ -79,6 +79,13 @@ def money(lo, hi, per='year'):
     return f'{fmt(vals[0])} per {per}'
 
 
+def relevant(title, cfg):
+    """Keep only titles that mention at least one of your terms (job boards often return loosely related roles)."""
+    terms = [t.lower() for t in cfg.get('title_must_include_any', [])]
+    t = str(title or '').lower()
+    return not terms or any(x in t for x in terms)
+
+
 def norm(s):
     s = re.sub(r'\b(ltd|limited|plc|llp|uk|group|inc)\b', '', str(s or '').lower())
     return re.sub(r'[^a-z0-9]+', '', s)
@@ -272,7 +279,7 @@ def main():
     stamp = NOW.isoformat(timespec='seconds')
     added = 0
     for j in found:
-        if not j['title'] or any(w in j['title'].lower() for w in exclude):
+        if not j['title'] or any(w in j['title'].lower() for w in exclude) or not relevant(j['title'], cfg):
             continue
         key = norm(j['title']) + '|' + norm(j['company'])
         if key in known:
@@ -290,7 +297,7 @@ def main():
             added += 1
 
     cutoff = (NOW - timedelta(days=cfg.get('keep_days', 45))).isoformat()
-    jobs = [j for j in known.values() if (j.get('lastSeen') or '') >= cutoff]
+    jobs = [j for j in known.values() if (j.get('lastSeen') or '') >= cutoff and relevant(j.get('title'), cfg)]
     jobs.sort(key=lambda j: (j.get('posted') or j.get('firstSeen') or ''), reverse=True)
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     json.dump({'updated': stamp, 'sources': sources, 'added': added, 'errors': errors[:10], 'usage': usage, 'jobs': jobs[:600]},

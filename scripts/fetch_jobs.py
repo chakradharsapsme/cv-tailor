@@ -12,7 +12,7 @@ Keys come from environment variables (GitHub Actions secrets):
   REED_API_KEY, ADZUNA_APP_ID, ADZUNA_APP_KEY, JOOBLE_API_KEY, APIFY_TOKEN
 A source without keys is skipped. Standard library only.
 """
-import base64, json, os, re, sys, time, urllib.parse, urllib.request
+import base64, json, os, re, sys, time, urllib.error, urllib.parse, urllib.request
 from datetime import datetime, timedelta, timezone
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -28,8 +28,16 @@ def http_json(url, headers=None, body=None, timeout=30):
     if data is not None:
         hdr['Content-Type'] = 'application/json'
     req = urllib.request.Request(url, data=data, headers=hdr, method='POST' if data is not None else 'GET')
-    with urllib.request.urlopen(req, timeout=timeout) as r:
-        return json.loads(r.read().decode('utf-8'))
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            return json.loads(r.read().decode('utf-8'))
+    except urllib.error.HTTPError as e:
+        detail = ''
+        try:
+            detail = e.read().decode('utf-8', 'replace')[:300]
+        except Exception:
+            pass
+        raise RuntimeError(f'HTTP {e.code}: {detail}') from None
 
 
 def ago(text):
@@ -153,7 +161,7 @@ def apify_google(query, cfg, token, max_items):
             'num_results': max_items, 'max_pagination': 1}
     # maxItems makes Apify stop charging after that many results, whatever the actor does.
     url = (f'https://api.apify.com/v2/acts/{actor}/run-sync-get-dataset-items?'
-           + urllib.parse.urlencode({'maxItems': max_items, 'timeout': 180, 'memory': 512}))
+           + urllib.parse.urlencode({'maxItems': max_items, 'timeout': 180}))
     data = http_json(url, {'Authorization': 'Bearer ' + token}, body=body, timeout=200)
     out = []
     for j in (data if isinstance(data, list) else [])[:max_items]:

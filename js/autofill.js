@@ -29,7 +29,14 @@
         return;
       }
       var f = pack.fields || {};
+      // First matching rule wins (so a 'phone extension' box never gets your phone number).
+      // Labels include Workday's data-automation-id, e.g. legalNameSection_firstName, addressSection_addressLine1.
       var rules = [
+        [/extension|\bext\b/, null],
+        [/country.?phone.?code|phone.?code|dial(l)?ing.?code/, f.phoneCode],
+        [/phone.?device|phone.?type|device.?type/, f.phoneType],
+        [/preferred.?(first.?)?name|known.?as|nickname/, f.preferredName],
+        [/middle.?name/, f.middleName],
         [/first.?name|given.?name|forename/, f.firstName],
         [/last.?name|surname|family.?name/, f.lastName],
         [/^(full.?)?name$|full.?name|your.?name|legal.?name/, f.fullName],
@@ -37,15 +44,28 @@
         [/phone|mobile|telephone|contact.?number/, f.phone],
         [/linked.?in/, f.linkedin],
         [/website|portfolio|personal.?url/, f.website],
-        [/post.?code|zip/, f.postcode],
+        [/address.?line.?2|address.?2|apartment|suite/, f.address2],
+        [/address.?line.?1|address.?1|street|^address$/, f.address1],
+        [/post.?code|postal|zip/, f.postcode],
         [/\bcity\b|town|current.?location|^location$|where.*(based|live)/, f.city],
         [/country/, f.country],
+        [/county|\bstate\b|region|province/, f.county],
+        [/hear.?about|how.?did.?you.?(hear|find)|source.?of.?(application|referral)|referral.?source/, f.hearAbout],
+        [/previously.?(work|employ)|worked.?(for|at|here).?before|former.?employee/, f.previouslyWorked],
+        [/sponsor/, f.sponsorship],
+        [/right.?to.?work|authori[sz]ed|eligib|visa/, f.rightToWork || f.eligibility],
+        [/relocat/, f.relocate],
+        [/travel/, f.travel],
+        [/current.?(salary|compensation|base|pay)/, f.currentSalary],
         [/current.*(job.?title|position|role)|job.?title|headline/, f.currentTitle],
         [/current.*(company|employer)|employer|company.?name/, f.currentCompany],
-        [/notice|availability|available.*start|start.?date|when.*start/, f.notice],
+        [/start.?date|earliest.?start|date.?available/, f.startDate || f.notice],
+        [/notice|availability|available.*start|when.*start/, f.notice],
         [/day.?rate|daily.?rate/, f.dayRate],
         [/salary|compensation|pay.?expect|remuneration|expected.?(pay|package)/, f.salary],
-        [/right.?to.?work|authori[sz]ed|eligib|visa|sponsor/, f.eligibility],
+        [/school|university|college|institution/, f.school],
+        [/field.?of.?study|area.?of.?study|discipline/, f.fieldOfStudy],
+        [/degree|qualification/, f.degree],
         [/cover.?letter|motivation.?letter|covering/, f.coverLetter],
         [/why.*(role|position|job|company|us|interested|apply|join)|reason.*apply|motivation/, f.why]
       ];
@@ -98,8 +118,9 @@
         if (!label) return;
         var value = null;
         if (el.tagName === 'TEXTAREA') value = qaFor(label);
-        if (value == null) for (var i = 0; i < rules.length; i++) { if (rules[i][1] && rules[i][0].test(label)) { value = rules[i][1]; break; } }
-        if (value == null && el.tagName !== 'SELECT') value = qaFor(label);
+        var ruled = false;
+        if (value == null) for (var i = 0; i < rules.length; i++) { if (rules[i][0].test(label)) { ruled = true; value = rules[i][1] || null; break; } }
+        if (value == null && !ruled && el.tagName !== 'SELECT') value = qaFor(label);
         var short = label.slice(0, 60);
         if (value == null) { if (el.required || /\*/.test(label)) skipped.push(short); return; }
         if (el.tagName === 'SELECT') {

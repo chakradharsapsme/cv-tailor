@@ -1591,3 +1591,9 @@ h1, h2, h3, .pcard-name, .kpi-num, .wl-card h2, .tour-card h2 { font-family: var
 /* short screens: keep the welcome card's buttons in view */
 @media (max-height: 760px) { .wl-art { display: none; } .wl-card { padding-top: 14px; padding-bottom: 14px; } }
 .wl-acts { position: sticky; bottom: -1px; background: var(--surface); padding-top: 10px; }
+/* career profile: application-form (Workday) details */
+.grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px 14px; }
+@media (max-width: 900px) { .grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .grid-3 { grid-template-columns: minmax(0, 1fr); } }
+.wd-h { font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 16px 0 8px; font-weight: 700; }
+#wd-panel .grid-2 { margin-top: 10px; }

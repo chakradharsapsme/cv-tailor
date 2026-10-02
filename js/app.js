@@ -130,6 +130,8 @@
       const fd = await S.getKV('feed', null);
       window.CVT.fields.setHint([...((fd && fd.searches && fd.searches.queries) || []), ...(await S.listMasters()).map(m => m.name || '')].join(' \n '));
       window.CVT.fields.use(await S.getProfile());
+      // Then read the loaded CVs in the background (fills in the field when the profile has no roles or skills).
+      if (window.CVT.jobs) window.CVT.jobs.evidence().catch(() => {});
     } catch (_) {}
     if (state.provider === 'gemini' && state.geminiKey) loadModels();
     window.addEventListener('hashchange', () => { if (location.hash && location.hash !== current) { current = location.hash; route(); } });

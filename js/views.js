@@ -417,7 +417,25 @@
           <label class="field"><span>Languages (one per line, with level)</span><textarea data-p="languages" rows="3" placeholder="English – Fluent&#10;Hindi – Native">${p.languages || ''}</textarea></label>
           <label class="field"><span>Certifications (one per line, with year)</span><textarea data-p="certifications" rows="3" placeholder="PMP – 2015">${p.certifications || ''}</textarea></label>
         </div>
-        <p class="muted small">Equal-opportunity questions (gender, ethnicity, disability, veteran status) are optional on these forms: answer them yourself on each site, or choose “Prefer not to say”. Work history comes from your CV: Workday's “Autofill with resume” reads it when you upload the tailored CV.</p>
+        <div class="panel-head mt"><h3 class="wd-h" style="margin:0">Work experience</h3><span class="row gap wrap"><button class="btn ghost small" id="xp-cv" type="button">Fill from my CV</button><button class="btn primary small" id="xp-add" type="button">+ Add experience</button></span></div>
+        <p class="hint">Add each job as Workday asks for it: newest first. <strong>Fill from my CV</strong> reads your default CV with the AI and adds the jobs it finds (check them before you use them).</p>
+        <p class="error" id="xp-err" hidden></p>
+        <div class="xp-list" id="xp-list">${(p.experience || []).length ? (p.experience || []).map((x, i) => html`
+          <div class="xp-card">
+            <div class="xp-head"><strong>${x.title || 'New role'}${x.company ? ' · ' + x.company : ''}</strong><span class="row gap">
+              <button class="icon-btn sm" type="button" data-xpup="${i}" aria-label="Move up" title="Move up" ${i === 0 ? raw('disabled') : ''}>↑</button>
+              <button class="icon-btn sm" type="button" data-xpdel="${i}" aria-label="Remove this job" title="Remove">×</button></span></div>
+            <div class="grid-3">
+              <label class="field"><span>Job title</span><input type="text" data-xp="${i}" data-k="title" value="${x.title || ''}" autocomplete="off"></label>
+              <label class="field"><span>Company</span><input type="text" data-xp="${i}" data-k="company" value="${x.company || ''}" autocomplete="off"></label>
+              <label class="field"><span>Location</span><input type="text" data-xp="${i}" data-k="location" value="${x.location || ''}" autocomplete="off"></label>
+              <label class="field"><span>From</span><input type="month" data-xp="${i}" data-k="from" value="${x.from || ''}"></label>
+              <label class="field"><span>To</span><input type="month" data-xp="${i}" data-k="to" value="${x.to || ''}" ${x.current ? raw('disabled') : ''}></label>
+              <label class="check-line xp-cur"><input type="checkbox" data-xp="${i}" data-k="current" ${x.current ? raw('checked') : ''}> I currently work here</label>
+            </div>
+            <label class="field"><span>Role description</span><textarea data-xp="${i}" data-k="desc" rows="3" placeholder="What you did and achieved (Workday allows about 2,000 characters)">${x.desc || ''}</textarea></label>
+          </div>`) : html`<p class="muted small" id="xp-empty">No jobs added yet. Press <strong>+ Add experience</strong> or <strong>Fill from my CV</strong>.</p>`}</div>
+        <p class="muted small">Equal-opportunity questions (gender, ethnicity, disability, veteran status) are optional on these forms: answer them yourself on each site, or choose “Prefer not to say”. Workday's “Autofill with resume” can also read your work history when you upload the tailored CV; check it against the list above.</p>
       </section>
 
       <section class="panel">
@@ -461,10 +479,53 @@
         ['EDUCATION'], ['University / school', p.school], ['Degree', p.degree], ['Field of study', p.fieldOfStudy], ['From', p.eduFrom], ['To', p.eduTo], ['Grade', p.grade],
         ['LANGUAGES'], ['', p.languages], ['CERTIFICATIONS'], ['', p.certifications]
       ];
+      const mY = v => { const m = String(v || '').match(/^(\d{4})-(\d{2})$/); return m ? `${m[2]}/${m[1]}` : String(v || ''); };
+      (p.experience || []).filter(x => x.title || x.company).forEach((x, i) => {
+        rows.push([`WORK EXPERIENCE ${i + 1}`], ['Job title', x.title], ['Company', x.company], ['Location', x.location], ['From', mY(x.from)], ['To', x.current ? 'Current – I currently work here' : mY(x.to)], ['Role description', x.desc]);
+      });
       const out = []; let head = '';
       rows.forEach(r => { if (r.length === 1) { head = r[0]; return; } const v = String(r[1] || '').trim(); if (!v) return; if (head) { out.push((out.length ? '\n' : '') + head); head = ''; } out.push(r[0] ? `${r[0]}: ${v}` : v); });
       if (!out.length) { toast('Fill in a few fields first', 'warn'); return; }
       copy(out.join('\n'), e.currentTarget);
+    });
+    // ---- work experience (repeatable, like Workday) ----
+    const xpSave = async () => { await S.saveProfile(p); state.profile = p; };
+    root.addEventListener('input', e => {
+      const t = e.target; if (!t.dataset || t.dataset.xp == null) return;
+      const x = (p.experience || [])[Number(t.dataset.xp)]; if (!x) return;
+      x[t.dataset.k] = t.type === 'checkbox' ? t.checked : t.value;
+      if (t.dataset.k === 'current') { const to = t.closest('.xp-card').querySelector('[data-k="to"]'); if (to) to.disabled = t.checked; }
+      if (t.dataset.k === 'title' || t.dataset.k === 'company') { const h = t.closest('.xp-card').querySelector('.xp-head strong'); if (h) h.textContent = (x.title || 'New role') + (x.company ? ' · ' + x.company : ''); }
+      save();
+    });
+    $('#xp-add', root).addEventListener('click', async () => {
+      p.experience = [{ title: '', company: '', location: '', from: '', to: '', current: false, desc: '' }].concat(p.experience || []);
+      await xpSave(); await window.CVT.app.rerender(); const f = $('[data-xp="0"][data-k="title"]'); if (f) f.focus();
+    });
+    root.addEventListener('click', async e => {
+      const d = e.target.closest('[data-xpdel]'), u = e.target.closest('[data-xpup]');
+      if (d) {
+        if (d.dataset.armed !== '1') { d.dataset.armed = '1'; d.textContent = '✓?'; d.title = 'Click again to remove'; return; }
+        p.experience.splice(Number(d.dataset.xpdel), 1); await xpSave(); return window.CVT.app.rerender();
+      }
+      if (u) { const i = Number(u.dataset.xpup); if (i > 0) { const l = p.experience; [l[i - 1], l[i]] = [l[i], l[i - 1]]; await xpSave(); window.CVT.app.rerender(); } }
+    });
+    $('#xp-cv', root).addEventListener('click', async e => {
+      const btn = e.currentTarget, err = $('#xp-err', root); err.hidden = true;
+      const mm = await masterModel();
+      if (!mm) { err.textContent = 'Upload a master CV first.'; err.hidden = false; return; }
+      btn.disabled = true; btn.textContent = 'Reading your CV…';
+      try {
+        const out = await A.cvHistory({ key: state.key, model: state.model, cvText: D.plainText(mm.model) });
+        const ym = v => { const m = String(v || '').match(/(\d{4})(?:-(\d{1,2}))?/); return m ? `${m[1]}-${String(m[2] || '01').padStart(2, '0')}` : ''; };
+        const have = new Set((p.experience || []).map(x => (x.title + '|' + x.company).toLowerCase()));
+        const add = (out.experience || []).filter(x => x && (x.title || x.company)).map(x => ({ title: x.title || '', company: x.company || '', location: x.location || '', from: ym(x.from), to: x.current ? '' : ym(x.to), current: !!x.current, desc: String(x.description || '').slice(0, 2000) }))
+          .filter(x => !have.has((x.title + '|' + x.company).toLowerCase()));
+        p.experience = (p.experience || []).concat(add);
+        const ed = (out.education || [])[0];
+        if (ed && !p.school && !p.degree) Object.assign(p, { school: ed.school || '', degree: ed.degree || '', fieldOfStudy: ed.field || '', eduFrom: ed.from || '', eduTo: ed.to || '' });
+        await xpSave(); toast(add.length ? `Added ${add.length} job${add.length > 1 ? 's' : ''} from your CV. Check the dates and wording.` : 'No new jobs found in your CV'); window.CVT.app.rerender();
+      } catch (x) { err.textContent = x.message; err.hidden = false; btn.disabled = false; btn.textContent = 'Fill from my CV'; }
     });
     $('#ach-add', root).addEventListener('click', async () => { p.achievements = (p.achievements || []).concat(''); await S.saveProfile(p); await window.CVT.app.rerender(); const all = $$('[data-ach]'); if (all.length) all[all.length - 1].focus(); });
 

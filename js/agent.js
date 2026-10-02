@@ -555,6 +555,15 @@ CV:
 ${String(cvText || '').slice(0, 9000)}
 JSON: {"employers": [{"name": "...", "kind": "employer" | "client"}]}`
   });
+  /** Work history and education exactly as the CV states them (for Workday-style forms). */
+  const cvHistory = ({ cvText, signal }) => ask({
+    signal, maxTokens: 6000, system: RESEARCH,
+    user: `Copy this person's work history and education from the CV below, for an online application form. Use only what the CV says: exact job titles, company names and dates; never invent or improve anything. Newest job first. If a role was a client project inside an employer, keep it under that employer's job. Dates as YYYY-MM (or YYYY if the month isn't given); current job: "current": true and "to": "".
+Description: the CV's own bullet points for that job joined into plain sentences, at most 1,800 characters.
+CV:
+${String(cvText || '').slice(0, 14000)}
+JSON: {"experience": [{"title": "...", "company": "...", "location": "", "from": "YYYY-MM", "to": "YYYY-MM", "current": false, "description": "..."}], "education": [{"school": "...", "degree": "...", "field": "...", "from": "YYYY", "to": "YYYY"}]}`
+  });
   const similarEmployers = ({ profile, country, known = [], signal }) => ask({
     signal, maxTokens: 2000, system: RESEARCH,
     user: `Suggest up to 20 real, well-known organisations that regularly hire for these roles in {{MARKET}} (${country}), including large employers, consultancies and fast-growing companies. Prefer organisations with their own online careers site.
@@ -687,5 +696,5 @@ ${STUDIO[kind]}`
     return [r.summary ? 'SUMMARY: ' + r.summary : '', r.text || ''].filter(Boolean).join('\n\n');
   }
 
-  window.CVT.agent = { appChat, employersFromCv, similarEmployers, loadPuter, chromeAIStatus, docStudio, myAnswer, docQuestions, docDigest, docMindmap, docAsk, describeImages, mockQuestion, mockGrade, storyDrafts, counterOffer, moreCards, listGemini, claudeSample, analyse, coverLetter, outreach, interviewPrep, answers, linkedin, parseJSON, profileBlock };
+  window.CVT.agent = { appChat, employersFromCv, cvHistory, similarEmployers, loadPuter, chromeAIStatus, docStudio, myAnswer, docQuestions, docDigest, docMindmap, docAsk, describeImages, mockQuestion, mockGrade, storyDrafts, counterOffer, moreCards, listGemini, claudeSample, analyse, coverLetter, outreach, interviewPrep, answers, linkedin, parseJSON, profileBlock };
 })();

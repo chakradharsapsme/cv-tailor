@@ -80,6 +80,8 @@
     const root = document.createElement('div');
     root.className = 'view' + (window.CVT._keepScroll ? '' : ' page-in');
     main.replaceChildren(root);
+    // Wide screens: illustrated helper cards in the empty side space (CSS hides them on smaller screens).
+    try { if (window.CVT.art && window.CVT.art.rails) main.append(...window.CVT.art.rails(view || 'dashboard')); } catch (_) {}
     const navKey = view === 'app' ? 'pipeline' : view === 'autopilot' ? 'dashboard' : (view || 'dashboard');
     $$('.nav a').forEach(a => { if (a.dataset.nav === navKey) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
     try {

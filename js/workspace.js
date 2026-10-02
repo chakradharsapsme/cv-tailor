@@ -10,6 +10,7 @@
 
   // ---------- tailoring helpers ----------
   const paraById = (mm, id) => mm.model.paras.find(p => p.id === id);
+  const normT = t => String(t || '').toLowerCase().replace(/s\/4\s*hana/g, 's4hana').replace(/[^a-z0-9+#.]+/g, ' ').trim();
   const editText = (e, p) => Array.isArray(e.segments) ? e.segments.join('') : typeof e.text === 'string' ? e.text : p.text;
 
   const words = t => String(t).toLowerCase().replace(/[^\p{L}\p{N}&/+.-]+/gu, ' ').split(' ').map(w => w.replace(/^[.\-]+|[.\-]+$/g, '')).filter(Boolean);
@@ -311,7 +312,7 @@
         work: async t => {
           t.step(0);
           t.step(1);
-          const out = await engine.analyse(a, ctx.profile, t.signal, s => { if (s === 'review' || s === 'humanise') t.step(2); });
+          const out = await engine.analyse(a, ctx.profile, t.signal, s => { if (s === 'review' || s === 'coverage' || s === 'humanise') t.step(2); });
           const title = `${a.role || 'This job'}${a.company ? ' at ' + a.company : ''}`; t.title(title);
           t.step(2);
           const verdict = out.decision && out.decision.verdict;
@@ -422,6 +423,9 @@
             <div class="panel-head"><h2>Requirements added to your CV <span class="muted">· ${total}</span></h2>
               <div class="row gap"><button class="btn ghost small" id="all-on" type="button">Accept all</button><button class="btn ghost small" id="all-off" type="button">Reject all</button></div></div>
             <p class="hint">Your own wording stays exactly as it is. Insertions add a job requirement to the paragraph where it fits best (in green); <strong>new bullets</strong> add the job's main duties under your most recent roles, in your own style. A senior CV writer drafted them, a recruiter-reviewer checked fit and realism${an.reviewed ? '' : ' (skipped this time)'}, and lines that sounded machine-written were rewritten. Items marked “tick only if you really did this” start unticked.</p>
+            ${(an.job_technologies || []).length ? (() => { const hay = ' ' + normT(t ? t.text : '') + ' '; const on = an.job_technologies.filter(x => hay.includes(' ' + normT(x) + ' '));
+              return html`<div class="tech-cover"><span class="small"><strong>Technologies in the advert: ${on.length} of ${an.job_technologies.length} on your tailored CV</strong>${on.length < an.job_technologies.length ? ' (tick the matching items below to add the rest)' : ''}</span>
+                <div class="chips">${an.job_technologies.map(x => html`<span class="chip ${on.includes(x) ? 'ok' : 'muted'}">${on.includes(x) ? '✓ ' : ''}${x}</span>`)}</div></div>`; })() : ''}
             ${(an.review_notes || []).length ? html`<details class="small"><summary>What the reviewer changed (${an.review_notes.length})</summary><ul class="tight">${an.review_notes.map(x => html`<li>${x}</li>`)}</ul></details>` : ''}
             <div class="edits">${total ? '' : html`<p class="empty-note">No changes proposed. Your CV already fits this role well.</p>`}
               ${r.edits.map(e => { const p = paraById(mm, e.id), d = a.decisions['e' + e.id] || { on: false, text: p.text }; const fl = flagsFor(p.text, d.text, flagCtx);

@@ -24,15 +24,29 @@
   const uid = () => 'n' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 
   /** Drop every item whose quote isn't in the documents; label the rest with their source. */
+  const STOP = new Set('this that with from have will been were they their them what when which while about into over also than then there these those your yours our ours such each more most some very just only other being does done make made like need needs using used able across within under after before should would could must shall'.split(' '));
+  const words = t => String(t || '').toLowerCase().replace(/[^a-z0-9£$%. ]+/g, ' ').split(/\s+/).map(w => w.replace(/^\.+|\.+$/g, '')).filter(w => (w.length >= 4 && !STOP.has(w)) || /\d/.test(w));
+  /** Share of an item's key words (names, systems, numbers) that appear in a passage. */
+  function overlap(itemText, passage) { const w = [...new Set(words(itemText))]; if (w.length < 2) return 0; const set = new Set(words(passage)); return w.filter(x => set.has(x)).length / w.length; }
+  const textOf = it => [it.text, it.term, it.explain, it.q, it.a, it.answer, it.when, it.what, it.name, it.role, it.front, it.back, it.quote].filter(x => typeof x === 'string').join(' ');
+  /** A quote may be shortened with "…": every piece must be in the passage. */
+  const quoted = (q, t, found) => { const parts = String(q || '').split(/\.{3}|…/).map(x => x.trim()).filter(x => x.split(/\s+/).length >= 3); return parts.length ? parts.every(x => found(x, t)) : false; };
+
+  /** Keep items backed by the documents (exact quote, or the cited passage clearly says it); drop the rest. */
   function verify(kind, data, passages, docs, found) {
-    const byId = new Map(passages.map(p => [p.id, p]));
+    const byId = new Map(passages.map(p => [String(p.id).toUpperCase(), p]));
     const texts = docs.map(d => [d.name, (d.text || '') + '\n' + (d.note || '')]);
     let kept = 0, removed = 0;
     const check = it => {
       if (!it || typeof it !== 'object') return null;
-      const p = byId.get(String(it.ref || '').trim());
-      const inP = !!(it.quote && p && found(it.quote, p.text));
-      const hit = inP ? [p.doc] : (it.quote ? texts.find(([, t]) => found(it.quote, t)) : null);
+      const ref = String(it.ref || '').replace(/[\[\]\s]/g, '').split(/[,;]/)[0].toUpperCase();
+      const p = byId.get(ref);
+      let hit = null, inP = false;
+      if (it.quote && p && quoted(it.quote, p.text, found)) { hit = [p.doc]; inP = true; }
+      if (!hit && it.quote) hit = texts.find(([, t]) => quoted(it.quote, t, found)) || null;
+      // Models often paraphrase the quote: accept the item when the cited passage plainly contains what it says.
+      if (!hit && p && overlap(textOf(it), p.text) >= 0.5) { hit = [p.doc]; inP = true; }
+      if (!hit) { const best = texts.map(([n, t]) => [n, overlap(textOf(it), t)]).sort((x, y) => y[1] - x[1])[0]; if (best && best[1] >= 0.65) hit = [best[0]]; }
       if (kind === 'audio') { it.ok = !!hit; it.source = hit ? hit[0] : ''; if (!hit) { it.ref = ''; it.quote = ''; } return it; }
       if (!hit) { removed++; return null; }
       kept++; return Object.assign(it, { source: hit[0], ref: inP ? p.id : '' });

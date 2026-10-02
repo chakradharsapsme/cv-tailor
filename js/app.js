@@ -125,14 +125,11 @@
     refreshKey();
     try { await S.migrateV1(); } catch (e) { console.warn('Migration skipped', e); }
     try { window.CVT.fields.use(await S.getProfile()); } catch (_) {}
-    // No target roles yet? Use your saved job searches and CV names to tell the field (SAP / IT searches mean the IT field).
+    // No target roles yet? Your saved job searches and CV names tell the field (SAP / IT searches mean the IT field).
     try {
-      const F = window.CVT.fields, p = await S.getProfile();
-      if (!p.field && F.current().id === 'any') {
-        const fd = await S.getKV('feed', null);
-        const hint = [...((fd && fd.searches && fd.searches.queries) || []), ...(await S.listMasters()).map(m => m.name || '')].join(' \n ');
-        if (hint.trim() && F.infer({ targetRoles: [hint] }) === 'it') F.use(Object.assign({}, p, { field: 'it' }));
-      }
+      const fd = await S.getKV('feed', null);
+      window.CVT.fields.setHint([...((fd && fd.searches && fd.searches.queries) || []), ...(await S.listMasters()).map(m => m.name || '')].join(' \n '));
+      window.CVT.fields.use(await S.getProfile());
     } catch (_) {}
     if (state.provider === 'gemini' && state.geminiKey) loadModels();
     window.addEventListener('hashchange', () => { if (location.hash && location.hash !== current) { current = location.hash; route(); } });

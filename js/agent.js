@@ -217,8 +217,17 @@
 - Where the candidate lacks something, say so plainly and suggest how to position adjacent experience honestly.
 - {{LANG}}. Plain, specific, confident. No clichés ("passionate", "results-driven", "dynamic", "I am writing to express").`;
 
+  /** Rules that keep added CV wording sounding like the candidate, not like an AI. */
+  const VOICE = `WRITE LIKE THE CANDIDATE, NOT LIKE AN AI (every word you add)
+- Match the CV's own voice: the same tense, person, spelling (British or US, as the CV uses), bullet length and punctuation. If the CV's bullets have no full stop, add none.
+- Start a new bullet with a plain verb the CV already uses, or a common one (Led, Ran, Configured, Built, Set up, Mapped, Rolled out, Supported, Worked with, Trained, Delivered). Never start two added bullets with the same verb.
+- Concrete beats grand: name the module, process, document, team, system or business area. No vague claims.
+- Never use: spearheaded, leveraged, leveraging, utilised, utilized, robust, seamless, seamlessly, cutting-edge, state-of-the-art, synergy, synergies, holistic, dynamic, passionate, results-driven, proven track record, best-in-class, world-class, game-changer, transformative, revolutionised, empowered, fostered, orchestrated, delve, myriad, plethora, pivotal, paramount, meticulous, a testament to, in today's, navigate the complexities.
+- No em dashes (—) and no dashes used as pauses. No trailing "-ing" summaries ("…, ensuring compliance", "…, driving efficiency", "…, enabling growth"). Not every line a list of three.
+- Vary the length a little, as real CVs do. Numbers only when the CV or profile gives them: never invent percentages, savings, volumes or team sizes.`;
+
   // ---------- 1. analyse + tailor ----------
-  const ANALYSE_SYSTEM = `You are a senior {{MARKET}} job-search coach and {{EXPERT}}. You assess a job for the candidate and tailor their EXISTING Word CV to it by inserting the job's requirements into the right places, never by rewriting.
+  const ANALYSE_SYSTEM = `You are a senior {{MARKET}} job-search coach, {{EXPERT}}, and an experienced CV writer who has written CVs for {{FIELD}} professionals for over 15 years. You assess a job for the candidate and tailor their EXISTING Word CV to it by inserting the job's requirements into the right places, never by rewriting.
 
 ${TRUTH}
 
@@ -241,6 +250,15 @@ You are a meticulous CV editor. The candidate's own wording is sacred. You never
 8. Cover every must-have requirement that is not already visible in the CV text, then the nice-to-haves. One requirement per edit where possible; group only when they belong in the same list.
 9. At most ONE edit per paragraph: combine several additions for the same paragraph into one edit.
 10. Do not use "reorder" or "remove". Return them as empty arrays.
+
+NEW BULLETS UNDER THE MOST RECENT ROLES (in addition to the insertions)
+Where the job's main responsibilities are not visible anywhere in the CV, propose NEW bullets for the candidate's most recent role(s) or client engagements, so a recruiter reading the latest position sees the job's core duties there.
+- Only for the latest one or two roles or client projects (the most recent dates). "after" is the id of an existing, unlocked bullet ("bullet": true) belonging to that role; the new bullet goes right after it, in the same format. Use that role's LAST bullet so new ones land at the end of its list.
+- 2 to 6 new bullets in total, one job responsibility each. Skip anything the CV already shows (use an insertion for those instead).
+- Each must be realistic for that client, industry, period and the candidate's seniority: no tool or version that did not exist then, no duties far above or below the role, no new employers, clients, dates, numbers or certifications.
+- "basis": "cv" when other parts of the CV show this work, "profile" when the profile states it, otherwise "unconfirmed" (the candidate includes it only if it is true). Never for anything on the NEVER-claim list.
+
+${VOICE}
 
 DECISION GUIDANCE
 - "apply": strong match on most must-haves.
@@ -282,6 +300,7 @@ Return this JSON shape:
   "keywords": ["8-20 exact terms from the job an ATS would scan for"],
   "keywords_missing": ["job terms the candidate cannot truthfully claim"],
   "edits": [{"id": 12, "text": "original text with the insertion added", "adds": "only the words you inserted", "requirement": "job requirement this covers", "basis": "cv|profile|unconfirmed", "reason": "why here"} or {"id": 14, "segments": ["Label: ", "original body with insertion"], "adds": "...", "requirement": "...", "basis": "...", "reason": "..."}],
+  "new_bullets": [{"after": 42, "role": "role or client it sits under", "text": "the new bullet, in the candidate's voice", "requirement": "job responsibility it covers", "basis": "cv|profile|unconfirmed", "reason": "why it fits this role"}],
   "reorder": [{"ids": [21, 23, 22], "reason": "new order of adjacent bullets"}],
   "remove": [{"id": 30, "reason": "why this bullet can go"}],
   "letterhead_ids": [ids of the candidate's name and contact-detail paragraphs at the top of the CV],
@@ -290,12 +309,126 @@ Return this JSON shape:
 }`;
   }
 
+  // Tell-tale signs of machine-written CV wording (checked on every line the AI adds).
+  const TELLS = [
+    [/\b(spearhead(?:ed|ing)?|leverag(?:ed|ing|es?)|utili[sz](?:ed|ing|es?)|robust|seamless(?:ly)?|cutting[- ]edge|state[- ]of[- ]the[- ]art|synerg(?:y|ies)|holistic|dynamic|passionate|results[- ]driven|best[- ]in[- ]class|world[- ]class|game[- ]changer|transformative|revolutioni[sz]ed|empower(?:ed|ing)|foster(?:ed|ing)|orchestrat(?:ed|ing)|delve|myriad|plethora|pivotal|paramount|meticulous(?:ly)?)\b/gi, w => `“${w}” sounds AI-written`],
+    [/proven track record|a testament to|in today's|navigate the complexities/gi, w => `“${w}” is a cliché`],
+    [/—|\s–\s/g, () => 'dash used as a pause'],
+    [/,\s+(ensuring|driving|enabling|fostering|delivering|resulting in|leading to)\b[^,.;]*[.]?$/gi, w => `trailing “${(w.match(/ensuring|driving|enabling|fostering|delivering|resulting in|leading to/i) || ['…'])[0]}…” summary`]
+  ];
+  function aiTells(text) {
+    const out = [];
+    for (const [re, msg] of TELLS) { re.lastIndex = 0; let m; while ((m = re.exec(String(text || '')))) { out.push(msg(m[0])); if (!re.global) break; } }
+    return [...new Set(out)];
+  }
+  /** The words an insertion added to a paragraph (to check only those, not the candidate's own wording). */
+  const addedPart = (orig, next) => { const o = new Set(String(orig || '').toLowerCase().split(/\s+/)); return String(next || '').split(/\s+/).filter(w => !o.has(w.toLowerCase())).join(' '); };
+
+  const REVIEW_SYSTEM = `You are a senior {{MARKET}} recruiter and CV writer for {{FIELD}} roles. A colleague drafted changes to a candidate's Word CV for one job. Review the draft as a hiring manager would read the final CV, and correct it. You fix; you do not add fluff.
+Check every insertion ("edits") and every new bullet ("new_bullets"):
+1. Fit: it sits in the right paragraph or under the right role, and serves a real requirement of this job. Drop it if not.
+2. Realism: the candidate could plausibly have done this at that client, in that period, at that seniority. Fix anachronisms (tools or versions that did not exist then), inflated scope and duties that clash with the job title. Drop what cannot be made realistic.
+3. Truth: no new employers, clients, dates, titles, numbers or certifications. Keep "basis" honest: if neither the CV nor the profile shows it, it is "unconfirmed".
+4. Insertions: the edited paragraph must keep ALL its original words in the same order; only the added words may change. Keep "segments" the same length when present.
+5. New bullets: "after" must stay the id of an unlocked bullet of the role it belongs to; keep 2 to 6 of them, the strongest first.
+6. No duplicates: no two items saying the same thing, no new bullet repeating an insertion.
+7. Voice: rewrite any wording that reads machine-written.
+
+${VOICE}
+
+${TRUTH}
+
+Reply with ONLY one JSON object.`;
+
+  function reviewPrompt({ app, profile, paras, draft }) {
+    return `JOB
+${jobBlock(app)}
+Requirements found: ${JSON.stringify((draft.requirements || []).slice(0, 25).map(r => r.req + (r.type === 'must' ? ' (must)' : '')))}
+---
+${String(app.jd || '').slice(0, 9000) || '(no advert text)'}
+---
+CANDIDATE PROFILE
+${profileBlock(profile)}
+
+CV PARAGRAPHS (id, text; "locked" = never edit; "bullet" = list item)
+${JSON.stringify(paras)}
+
+DRAFT CHANGES
+${JSON.stringify({ edits: draft.edits, new_bullets: draft.new_bullets })}
+
+Return the full corrected lists in the same shapes:
+{"edits": [...], "new_bullets": [...], "notes": ["one short line per thing you changed or dropped"]}`;
+  }
+
+  const HUMAN_SYSTEM = `You edit lines of a CV so they read as if the candidate wrote them by hand. Keep every fact, tool name, module and job keyword; change only the wording that sounds machine-written. Use the candidate's own bullets as the style sample.
+
+${VOICE}
+
+Reply with ONLY one JSON object.`;
+
+  async function humanise({ lines, sample, signal }) {
+    const r = await ask({ signal, system: HUMAN_SYSTEM, maxTokens: 4000, user: `THE CANDIDATE'S OWN BULLETS (style sample)
+${sample.map(x => '- ' + x).join('\n') || '(none)'}
+
+LINES TO FIX (problems in "problems"). For lines with "original": every original word must stay, in the same order; change only the words that were added.
+${JSON.stringify(lines)}
+
+JSON: {"lines": [{"key": "same key", "text": "fixed line"}]}` });
+    return Array.isArray(r.lines) ? r.lines : [];
+  }
+
+  /**
+   * Fit + tailoring in three passes (time matters less than quality):
+   * 1. senior CV writer plans insertions and new bullets for the latest roles,
+   * 2. a recruiter-reviewer checks fit, realism, truth and duplicates,
+   * 3. any line that still reads machine-written is rewritten in the candidate's voice.
+   */
   async function analyse(opts) {
+    const stage = s => { try { if (opts.onStage) opts.onStage(s); } catch (_) {} };
     const out = await ask({ ...opts, system: ANALYSE_SYSTEM, user: analysePrompt(opts), maxTokens: 16000 });
     const arr = v => Array.isArray(v) ? v : [];
     out.job = out.job || {}; out.decision = out.decision || {}; out.fit = out.fit || {};
     out.decision.reasons = arr(out.decision.reasons); out.decision.red_flags = arr(out.decision.red_flags);
-    ['requirements', 'keywords', 'keywords_missing', 'edits', 'reorder', 'remove', 'letterhead_ids', 'talking_points'].forEach(k => { out[k] = arr(out[k]); });
+    ['requirements', 'keywords', 'keywords_missing', 'edits', 'new_bullets', 'reorder', 'remove', 'letterhead_ids', 'talking_points'].forEach(k => { out[k] = arr(out[k]); });
+    const paras = opts.paras || [];
+    const byId = new Map(paras.map(p => [p.id, p]));
+    out.new_bullets = out.new_bullets.filter(b => b && typeof b.text === 'string' && b.text.trim() && byId.has(Number(b.after)));
+    if (!out.edits.length && !out.new_bullets.length) return out;
+
+    // 2. Recruiter review
+    stage('review');
+    try {
+      const r = await ask({ signal: opts.signal, system: REVIEW_SYSTEM, user: reviewPrompt({ ...opts, draft: out }), maxTokens: 14000 });
+      if (Array.isArray(r.edits)) out.edits = r.edits.filter(e => e && byId.has(Number(e.id)));
+      if (Array.isArray(r.new_bullets)) out.new_bullets = r.new_bullets.filter(b => b && typeof b.text === 'string' && b.text.trim() && byId.has(Number(b.after)));
+      out.review_notes = arr(r.notes).slice(0, 12); out.reviewed = true;
+    } catch (e) { if (e && e.name === 'AbortError') throw e; out.review_error = (e && e.message) || 'review skipped'; }
+
+    // 3. Humanise whatever still reads machine-written
+    const lines = [];
+    out.new_bullets.forEach((b, i) => { const pr = aiTells(b.text); if (pr.length) lines.push({ key: 'n' + i, text: b.text, problems: pr }); });
+    out.edits.forEach((e, i) => {
+      if (Array.isArray(e.segments) || typeof e.text !== 'string') return;
+      const p = byId.get(Number(e.id)); if (!p) return;
+      const pr = aiTells(addedPart(p.text, e.text)); if (pr.length) lines.push({ key: 'e' + i, original: p.text, text: e.text, problems: pr });
+    });
+    if (lines.length) {
+      stage('humanise');
+      try {
+        const sample = paras.filter(p => p.bullet && !p.locked && p.text.length > 40).slice(0, 8).map(p => p.text);
+        const fixed = await humanise({ lines, sample, signal: opts.signal });
+        fixed.forEach(f => {
+          if (!f || typeof f.text !== 'string' || !f.text.trim()) return;
+          const i = Number(String(f.key).slice(1));
+          if (String(f.key)[0] === 'n' && out.new_bullets[i]) out.new_bullets[i].text = f.text.trim();
+          if (String(f.key)[0] === 'e' && out.edits[i]) out.edits[i].text = f.text.trim();
+        });
+        out.humanised = fixed.length;
+      } catch (e) { if (e && e.name === 'AbortError') throw e; }
+    }
+    // Anything still flagged is shown to the candidate next to that line.
+    out.new_bullets.forEach(b => { b.tells = aiTells(b.text); });
+    out.edits.forEach(e => { const p = byId.get(Number(e.id)); e.tells = p && typeof e.text === 'string' ? aiTells(addedPart(p.text, e.text)) : []; });
     return out;
   }
 
@@ -696,5 +829,5 @@ ${STUDIO[kind]}`
     return [r.summary ? 'SUMMARY: ' + r.summary : '', r.text || ''].filter(Boolean).join('\n\n');
   }
 
-  window.CVT.agent = { appChat, employersFromCv, cvHistory, similarEmployers, loadPuter, chromeAIStatus, docStudio, myAnswer, docQuestions, docDigest, docMindmap, docAsk, describeImages, mockQuestion, mockGrade, storyDrafts, counterOffer, moreCards, listGemini, claudeSample, analyse, coverLetter, outreach, interviewPrep, answers, linkedin, parseJSON, profileBlock };
+  window.CVT.agent = { aiTells, appChat, employersFromCv, cvHistory, similarEmployers, loadPuter, chromeAIStatus, docStudio, myAnswer, docQuestions, docDigest, docMindmap, docAsk, describeImages, mockQuestion, mockGrade, storyDrafts, counterOffer, moreCards, listGemini, claudeSample, analyse, coverLetter, outreach, interviewPrep, answers, linkedin, parseJSON, profileBlock };
 })();

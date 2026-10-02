@@ -165,24 +165,33 @@
     return { passages: picked, coverage: Math.round(100 * picked.reduce((n, x) => n + x.text.length, 0) / total) };
   }
   const norm = t => String(t || '').toLowerCase().replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/[^a-z0-9%£$.' ]+/g, ' ').replace(/\s+/g, ' ').trim();
-  function found(quote, text) {
-    const q = norm(quote), t = norm(text);
+  function found1(q, t) {
     if (!q || q.split(' ').length < 3) return false;
     if (t.includes(q)) return true;
     const w = q.split(' '), grams = new Set(); const tw = t.split(' ');
     for (let i = 0; i + 3 <= tw.length; i++) grams.add(tw.slice(i, i + 3).join(' '));
     let hit = 0, n = 0;
     for (let i = 0; i + 3 <= w.length; i++) { n++; if (grams.has(w.slice(i, i + 3).join(' '))) hit++; }
-    return n > 0 && hit / n >= 0.8;
+    return n > 0 && hit / n >= 0.7;
   }
+  /** Is this quote in the text? Tolerates small wording changes and quotes shortened with "…". */
+  function found(quote, text) {
+    const t = norm(text);
+    const parts = String(quote || '').split(/\.{3}|…/).map(norm).filter(x => x.split(' ').length >= 3);
+    return parts.length ? parts.every(q => found1(q, t)) : false;
+  }
+  const refId = r => String(r || '').replace(/[\[\]\s]/g, '').split(/[,;]/)[0].toUpperCase();
+  /** Does the cited passage plainly contain what an item says (its names, systems, numbers)? For paraphrased quotes. */
+  const KEYW = t => norm(t).split(' ').map(w => w.replace(/^\.+|\.+$/g, '')).filter(w => (w.length >= 4 && !STOP.has(w)) || /\d/.test(w));
+  function backs(itemText, passage) { const w = [...new Set(KEYW(itemText))]; if (w.length < 2) return false; const set = new Set(KEYW(passage)); return w.filter(x => set.has(x)).length / w.length >= 0.5; }
   /** Keep only nodes whose quote is really in the cited passage (or elsewhere in that document). */
   function verifyTree(raw, passages, docs) {
     const byId = new Map(passages.map(p => [p.id, p]));
     const docText = new Map(docs.map(d => [d.name, (d.text || '') + '\n' + (d.note || '')]));
     let removed = 0, kept = 0;
     const check = n => {
-      const p = byId.get(String(n.ref || '').trim());
-      const ok = !!(n.quote && ((p && found(n.quote, p.text)) || [...docText.values()].some(t => found(n.quote, t))));
+      const p = byId.get(refId(n.ref));
+      const ok = !!((n.quote && ((p && found(n.quote, p.text)) || [...docText.values()].some(t => found(n.quote, t)))) || (p && backs([n.label, n.detail, n.quote].join(' '), p.text)));
       const src = p ? p.doc : ([...docText.entries()].find(([, t]) => found(n.quote, t)) || [])[0];
       const kids = (n.children || []).map(check).filter(Boolean);
       if (ok) { kept++; return { label: n.label, detail: n.detail, quote: n.quote, ref: p ? p.id : '', source: src || 'your documents', children: kids }; }
@@ -221,8 +230,8 @@
     const docText = docs.map(d => [d.name, (d.text || '') + '\n' + (d.note || '')]);
     let removed = 0;
     const items = (list || []).filter(q => q && q.q).map(q => {
-      const p = byId.get(String(q.ref || '').trim());
-      const inP = !!(q.quote && p && found(q.quote, p.text));
+      const p = byId.get(refId(q.ref));
+      const inP = !!(p && q.quote && found(q.quote, p.text));
       const hit = inP ? [p.doc] : (q.quote ? docText.find(([, t]) => found(q.quote, t)) : null);
       if (!hit) { removed++; return null; }
       return Object.assign({}, q, { source: hit[0], ref: inP ? p.id : '' });
@@ -338,6 +347,9 @@
               <strong>Drop files here or click to choose</strong>
               <span class="muted small">Kept on this device. ${inClaude() ? 'PDFs, images and videos up to 20 MB also sync to your other devices.' : ''}</span>
             </label>
+            <details class="paste-doc"><summary>Or paste text as a document (an email, web page, meeting notes…)</summary>
+              <form id="pd-form" class="pd-form"><input id="pd-name" type="text" placeholder="Name, e.g. Recruiter email" aria-label="Document name"><textarea id="pd-text" rows="6" placeholder="Paste the text here" aria-label="Document text"></textarea>
+              <div class="row gap"><span class="grow-s"></span><button class="btn primary small" type="submit">Add as a document</button></div></form></details>
             <div class="doc-list">${a.docs.map(d => html`
               <article class="doc ${d.use === false ? 'off' : ''}" data-id="${d.id}">
                 <span class="doc-ico k-${d.kind}">${ICON[d.kind] || 'FILE'}</span>
@@ -594,6 +606,13 @@
     function confirmInline(btn) { if (btn.dataset.sure) return true; const was = btn.textContent; btn.dataset.sure = '1'; btn.textContent = 'Click again to delete'; btn.classList.add('armed'); setTimeout(() => { if (btn.isConnected) { delete btn.dataset.sure; btn.textContent = was; btn.classList.remove('armed'); } }, 4000); return false; }
 
     body.addEventListener('submit', async e => {
+      if (e.target.id === 'pd-form') {
+        e.preventDefault();
+        const txt = $('#pd-text', body).value.trim(); if (txt.length < 20) { toast('Paste a little more text first.', 'warn'); return; }
+        const nm = ($('#pd-name', body).value.trim() || 'Pasted text ' + (a.docs.length + 1)).replace(/[\\/:*?"<>|]+/g, ' ').slice(0, 80);
+        await addFiles([new File([txt], /\.(txt|md)$/i.test(nm) ? nm : nm + '.txt', { type: 'text/plain' })]);
+        toast('Added ' + nm); return;
+      }
       if (e.target.id !== 'dc-form') return; e.preventDefault();
       const inp = $('#dc-q', body), q = inp.value.trim(); if (q.length < 3) return;
       const btn = e.target.querySelector('button'); btn.disabled = true; inp.disabled = true; btn.textContent = 'Thinking…';
@@ -624,5 +643,5 @@
     });
   }
 
-  window.CVT.docs = { tab, kindOf, extract, passagesOf, retrieve, found };
+  window.CVT.docs = { tab, kindOf, extract, passagesOf, retrieve, found, verifyTree, verifyQuestions };
 })();

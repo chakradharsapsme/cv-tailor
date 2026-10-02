@@ -192,8 +192,9 @@
       <div class="job-grid">
         <section class="panel">
           <div class="panel-head"><h2>Job description</h2>${!a.jd ? html`<button class="btn ghost small" id="example" type="button">Load an example job</button>` : ''}</div>
-          <p class="hint">Paste the full advert. LinkedIn blocks other sites from reading its pages, so pasting works best. Include the recruiter's name if shown.</p>
-          <label class="field"><span class="sr">Job description</span><textarea data-f="jd" id="jd" rows="18" placeholder="Paste the full job description here…">${a.jd}</textarea></label>
+          <p class="hint">Paste the advert. A full advert gives the best result, but two or three lines (or just the job title) are enough to start.</p>
+          <label class="field"><span class="sr">Job description</span><textarea data-f="jd" id="jd" rows="18" placeholder="Paste the job description here, even a short one…">${a.jd}</textarea></label>
+          <p class="hint short-hint" id="short-hint" hidden>Short advert: Applywise will fill in what this kind of role usually asks for and mark those points as typical, not from the advert.</p>
           <label class="field"><span>What to emphasise for this job (treated as true)</span><textarea data-f="emphasis" rows="3" placeholder="e.g. Ran Guided Buying for a regulated utility; can start in 4 weeks">${a.emphasis}</textarea></label>
           <div class="grid-2">
             <label class="field"><span>Master CV to tailor</span>
@@ -209,6 +210,7 @@
             <button class="btn ghost" id="stop" type="button" hidden>Stop</button>
           </div>
           <label class="check-line small"><input type="checkbox" id="auto-letter" ${S.local.get('cvt.autoLetter', true) ? raw('checked') : ''}> Also write the cover letter automatically (in the tone chosen above)</label>
+          <p class="hint bg-note" id="bg-note" hidden>This runs in the background. Carry on with other jobs or pages; you'll get a notice when it's ready.</p>
           <ol class="progress" id="prog" hidden></ol>
           <p class="error" id="err" role="alert" hidden></p>
         </section>
@@ -251,19 +253,44 @@
     const ex = $('#example', body);
     if (ex) ex.addEventListener('click', () => { const it = window.CVT.fields.current().id === 'it'; a.jd = it ? EXAMPLE_JD : EXAMPLE_GENERIC; a.company = a.company || (it ? 'Northgate Energy (fictional example)' : 'Brightside Services (fictional example)'); a.role = a.role || (it ? 'SAP Ariba Solution Architect' : 'Operations Team Leader'); ctx.saveNow().then(() => window.CVT.app.rerender()); });
 
-    let ctl = null;
-    $('#stop', body).addEventListener('click', () => ctl && ctl.abort());
+    const T = window.CVT.tasks;
+    $('#stop', body).addEventListener('click', () => T.stop(a.id));
     const ub = $('#use-best', body); if (ub) ub.addEventListener('click', async () => { a.masterId = ub.dataset.id; await ctx.saveNow(); toast('CV switched for this job'); window.CVT.app.rerender(); });
     const al = $('#auto-letter', body); if (al) al.addEventListener('change', () => S.local.set('cvt.autoLetter', al.checked));
+    const STEPS = ['Reading your CV and profile', 'Assessing fit and planning CV changes (30–90 s)', 'Checking every change against your CV', 'Writing your cover letter'];
+    const shortHint = e => { const h = $('#short-hint', body); if (h) { const n = ((e && e.target ? e.target.value : a.jd) || '').trim().length; h.hidden = !(n > 0 && n < 600); } };
+    $('#jd', body).addEventListener('input', shortHint); shortHint();
+    // Shows the background run (if any) for this job, and keeps it up to date while you stay on this page.
+    let st = null;
+    function paint() {
+      const t = T.get(a.id), run = $('#run', body), stop = $('#stop', body);
+      if (!run) return;
+      const busy = !!(t && t.status === 'running');
+      run.disabled = busy; stop.hidden = !busy;
+      const bg = $('#bg-note', body); if (bg) bg.hidden = !busy;
+      if (busy) { if (!st) st = progress($('#prog', body), t.steps); st.at(t.at); }
+    }
+    const onTasks = () => { if (!document.body.contains(body)) return document.removeEventListener('cvt-tasks', onTasks); paint(); };
+    const onDone = e => {
+      if (!document.body.contains(body)) return document.removeEventListener('cvt-task-done', onDone);
+      if (e.detail.id !== a.id) return;
+      document.removeEventListener('cvt-task-done', onDone); document.removeEventListener('cvt-tasks', onTasks);
+      if (e.detail.ok) ctx.go('fit');
+      else { const err = $('#err', body); if (st) st.fail(T.get(a.id) ? T.get(a.id).at : 0); err.textContent = e.detail.error === 'Stopped' ? 'Stopped.' : e.detail.error; err.hidden = false; paint(); }
+    };
+    document.addEventListener('cvt-tasks', onTasks); document.addEventListener('cvt-task-done', onDone);
+    paint();
+
     $('#run', body).addEventListener('click', async () => {
       const err = $('#err', body); err.hidden = true;
-      if ((a.jd || '').trim().length < 200) { err.textContent = 'Paste the full job description (at least a few paragraphs).'; err.hidden = false; return; }
+      const jd = (a.jd || '').trim();
+      if (jd.length < 15 && !(a.role || '').trim()) { err.textContent = 'Paste the advert, even two or three lines, or type the role title under Details.'; err.hidden = false; return; }
       if (!a.masterId && masters.length) a.masterId = (masters.find(m => m.isDefault) || masters[0]).id;
       const mm = await masterModel(a.masterId);
       if (!mm) { err.innerHTML = 'Add your master CV in <a class="link" href="#/profile">Career profile</a> first.'; err.hidden = false; return; }
       if (!(await window.CVT.ai.ensure('Analysing fit and tailoring your CV uses AI.', { big: true }))) {
         // Still useful without AI: which of the advert's skills your CV already shows.
-        const J = window.CVT.jobs, want = [...new Set(J.termsIn(a.jd))], have = new Set(J.termsIn(D.plainText(mm.model)));
+        const J = window.CVT.jobs, want = [...new Set(J.termsIn(a.jd || ''))], have = new Set(J.termsIn(D.plainText(mm.model)));
         const hit = want.filter(t => have.has(t)), miss = want.filter(t => !have.has(t));
         err.innerHTML = String(html`<strong>${state.provider === 'chrome-ai' && state.key ? "Chrome's built-in AI is too small to tailor a CV, so it wasn't tailored." : "The AI is off, so the CV wasn't tailored."}</strong> <button class="linkish" type="button" id="eng-open">Choose a free AI</button>
           ${want.length ? html`<br>Quick check without AI: your CV shows <strong>${hit.length} of ${want.length}</strong> skills this advert asks for.${miss.length ? html` Not found on your CV: ${miss.slice(0, 10).join(', ')}.` : ''}` : ''}`);
@@ -272,41 +299,30 @@
         return;
       }
       const autoLetter = $('#auto-letter', body) ? $('#auto-letter', body).checked : true;
-      const st = progress($('#prog', body), ['Reading your CV and profile', 'Assessing fit and planning CV changes (30–90 s)', 'Checking every change against your CV'].concat(autoLetter ? ['Writing your cover letter'] : []));
-      const run = $('#run', body), stop = $('#stop', body);
-      run.disabled = true; stop.hidden = false; ctl = new AbortController();
-      let i = 0;
-      try {
-        st.at(0);
-        const paras = D.forModel(mm.model);
-        st.at(i = 1);
-        const out = await A.analyse({ key: state.key, model: state.model, signal: ctl.signal, app: a, profile: ctx.profile, paras });
-        st.at(i = 2);
-        const j = out.job || {};
-        const fill = (k, v) => { if (!a[k] && v && v !== 'unknown') a[k] = v; };
-        fill('company', j.company); fill('role', j.title); fill('location', j.location); fill('pay', j.pay); fill('agency', j.agency);
-        fill('workMode', { onsite: 'On-site', hybrid: 'Hybrid', remote: 'Remote' }[j.work_mode]);
-        fill('contractType', { permanent: 'Permanent', contract: 'Contract', 'fixed-term': 'Fixed-term' }[j.contract_type]);
-        if (/^\d{4}-\d{2}-\d{2}$/.test(j.closing_date || '')) fill('closing', j.closing_date);
-        a.masterId = mm.master.id;
-        a.analysis = out; a.analysedAt = S.now();
-        prepareDecisions(a, mm);
-        a.letter = a.letter || ''; a.coverageBefore = D.keywordCoverage(D.plainText(mm.model), out.keywords);
-        if (a.status === 'Saved') S.setStatus(a, 'Tailored');
-        if (!a.next && a.closing) a.next = { text: 'Apply before the closing date', due: a.closing };
-        await ctx.saveNow();
-        // Cover letter straight away, unless the advice is to skip this job.
-        const verdict = out.decision && out.decision.verdict;
-        if (autoLetter && verdict !== 'skip') {
-          st.at(i = 3);
-          try { await engine.letter(a, ctx.profile); toast('CV tailored and cover letter written'); }
-          catch (le) { if (le.name === 'AbortError') throw le; toast('CV tailored. The cover letter could not be written: ' + le.message, 'warn'); }
+      await ctx.saveNow();
+      const title = `${a.role || 'This job'}${a.company ? ' at ' + a.company : ''}`;
+      st = null;
+      const ok = T.start({
+        id: a.id, title, href: `#/app/${a.id}/fit`, steps: autoLetter ? STEPS : STEPS.slice(0, 3),
+        work: async t => {
+          t.step(0);
+          t.step(1);
+          const out = await engine.analyse(a, ctx.profile, t.signal);
+          const title = `${a.role || 'This job'}${a.company ? ' at ' + a.company : ''}`; t.title(title);
+          t.step(2);
+          const verdict = out.decision && out.decision.verdict;
+          if (autoLetter && verdict !== 'skip') {
+            t.step(3);
+            try { await engine.letter(a, ctx.profile); return `CV tailored and cover letter written: ${title}`; }
+            catch (le) { if (le.name === 'AbortError') throw le; return `CV tailored: ${title}. The cover letter could not be written (${le.message}).`; }
+          }
+          return `CV tailored: ${title}`;
         }
-        st.done();
-        ctx.go('fit');
-      } catch (x) {
-        st.fail(i); err.textContent = x.name === 'AbortError' ? 'Stopped.' : x.message; err.hidden = false;
-      } finally { run.disabled = false; stop.hidden = true; }
+      });
+      if (!ok) toast('Already working on this job', 'warn');
+      document.removeEventListener('cvt-tasks', onTasks); document.removeEventListener('cvt-task-done', onDone);
+      document.addEventListener('cvt-tasks', onTasks); document.addEventListener('cvt-task-done', onDone);
+      paint();
     });
   }
 
@@ -599,6 +615,7 @@
             </div>` : html`
             <div class="empty-state inline"><p class="hint">Written from your tailored CV, the positioning angle and your achievements bank. It uses your CV's fonts, header and letterhead.</p>
             <button class="btn primary" id="gen" type="button">Write cover letter</button></div>`}
+          <p class="hint bg-note" id="bg-note" hidden>This runs in the background. Carry on with other jobs or pages; you'll get a notice when it's ready.</p>
           <ol class="progress" id="prog" hidden></ol>
           <p class="error" id="err" role="alert" hidden></p>
         </section>
@@ -789,7 +806,8 @@
               <input data-qa="${i}.q" type="text" value="${q.q}" aria-label="Question ${i + 1}">
               <textarea data-qa="${i}.a" rows="3" aria-label="Answer ${i + 1}">${q.a}</textarea>
               <button class="icon-btn" data-qdel="${i}" type="button" aria-label="Remove question">×</button></div>`)}</div>
-            <ol class="progress" id="prog" hidden></ol>
+            <p class="hint bg-note" id="bg-note" hidden>This runs in the background. Carry on with other jobs or pages; you'll get a notice when it's ready.</p>
+          <ol class="progress" id="prog" hidden></ol>
             <p class="error" id="err" role="alert" hidden></p>
           </section>
         </div>
@@ -922,12 +940,15 @@ What you'll bring
   // =====================================================================
   const engine = {
     async analyse(a, profile, signal) {
-      if ((a.jd || '').trim().length < 200) throw new Error('Needs the full job advert');
+      if ((a.jd || '').trim().length < 15 && !(a.role || '').trim()) throw new Error('Needs the job title or a few lines of the advert');
       const masters = await S.listMasters();
       if (!a.masterId && masters.length) a.masterId = (masters.find(m => m.isDefault) || masters[0]).id;
       const mm = await masterModel(a.masterId);
       if (!mm) throw new Error('Add your master CV in Career profile first');
       const out = await A.analyse({ key: state.key, model: state.model, signal, app: a, profile, paras: D.forModel(mm.model) });
+      // You may have edited this application while the AI worked: build on the latest saved copy.
+      const fresh = await S.getApp(a.id);
+      if (fresh && fresh !== a) Object.assign(a, fresh);
       const j = out.job || {};
       const fill = (k, v) => { if (!a[k] && v && v !== 'unknown') a[k] = v; };
       fill('company', j.company); fill('role', j.title); fill('location', j.location); fill('pay', j.pay); fill('agency', j.agency);
@@ -949,9 +970,9 @@ What you'll bring
       const lines = [ukDate(), '', `**Re: ${a.role || (an.job && an.job.title) || ''}${a.company ? ', ' + a.company : ''}**`, '', L.salutation || 'Dear Hiring Manager,', ''];
       (L.paragraphs || []).forEach(p => lines.push(p, ''));
       lines.push(L.signoff || 'Kind regards,', '', L.name || an.candidate_name || profile.name || '');
-      a.letter = lines.join('\n'); await S.saveApp(a);
+      await commit(a, f => { f.letter = lines.join('\n'); });
     },
-    async outreach(a, profile) { a.outreach = await A.outreach({ key: state.key, model: state.model, app: a, profile, cvText: await engine.cvText(a) }); await S.saveApp(a); },
+    async outreach(a, profile) { const o = await A.outreach({ key: state.key, model: state.model, app: a, profile, cvText: await engine.cvText(a) }); await commit(a, f => { f.outreach = o; }); },
     async answers(a, profile) {
       a.answers = a.answers || { why: '', salary: '', notice: '', qa: [] };
       const out = await A.answers({ key: state.key, model: state.model, app: a, profile, cvText: await engine.cvText(a), questions: [] });
@@ -959,8 +980,14 @@ What you'll bring
       if (!ans.why && out.why) ans.why = out.why; if (!ans.salary && out.salary) ans.salary = out.salary; if (!ans.notice && out.notice) ans.notice = out.notice;
       await S.saveApp(a);
     },
-    async interview(a, profile) { a.interview = await A.interviewPrep({ key: state.key, model: state.model, app: a, profile, cvText: await engine.cvText(a) }); await S.saveApp(a); }
+    async interview(a, profile) { const iv = await A.interviewPrep({ key: state.key, model: state.model, app: a, profile, cvText: await engine.cvText(a) }); await commit(a, f => { f.interview = iv; }); }
   };
+  /** Save a result into the latest copy of the application, so edits made meanwhile are kept. */
+  async function commit(a, fn) {
+    const f = (await S.getApp(a.id)) || a;
+    fn(f); await S.saveApp(f);
+    if (f !== a) Object.assign(a, f);
+  }
 
   window.CVT.views = Object.assign(window.CVT.views || {}, { workspace });
   window.CVT.engine = engine;

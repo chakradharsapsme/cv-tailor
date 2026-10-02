@@ -637,8 +637,8 @@
 
         <aside class="jobs-side">
           <section class="panel">
-            <div class="panel-head"><h2>Searches</h2></div>
-            <p class="hint">One job title or skill per line. The feed runs each search for your location${cfg.remote ? ' and for remote roles' : ''}.</p>
+            <div class="panel-head"><h2>Searches</h2><span class="row gap"><span class="chip warn" id="s-dirty" hidden>Not saved</span><button class="btn primary small" data-s-save type="button">Save</button></span></div>
+            <p class="hint">One job title or skill per line (up to 6). Add or change a role, then press <strong>Save</strong> (or Ctrl+Enter). The feed runs each search for your location${cfg.remote ? ' and for remote roles' : ''}.</p>
             <label class="field"><span class="sr">Searches</span><textarea id="s-q" rows="5">${cfg.queries.join('\n')}</textarea></label>
             <label class="field"><span>Country</span><select id="s-country">${Object.entries(CO().list).map(([k, c]) => html`<option value="${k}" ${cfg.country === k ? raw('selected') : ''}>${c.flag} ${c.name}</option>`)}</select></label>
             <p class="muted small">Detected from your browser: ${CO().get(CO().detect()).name}. Pick another to search there.</p>
@@ -649,7 +649,7 @@
             <label class="check-line"><input id="s-remote" type="checkbox" ${cfg.remote ? raw('checked') : ''}> Also search remote roles</label>
             <label class="field mt"><span>Company career portals (one careers-page link per line)</span><textarea id="s-portals" rows="4" placeholder="https://boards.greenhouse.io/company">${(cfg.portals && cfg.portals.length ? cfg.portals : window.CVT.websources.portalsFor(cfg.country)).join('\n')}</textarea></label>
             <p class="muted small">Works with careers pages hosted on Greenhouse, Lever, Ashby, SmartRecruiters, Workable, Recruitee, Personio, Teamtailor, Breezy and Rippling.</p>
-            <div class="row gap wrap mt"><button class="btn small" id="s-save" type="button">Save searches</button><button class="btn small ghost" id="s-auto" type="button">Rebuild from my titles and CV</button></div>
+            <div class="row gap wrap mt"><button class="btn small" id="s-save" data-s-save type="button">Save searches</button><button class="btn small ghost" id="s-auto" type="button">Rebuild from my titles and CV</button></div>
           </section>
 
           <section class="panel emp-panel" id="emp-panel" aria-live="polite"></section>
@@ -822,7 +822,12 @@
       shownCountry = code;
     });
     $('#jb-country', root).addEventListener('click', () => { const sel = $('#s-country', root); sel.scrollIntoView({ block: 'center', behavior: 'smooth' }); sel.focus(); });
-    $('#s-save', root).addEventListener('click', async () => {
+    // Unsaved changes: show "Not saved" next to the Save button; Ctrl+Enter saves.
+    const dirty = on => { const d = $('#s-dirty', root); if (d) d.hidden = !on; };
+    ['#s-q', '#s-loc', '#s-portals'].forEach(sel => { const el = $(sel, root); if (!el) return; el.addEventListener('input', () => dirty(true)); el.addEventListener('keydown', e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); saveSearches(); } }); });
+    ['#s-type', '#s-remote', '#s-country'].forEach(sel => { const el = $(sel, root); if (el) el.addEventListener('change', () => dirty(true)); });
+    $$('[data-s-save]', root).forEach(b => b.addEventListener('click', () => saveSearches()));
+    async function saveSearches() {
       const f = await loadFeed();
       const country = $('#s-country', root).value, ps = readPortals();
       f.searches = {
@@ -839,8 +844,9 @@
       const bad = f.searches.portals.filter(u => !window.CVT.websources.detect(u));
       if (bad.length) toast(`Skipped ${bad.length} link${bad.length > 1 ? 's' : ''} that isn't a careers page Applywise can read`, 'warn');
       if (!f.searches.queries.length) { toast('Add at least one search', 'warn'); return; }
+      dirty(false);
       await saveFeed(f); toast(moved ? `Now searching ${CO().get(country).name}. Press Find jobs now.` : 'Searches saved. Press Find jobs now.'); window.CVT.app.rerender();
-    });
+    }
     $('#s-auto', root).addEventListener('click', async () => {
       const f = await loadFeed(); resetEvidence();
       const qs = await defaultSearches();

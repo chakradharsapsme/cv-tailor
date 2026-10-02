@@ -1,7 +1,7 @@
 /*
  * art.js — original job-themed illustrations (inline SVG, no image files, crisp at any size).
  * Colours follow the theme (light and dark) through CSS variables.
- * Scenes: search, cv, interview, handshake, growth, ask, welcome, calendar, aiwriter, match, robot, shield.
+ * Scenes: search, cv, interview, handshake, growth, ask, welcome, calendar, aiwriter, match, robot, shield, seeker, phone, coach, celebrate.
  */
 (function () {
   const C = { a: 'var(--art-a, #2447D6)', b: 'var(--art-b, #7AA8F8)', c: 'var(--art-c, #F2B84B)', d: 'var(--art-d, #2FA37C)', skin: 'var(--art-skin, #E9B08B)', skin2: 'var(--art-skin2, #8D5A3B)',
@@ -106,17 +106,55 @@
       <path d="M200 54l52 18v34c0 34-24 56-52 66-28-10-52-32-52-66V72z" fill="${C.a}"/>
       <rect x="182" y="104" width="36" height="30" rx="6" fill="${C.paper}"/><path d="M190 104v-8a10 10 0 0 1 20 0v8" stroke="${C.paper}" stroke-width="6" fill="none"/>
       <circle cx="200" cy="118" r="5" fill="${C.a}"/>
-      <path d="M268 50l3 7 7 3-7 3-3 7-3-7-7-3 7-3z" fill="${C.c}"/>`, 'Your details kept private and ready for application forms')
+      <path d="M268 50l3 7 7 3-7 3-3 7-3-7-7-3 7-3z" fill="${C.c}"/>`, 'Your details kept private and ready for application forms'),
+
+    // ---- people: job seekers working with their AI helper ----
+    seeker: () => svg(`${blob(C.soft)}
+      <rect x="190" y="62" width="92" height="70" rx="8" fill="${C.paper}" stroke="${C.line}" stroke-width="2"/>
+      <rect x="200" y="72" width="38" height="6" rx="3" fill="${C.a}"/>
+      ${[0, 1, 2, 3].map(i => `<rect x="200" y="${86 + i * 9}" width="${i === 3 ? 40 : 64}" height="4" rx="2" fill="${C.line}"/>`).join('')}
+      <circle cx="262" cy="116" r="9" fill="${C.d}"/><path d="M257 116l3 3 6-6" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+      <rect x="230" y="132" width="12" height="14" fill="${C.line}"/>
+      <rect x="40" y="146" width="250" height="8" rx="4" fill="${C.ink}" opacity=".85"/>
+      <rect x="168" y="138" width="56" height="7" rx="3" fill="${C.line}"/>
+      ${person(118, 50, { shirt: C.a, skin: C.skin2, hair: C.ink })}
+      <path d="M134 100c14 10 26 24 38 38" stroke="${C.a}" stroke-width="12" stroke-linecap="round" fill="none"/><circle cx="174" cy="139" r="6" fill="${C.skin2}"/>
+      <circle cx="258" cy="36" r="17" fill="${C.c}"/><path d="M258 25l3 8 8 3-8 3-3 8-3-8-8-3 8-3z" fill="#fff"/>
+      <path d="M246 50l-8 10" stroke="${C.c}" stroke-width="3" stroke-linecap="round" stroke-dasharray="3 5"/>`, 'A job seeker tailoring a CV with an AI helper'),
+    phone: () => svg(`${blob(C.soft)}
+      ${person(112, 48, { shirt: C.d, skin: C.skin, hair: '#6B3E26' })}
+      <path d="M128 96c12 6 22 14 30 24" stroke="${C.d}" stroke-width="12" stroke-linecap="round" fill="none"/>
+      <rect x="152" y="98" width="28" height="48" rx="6" fill="${C.ink}"/><rect x="156" y="104" width="20" height="34" rx="3" fill="${C.paper}"/>
+      <circle cx="160" cy="126" r="6" fill="${C.skin}"/>
+      ${[0, 1, 2].map(i => `<g transform="translate(${196 + (i % 2) * 14} ${42 + i * 40})"><rect width="88" height="30" rx="8" fill="${C.paper}" stroke="${C.line}" stroke-width="2"/><rect x="10" y="9" width="44" height="5" rx="2.5" fill="${C.ink}" opacity=".7"/><rect x="10" y="18" width="30" height="4" rx="2" fill="${C.line}"/><circle cx="72" cy="15" r="9" fill="${i === 2 ? C.c : C.d}"/></g>`).join('')}
+      <path d="M182 110c6-2 10-6 14-12" stroke="${C.b}" stroke-width="3" fill="none" stroke-dasharray="3 5" stroke-linecap="round"/>
+      <rect x="70" y="146" width="84" height="10" rx="5" fill="${C.ink}" opacity=".15"/>`, 'A job seeker browsing matched jobs on a phone'),
+    coach: () => svg(`${blob(C.soft)}
+      <rect x="40" y="152" width="240" height="8" rx="4" fill="${C.ink}" opacity=".85"/>
+      ${person(88, 64, { shirt: C.b, skin: C.skin, hair: C.c })}${person(232, 60, { shirt: C.a, skin: C.skin2, hair: C.ink })}
+      ${doc(132, 84, 56, 66, 5, C.d)}
+      <path d="M172 118l8 8 14-16" stroke="${C.d}" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <rect x="44" y="22" width="58" height="30" rx="11" fill="${C.paper}" stroke="${C.line}" stroke-width="2"/><path d="M66 52l-4 10 12-10" fill="${C.paper}" stroke="${C.line}" stroke-width="2"/>
+      <rect x="54" y="32" width="38" height="4" rx="2" fill="${C.line}"/><rect x="54" y="40" width="26" height="4" rx="2" fill="${C.line}"/>
+      <rect x="208" y="16" width="60" height="32" rx="12" fill="${C.a}"/><path d="M230 48l2 10 10-10" fill="${C.a}"/>
+      <path d="M238 23l3 7 7 3-7 3-3 7-3-7-7-3 7-3z" fill="#fff"/>`, 'An expert coach reviewing a CV with a job seeker'),
+    celebrate: () => svg(`${blob(C.soft)}
+      ${person(160, 66, { shirt: C.d, skin: C.skin, hair: '#3B2A20' })}
+      <path d="M140 108l-20-40M180 108l22-42" stroke="${C.d}" stroke-width="12" stroke-linecap="round"/>
+      <circle cx="119" cy="66" r="7" fill="${C.skin}"/><circle cx="203" cy="64" r="7" fill="${C.skin}"/>
+      <g transform="rotate(12 222 46)"><rect x="200" y="18" width="44" height="54" rx="6" fill="${C.paper}" stroke="${C.line}" stroke-width="2"/><rect x="208" y="28" width="22" height="5" rx="2.5" fill="${C.a}"/><rect x="208" y="38" width="28" height="4" rx="2" fill="${C.line}"/><rect x="208" y="46" width="20" height="4" rx="2" fill="${C.line}"/><circle cx="230" cy="60" r="6" fill="${C.d}"/></g>
+      ${[[70, 40, C.c], [96, 26, C.a], [260, 96, C.b], [250, 140, C.c], [62, 110, C.d], [280, 60, C.a], [44, 76, C.b]].map(([x, y, c], i) => `<rect x="${x}" y="${y}" width="9" height="5" rx="2" fill="${c}" transform="rotate(${i * 37} ${x} ${y})"/>`).join('')}
+      <path d="M60 178h200" stroke="${C.ink}" stroke-width="6" stroke-linecap="round" opacity=".8"/>`, 'A job seeker celebrating a job offer')
   };
 
   // ---- side rails: illustrated helpers that fill the empty space on wide screens (hidden on smaller ones) ----
   const CARDS = {
-    writer: ['aiwriter', 'Your AI CV writer', 'Paste any advert. A senior CV writer fits the job into your own Word CV, a recruiter-reviewer checks it is realistic, and it is written in your voice.', 'Tailor for an advert', '#/new'],
-    robot: ['robot', 'Your job robot', 'Every morning it gathers new roles in your field, including LinkedIn, Totaljobs and Reed adverts via Google Jobs.', 'See jobs for you', '#/jobs'],
-    match: ['match', 'Scored against your CVs', 'Every job is matched to the skills on all your CVs, with your town first. Pick one and press Tailor.', 'Paste an advert', '#/new'],
+    writer: ['seeker', 'Your AI CV writer', 'Paste any advert. A senior CV writer fits the job into your own Word CV, a recruiter-reviewer checks it is realistic, and it is written in your voice.', 'Tailor for an advert', '#/new'],
+    robot: ['phone', 'Your job robot', 'Every morning it gathers new roles in your field, including LinkedIn, Totaljobs and Reed adverts via Google Jobs.', 'See jobs for you', '#/jobs'],
+    match: ['coach', 'Scored against your CVs', 'Every job is matched to the skills on all your CVs, with your town first. Pick one and press Tailor.', 'Paste an advert', '#/new'],
     forms: ['shield', 'Workday-ready', 'Fill in your details and work history once, then copy them into Workday, Taleo or SuccessFactors in seconds.', 'Career profile', '#/profile'],
     prep: ['interview', 'Interview prep', 'Likely questions, STAR stories and a mock interviewer for each application.', 'Open Prep', '#/prep'],
-    track: ['growth', 'Track every application', 'Follow-ups, interviews and offers in one pipeline, with reminders.', 'Pipeline', '#/pipeline'],
+    track: ['celebrate', 'Track every application', 'Follow-ups, interviews and offers in one pipeline, with reminders.', 'Pipeline', '#/pipeline'],
     ask: ['ask', 'Ask AI', 'Ask anything about a job, your CV or the company, with answers from your own documents.', 'Applications', '#/pipeline']
   };
   const RAILS = { dashboard: ['writer', 'robot'], jobs: ['robot', 'match'], profile: ['forms', 'writer'], app: ['writer', 'prep'], pipeline: ['track', 'prep'], prep: ['prep', 'ask'], settings: ['forms', 'robot'] };

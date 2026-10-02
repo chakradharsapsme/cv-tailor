@@ -873,7 +873,11 @@
       const pack = {
         kind: 'cv-tailor-pack', v: 1, company: a.company, role: a.role,
         fields: {
-          firstName: parts[0] || '', lastName: parts.length > 1 ? parts[parts.length - 1] : '', fullName: profile.name,
+          firstName: profile.legalFirst || parts[0] || '', lastName: profile.legalLast || (parts.length > 1 ? parts[parts.length - 1] : ''), fullName: profile.name,
+          middleName: profile.middleName, preferredName: profile.preferredName, phoneCode: profile.phoneCode, phoneType: profile.phoneType,
+          address1: profile.address1, address2: profile.address2, county: profile.county, hearAbout: profile.hearAbout, previouslyWorked: profile.previouslyWorked,
+          rightToWork: profile.rightToWork, sponsorship: profile.sponsorship, relocate: profile.relocate, travel: profile.travel, startDate: profile.startDate,
+          currentSalary: profile.currentSalary, school: profile.school, degree: profile.degree, fieldOfStudy: profile.fieldOfStudy,
           email: profile.email, phone: profile.phone, linkedin: profile.linkedin, website: profile.website,
           city: profile.city, postcode: profile.postcode, country: profile.country,
           currentTitle: profile.currentTitle, currentCompany: profile.currentCompany,

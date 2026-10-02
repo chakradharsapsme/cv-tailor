@@ -301,6 +301,8 @@
       try { const mm = await masterModel(m.id); if (mm) { const t = D.plainText(mm.model); cv += '\n' + t; perCv.push({ id: m.id, name: m.name, isDefault: !!m.isDefault, terms: new Set(termsIn(t)) }); } } catch (_) {}
     }
     void def;
+    // Blank profile (no target roles or skills)? Your CVs decide the field: an SAP CV gets SAP / IT matching and searches.
+    FL().setHint(cv.slice(0, 30000), 'cv'); FL().use(p);
     const text = [cv, p.extraSkills, (p.achievements || []).join('\n'), p.currentTitle].join('\n');
     evidenceCache = { sig, text, hasCv: !!cv.trim(), terms: new Set(termsIn(text)), perCv };
     return evidenceCache;

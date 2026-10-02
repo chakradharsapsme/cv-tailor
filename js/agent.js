@@ -227,7 +227,7 @@
 - Vary the length a little, as real CVs do. Numbers only when the CV or profile gives them: never invent percentages, savings, volumes or team sizes.`;
 
   // ---------- 1. analyse + tailor ----------
-  const ANALYSE_SYSTEM = `You are a senior {{MARKET}} job-search coach, {{EXPERT}}, and an experienced CV writer who has written CVs for {{FIELD}} professionals for over 15 years. You assess a job for the candidate and tailor their EXISTING Word CV to it by inserting the job's requirements into the right places, never by rewriting.
+  const ANALYSE_SYSTEM = `You are a senior {{MARKET}} job-search coach, {{EXPERT}}, an experienced CV writer who has written CVs for {{FIELD}} professionals for over 15 years, and a senior technology expert who knows enterprise systems end to end. You assess a job for the candidate and tailor their EXISTING Word CV to it by inserting the job's requirements into the right places, never by rewriting.
 
 ${TRUTH}
 
@@ -239,7 +239,7 @@ You are a meticulous CV editor. The candidate's own wording is sacred. You never
    - the bullet describing the related work: extend it with a clause (e.g. "... via Cloud Integration Gateway (CIG), covering catalogue punch-outs.");
    - the profile/summary: add one short clause that names the requirement.
    Prefer the most specific location. Never put an addition somewhere it doesn't fit.
-3. Keep each addition short: 2-15 words. A paragraph may grow by at most 35% or 120 characters, whichever is smaller.
+3. Keep each addition short: 2-15 words. A paragraph may grow by at most 35% or 120 characters, whichever is smaller. Exception: a skills or technology list may grow by up to 200 characters to hold the job's technologies.
 4. Never edit paragraphs marked "locked", names, contact details, dates, job titles, employer or client names, or education/certification lines.
 5. If a paragraph has "segments" (runs with different formatting, e.g. a bold label then normal text), return "segments" with the SAME number of items; keep labels unchanged and add text only to the body segment. Otherwise return "text".
 6. Use the job's exact terminology (ATS keywords) in the addition.
@@ -250,6 +250,13 @@ You are a meticulous CV editor. The candidate's own wording is sacred. You never
 8. Cover every must-have requirement that is not already visible in the CV text, then the nice-to-haves. One requirement per edit where possible; group only when they belong in the same list.
 9. At most ONE edit per paragraph: combine several additions for the same paragraph into one edit.
 10. Do not use "reorder" or "remove". Return them as empty arrays.
+
+TECHNOLOGY COVERAGE (every technology the job names must appear somewhere in the tailored CV)
+You know enterprise technology in depth: SAP (ECC, S/4HANA private and public cloud, Ariba, Fieldglass, Concur, BTP, Integration Suite/CPI, CIG, MDG, SuccessFactors, Signavio, Analytics Cloud), Coupa, Jaggaer, Ivalua, GEP, Oracle, Workday, Salesforce, ServiceNow, Microsoft Dynamics, integration (APIs, EDI, cXML, IDoc, MuleSoft), data and reporting (SQL, Power BI, Tableau, Excel), cloud (Azure, AWS, GCP), delivery methods (SAP Activate, Agile, Scrum, Waterfall, PRINCE2) and tools (Jira, Confluence, Solution Manager, Cloud ALM, Visio). You know what each does, which ones are used together, and when each became available.
+- List every technology, product, module, tool and method the advert names in "job_technologies" (exact names as the advert writes them).
+- Each one not already in the CV must be placed in the tailored CV where a hiring manager expects it: the skills / technical skills list first, otherwise the summary, the bullet of related work, or a new bullet under the latest role.
+- "basis": "cv" when the CV shows related or adjacent work with it, "profile" when the profile states it, otherwise "unconfirmed" (the candidate ticks it only if true).
+- Leave a technology out only if it is on the NEVER-claim list; then list it in "keywords_missing".
 
 NEW BULLETS UNDER THE MOST RECENT ROLES (in addition to the insertions)
 Where the job's main responsibilities are not visible anywhere in the CV, propose NEW bullets for the candidate's most recent role(s) or client engagements, so a recruiter reading the latest position sees the job's core duties there.
@@ -298,6 +305,7 @@ Return this JSON shape:
   "requirements": [{"req": "short requirement", "type": "must|nice", "evidence": "direct|adjacent|gap", "cv_ids": [ids], "note": "how the CV covers it, or what is missing"}],
   "fit": {"score": 0-100, "core": 0-100, "adjacent": 0-100},
   "keywords": ["8-20 exact terms from the job an ATS would scan for"],
+  "job_technologies": ["every technology, product, module, tool and method the advert names"],
   "keywords_missing": ["job terms the candidate cannot truthfully claim"],
   "edits": [{"id": 12, "text": "original text with the insertion added", "adds": "only the words you inserted", "requirement": "job requirement this covers", "basis": "cv|profile|unconfirmed", "reason": "why here"} or {"id": 14, "segments": ["Label: ", "original body with insertion"], "adds": "...", "requirement": "...", "basis": "...", "reason": "..."}],
   "new_bullets": [{"after": 42, "role": "role or client it sits under", "text": "the new bullet, in the candidate's voice", "requirement": "job responsibility it covers", "basis": "cv|profile|unconfirmed", "reason": "why it fits this role"}],
@@ -333,6 +341,7 @@ Check every insertion ("edits") and every new bullet ("new_bullets"):
 5. New bullets: "after" must stay the id of an unlocked bullet of the role it belongs to; keep 2 to 6 of them, the strongest first.
 6. No duplicates: no two items saying the same thing, no new bullet repeating an insertion.
 7. Voice: rewrite any wording that reads machine-written.
+8. Technology coverage: every item in "Technologies in the advert" must appear in the CV or in one of the changes (preferably the skills list). Add any that went missing.
 
 ${VOICE}
 
@@ -344,6 +353,7 @@ Reply with ONLY one JSON object.`;
     return `JOB
 ${jobBlock(app)}
 Requirements found: ${JSON.stringify((draft.requirements || []).slice(0, 25).map(r => r.req + (r.type === 'must' ? ' (must)' : '')))}
+Technologies in the advert: ${JSON.stringify(draft.job_technologies || [])}
 ---
 ${String(app.jd || '').slice(0, 9000) || '(no advert text)'}
 ---
@@ -377,8 +387,21 @@ JSON: {"lines": [{"key": "same key", "text": "fixed line"}]}` });
     return Array.isArray(r.lines) ? r.lines : [];
   }
 
+  // Is a technology named anywhere in this text? (word-boundary match, tolerant of "S/4HANA" vs "S4HANA" and spacing)
+  const normT = t => String(t || '').toLowerCase().replace(/s\/4\s*hana/g, 's4hana').replace(/[^a-z0-9+#.]+/g, ' ').trim();
+  const mentions = (hay, tech) => { const n = normT(tech); return !!n && (' ' + hay + ' ').includes(' ' + n + ' '); };
+
+  const app_title = a => [a && a.role, a && a.company].filter(Boolean).join(' at ') || '(not given)';
+  const COVER_SYSTEM = `You are a senior technology expert and CV writer. Some technologies the job asks for are still missing from the candidate's tailored CV. Place each one where a hiring manager expects it: add it to the skills / technical skills list (preferred), or to the summary, or to the bullet describing related work. Keep every original word of a paragraph in the same order; only add words. If a paragraph already has a draft change, build on that draft text. One edit per paragraph.
+
+${VOICE}
+
+${TRUTH}
+
+Reply with ONLY one JSON object.`;
+
   /**
-   * Fit + tailoring in three passes (time matters less than quality):
+   * Fit + tailoring in four passes (time matters less than quality):
    * 1. senior CV writer plans insertions and new bullets for the latest roles,
    * 2. a recruiter-reviewer checks fit, realism, truth and duplicates,
    * 3. any line that still reads machine-written is rewritten in the candidate's voice.
@@ -393,7 +416,7 @@ JSON: {"lines": [{"key": "same key", "text": "fixed line"}]}` });
     const paras = opts.paras || [];
     const byId = new Map(paras.map(p => [p.id, p]));
     out.new_bullets = out.new_bullets.filter(b => b && typeof b.text === 'string' && b.text.trim() && byId.has(Number(b.after)));
-    if (!out.edits.length && !out.new_bullets.length) return out;
+    if (!out.edits.length && !out.new_bullets.length && !arr(out.job_technologies).length) return out;
 
     // 2. Recruiter review
     stage('review');
@@ -404,7 +427,39 @@ JSON: {"lines": [{"key": "same key", "text": "fixed line"}]}` });
       out.review_notes = arr(r.notes).slice(0, 12); out.reviewed = true;
     } catch (e) { if (e && e.name === 'AbortError') throw e; out.review_error = (e && e.message) || 'review skipped'; }
 
-    // 3. Humanise whatever still reads machine-written
+    // 3. Technology coverage: anything the advert names that is still nowhere in the CV or the changes gets placed.
+    out.job_technologies = arr(out.job_technologies).map(String).filter(Boolean).slice(0, 40);
+    const never = normT(opts.profile && opts.profile.neverClaim);
+    const haystack = () => normT([...paras.map(p => p.text), ...out.edits.map(e => typeof e.text === 'string' ? e.text : (e.segments || []).join('')), ...out.new_bullets.map(b => b.text)].join(' \n '));
+    let missing = out.job_technologies.filter(t => !mentions(haystack(), t) && !(never && mentions(never, t)));
+    if (missing.length) {
+      stage('coverage');
+      try {
+        const editable = paras.filter(p => !p.locked).map(p => { const e = out.edits.find(x => Number(x.id) === p.id); return e && typeof e.text === 'string' ? { ...p, draft: e.text } : p; });
+        const r = await ask({ signal: opts.signal, system: COVER_SYSTEM, maxTokens: 6000, user: `MISSING TECHNOLOGIES (from the job advert)
+${JSON.stringify(missing)}
+
+JOB: ${app_title(opts.app)}
+
+CANDIDATE PROFILE
+${profileBlock(opts.profile)}
+
+CV PARAGRAPHS (id, text; "draft" = the change already planned for that paragraph; "bullet" = list item)
+${JSON.stringify(editable)}
+
+JSON: {"edits": [{"id": 12, "text": "full paragraph text with the technology added", "adds": "only the words added", "requirement": "the technology", "basis": "cv|profile|unconfirmed", "reason": "why here"}]}` });
+        arr(r.edits).forEach(e => {
+          if (!e || typeof e.text !== 'string' || !byId.has(Number(e.id))) return;
+          const i = out.edits.findIndex(x => Number(x.id) === Number(e.id));
+          if (i >= 0) { const old = out.edits[i]; out.edits[i] = Object.assign({}, old, { text: e.text, segments: undefined, adds: [old.adds, e.adds].filter(Boolean).join('; '), requirement: [old.requirement, e.requirement].filter(Boolean).join(', '), basis: old.basis === 'unconfirmed' || e.basis === 'unconfirmed' ? 'unconfirmed' : (e.basis || old.basis) }); }
+          else out.edits.push(e);
+        });
+        missing = out.job_technologies.filter(t => !mentions(haystack(), t) && !(never && mentions(never, t)));
+      } catch (e) { if (e && e.name === 'AbortError') throw e; }
+    }
+    out.tech_missing = missing;
+
+    // 4. Humanise whatever still reads machine-written
     const lines = [];
     out.new_bullets.forEach((b, i) => { const pr = aiTells(b.text); if (pr.length) lines.push({ key: 'n' + i, text: b.text, problems: pr }); });
     out.edits.forEach((e, i) => {

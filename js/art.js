@@ -19,6 +19,44 @@
     <rect x="10" y="10" width="${w * 0.45}" height="7" rx="3.5" fill="${accent}"/>
     ${Array.from({ length: lines }, (_, i) => `<rect x="10" y="${26 + i * 10}" width="${(w - 20) * (i % 3 === 2 ? 0.6 : 1)}" height="4" rx="2" fill="${C.line}"/>`).join('')}</g>`;
 
+  // ---------- detailed people (job seekers), drawn to feel warm and human ----------
+  const SKIN = ['#F5CDAA', '#E2A97F', '#C68A62', '#8D5A3B', '#5E3B27'];
+  const P = { coral: '#F27C6B', purple: '#7C5CFC', teal: '#22A699', navy: '#22305A', gold: '#F2B84B', sky: '#6FA8F5', plum: '#8E4D86', grey: '#3A4254' };
+  /** A standing person, feet at (x, y). pose: down | wave | hold | phone | point | cheer | folder. item for hold: laptop | doc. */
+  function fig({ x, y, s = 1, flip = false, skin = SKIN[1], hair = '#2B2118', style = 'short', top = P.purple, bottom = P.navy, skirt = false, shoe = '#1E2433', pose = 'down', item = '' }) {
+    const arm = (d, hx, hy) => `<path d="${d}" stroke="${top}" stroke-width="10" stroke-linecap="round" fill="none"/><circle cx="${hx}" cy="${hy}" r="5.2" fill="${skin}"/>`;
+    const L = { down: arm('M-19 -124 Q-27 -104 -26 -84', -26, -82), hold: arm('M-19 -124 Q-31 -104 -9 -98', -9, -98), cheer: arm('M-19 -124 Q-36 -142 -31 -168', -31, -171) };
+    const R = { down: arm('M19 -124 Q27 -104 26 -84', 26, -82), wave: arm('M19 -124 Q37 -130 35 -160', 35, -163), hold: arm('M19 -124 Q31 -104 9 -98', 9, -98),
+      phone: arm('M19 -124 Q34 -112 13 -140', 13, -141), point: arm('M19 -124 Q40 -126 60 -134', 61, -134), cheer: arm('M19 -124 Q36 -142 31 -168', 31, -171), folder: arm('M19 -124 Q27 -104 26 -86', 26, -84) };
+    const left = L[pose] || L[pose === 'cheer' ? 'cheer' : (pose === 'hold' ? 'hold' : 'down')] || L.down, right = R[pose] || R.down;
+    const legs = skirt
+      ? `<rect x="-10" y="-44" width="7" height="40" rx="3.5" fill="${skin}"/><rect x="3" y="-44" width="7" height="40" rx="3.5" fill="${skin}"/><path d="M-17 -80 L-25 -40 Q0 -34 25 -40 L17 -80 Z" fill="${bottom}"/>`
+      : `<path d="M-16 -80 L-17 -6 L-3 -6 L0 -58 L3 -6 L17 -6 L16 -80 Z" fill="${bottom}"/>`;
+    const hairBack = style === 'long' ? `<path d="M-18 -156 Q-21 -122 -15 -110 L15 -110 Q21 -122 18 -156 Z" fill="${hair}"/>` : '';
+    const hairTop = {
+      short: `<path d="M-15.5 -155 Q-16 -174 0 -174 Q16 -174 15.5 -155 Q13 -165 1 -165 Q-9 -165 -15.5 -155 Z" fill="${hair}"/>`,
+      long: `<path d="M-16 -150 Q-17 -175 0 -175 Q17 -175 16 -150 Q14 -166 2 -166 Q-12 -164 -16 -150 Z" fill="${hair}"/>`,
+      bun: `<circle cx="0" cy="-177" r="7" fill="${hair}"/><path d="M-15.5 -154 Q-16 -174 0 -174 Q16 -174 15.5 -154 Q12 -166 0 -166 Q-12 -166 -15.5 -154 Z" fill="${hair}"/>`,
+      curly: [[-13, -163], [-7, -170], [1, -172], [9, -169], [14, -162], [-16, -155], [16, -155]].map(([a, b]) => `<circle cx="${a}" cy="${b}" r="6.5" fill="${hair}"/>`).join(''),
+      hijab: ''
+    }[style] || '';
+    const head = style === 'hijab'
+      ? `<path d="M-19 -150 Q-19 -177 0 -177 Q19 -177 19 -150 L22 -124 Q0 -116 -22 -124 Z" fill="${hair}"/><ellipse cx="0" cy="-152" rx="11.5" ry="13.5" fill="${skin}"/>`
+      : `<rect x="-5" y="-141" width="10" height="13" rx="3" fill="${skin}"/><ellipse cx="0" cy="-154" rx="15" ry="17" fill="${skin}"/>`;
+    const face = `<circle cx="-5" cy="-155" r="1.8" fill="#1B2233"/><circle cx="5" cy="-155" r="1.8" fill="#1B2233"/><path d="M-4.5 -147.5 Q0 -143.5 4.5 -147.5" stroke="#1B2233" stroke-width="1.6" fill="none" stroke-linecap="round"/><circle cx="-9" cy="-149" r="2.6" fill="#F27C6B" opacity=".22"/><circle cx="9" cy="-149" r="2.6" fill="#F27C6B" opacity=".22"/>`;
+    const held = pose === 'hold' && item === 'laptop' ? `<rect x="-26" y="-116" width="52" height="32" rx="4" fill="#E6EBF5" stroke="#C9D3EA" stroke-width="1.5"/><circle cx="0" cy="-100" r="3.5" fill="#C9D3EA"/>`
+      : pose === 'hold' && item === 'doc' ? `<g transform="rotate(-6 0 -110)"><rect x="-24" y="-142" width="48" height="62" rx="5" fill="#fff" stroke="#C9D3EA" stroke-width="1.5"/><rect x="-16" y="-133" width="22" height="5" rx="2.5" fill="${P.purple}"/>${[0, 1, 2, 3].map(i => `<rect x="-16" y="${-123 + i * 9}" width="${i === 3 ? 18 : 32}" height="3.5" rx="1.75" fill="#C9D3EA"/>`).join('')}</g>`
+      : pose === 'phone' ? `<rect x="7" y="-153" width="11" height="19" rx="2.5" fill="#1E2433"/>`
+      : pose === 'folder' ? `<rect x="22" y="-104" width="22" height="28" rx="3" fill="${P.gold}" transform="rotate(8 33 -90)"/>` : '';
+    const body = `<path d="M-21 -128 Q-25 -116 -22 -80 L22 -80 Q25 -116 21 -128 Q0 -137 -21 -128 Z" fill="${top}"/>`;
+    return `<g transform="translate(${x} ${y}) scale(${flip ? -s : s} ${s})">${hairBack}${legs}<ellipse cx="-9" cy="-4" rx="11" ry="5" fill="${shoe}"/><ellipse cx="9" cy="-4" rx="11" ry="5" fill="${shoe}"/>${body}${head}${hairTop}${face}${left}${right}${held}</g>`;
+  }
+  const shadow = (x, y, w) => `<ellipse cx="${x}" cy="${y}" rx="${w}" ry="7" fill="#1B2A4A" opacity=".08"/>`;
+  const spark = (x, y, r = 8, c = P.gold) => `<path d="M${x} ${y - r}l${r * .3} ${r * .7} ${r * .7} ${r * .3}-${r * .7} ${r * .3}-${r * .3} ${r * .7}-${r * .3}-${r * .7}-${r * .7}-${r * .3} ${r * .7}-${r * .3}z" fill="${c}"/>`;
+  const card = (x, y, w, h, inner = '') => `<g transform="translate(${x} ${y})"><rect width="${w}" height="${h}" rx="12" fill="${C.paper}" stroke="${C.line}" stroke-width="1.5"/>${inner}</g>`;
+  const big = (body, label) => svg(`<defs><radialGradient id="pg" cx="50%" cy="45%" r="60%"><stop offset="0" stop-color="${C.soft}"/><stop offset="1" stop-color="${C.soft}" stop-opacity="0"/></radialGradient></defs><ellipse cx="200" cy="140" rx="190" ry="120" fill="url(#pg)"/>${body}`, label, '0 0 400 260');
+  const plant = (x, y) => `<g transform="translate(${x} ${y})"><path d="M0 0 Q-14 -30 -4 -56 M0 0 Q12 -26 6 -50 M0 0 Q-2 -34 2 -66" stroke="${P.teal}" stroke-width="6" fill="none" stroke-linecap="round"/><path d="M-12 0 h24 l-4 22 h-16 z" fill="${P.coral}"/></g>`;
+
   const S = {
     search: () => svg(`${blob(C.soft)}
       ${doc(60, 52, 66, 86, 6)}${doc(98, 40, 66, 86, 6, C.d)}
@@ -144,18 +182,54 @@
       <circle cx="119" cy="66" r="7" fill="${C.skin}"/><circle cx="203" cy="64" r="7" fill="${C.skin}"/>
       <g transform="rotate(12 222 46)"><rect x="200" y="18" width="44" height="54" rx="6" fill="${C.paper}" stroke="${C.line}" stroke-width="2"/><rect x="208" y="28" width="22" height="5" rx="2.5" fill="${C.a}"/><rect x="208" y="38" width="28" height="4" rx="2" fill="${C.line}"/><rect x="208" y="46" width="20" height="4" rx="2" fill="${C.line}"/><circle cx="230" cy="60" r="6" fill="${C.d}"/></g>
       ${[[70, 40, C.c], [96, 26, C.a], [260, 96, C.b], [250, 140, C.c], [62, 110, C.d], [280, 60, C.a], [44, 76, C.b]].map(([x, y, c], i) => `<rect x="${x}" y="${y}" width="9" height="5" rx="2" fill="${c}" transform="rotate(${i * 37} ${x} ${y})"/>`).join('')}
-      <path d="M60 178h200" stroke="${C.ink}" stroke-width="6" stroke-linecap="round" opacity=".8"/>`, 'A job seeker celebrating a job offer')
+      <path d="M60 178h200" stroke="${C.ink}" stroke-width="6" stroke-linecap="round" opacity=".8"/>`, 'A job seeker celebrating a job offer'),
+
+    // ---- detailed people scenes ----
+    team: () => big(`${plant(44, 236)}
+      ${card(18, 34, 96, 74, `<rect x="12" y="12" width="40" height="7" rx="3.5" fill="${P.purple}"/>${[0, 1, 2].map(i => `<rect x="12" y="${28 + i * 10}" width="${i === 2 ? 44 : 70}" height="4" rx="2" fill="${C.line}"/>`).join('')}<circle cx="80" cy="60" r="9" fill="${P.teal}"/><path d="M75.5 60l3 3 6-6" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round"/>`)}
+      ${card(288, 22, 96, 50, `<circle cx="26" cy="25" r="16" fill="${P.teal}"/><text x="26" y="30" text-anchor="middle" font-family="system-ui,sans-serif" font-size="12" font-weight="800" fill="#fff">92%</text><rect x="50" y="16" width="34" height="5" rx="2.5" fill="${C.ink}" opacity=".7"/><rect x="50" y="27" width="24" height="4" rx="2" fill="${C.line}"/>`)}
+      <g transform="translate(176 14)"><rect width="58" height="34" rx="14" fill="${P.purple}"/><path d="M18 34l-2 10 10-10" fill="${P.purple}"/>${spark(29, 17, 8, '#fff')}</g>
+      ${shadow(130, 242, 34)}${shadow(212, 244, 36)}${shadow(292, 242, 34)}
+      ${fig({ x: 130, y: 240, s: .92, skin: SKIN[0], hair: '#3B2A20', style: 'long', top: P.coral, bottom: P.navy, pose: 'hold', item: 'laptop' })}
+      ${fig({ x: 212, y: 242, s: 1.02, skin: SKIN[3], hair: '#1B1612', style: 'short', top: P.teal, bottom: P.grey, pose: 'wave' })}
+      ${fig({ x: 292, y: 240, s: .92, skin: SKIN[2], hair: '#5A3A22', style: 'curly', top: P.gold, bottom: P.purple, skirt: true, pose: 'folder' })}
+      ${spark(360, 118, 7, P.coral)}${spark(28, 140, 6, P.purple)}`, 'Job seekers working with their AI career helper'),
+    searcher: () => big(`${shadow(150, 244, 38)}
+      ${fig({ x: 150, y: 242, s: 1, skin: SKIN[2], hair: '#2A1C14', style: 'bun', top: P.purple, bottom: P.navy, pose: 'phone' })}
+      ${[0, 1, 2].map(i => card(212 + (i % 2) * 16, 40 + i * 62, 150, 48, `<rect x="14" y="14" width="66" height="6" rx="3" fill="${C.ink}" opacity=".7"/><rect x="14" y="27" width="46" height="4" rx="2" fill="${C.line}"/><circle cx="124" cy="24" r="13" fill="${i === 2 ? P.gold : P.teal}"/><text x="124" y="28.5" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" font-weight="800" fill="#fff">${[94, 88, 71][i]}</text>`)).join('')}
+      <path d="M176 92 Q196 80 210 66" stroke="${P.sky}" stroke-width="3" fill="none" stroke-dasharray="4 6" stroke-linecap="round"/>
+      ${plant(66, 236)}${spark(70, 70, 8, P.gold)}`, 'A job seeker finding matched jobs on a phone'),
+    writer2: () => big(`${shadow(150, 244, 38)}
+      ${fig({ x: 150, y: 242, s: 1.05, skin: SKIN[4], hair: '#151110', style: 'short', top: P.sky, bottom: P.navy, pose: 'hold', item: 'doc' })}
+      <circle cx="292" cy="78" r="38" fill="${P.purple}" opacity=".14"/><circle cx="292" cy="78" r="26" fill="${P.purple}"/>${spark(292, 78, 13, '#fff')}
+      <path d="M262 98 Q222 116 186 108" stroke="${P.purple}" stroke-width="3" fill="none" stroke-dasharray="4 6" stroke-linecap="round"/>
+      ${card(246, 134, 128, 72, `<rect x="12" y="12" width="70" height="5" rx="2.5" fill="${P.teal}"/><rect x="12" y="24" width="100" height="4" rx="2" fill="${C.line}"/><rect x="12" y="34" width="86" height="4" rx="2" fill="${C.line}"/><rect x="12" y="48" width="44" height="12" rx="6" fill="${P.teal}" opacity=".18"/><rect x="62" y="48" width="44" height="12" rx="6" fill="${P.purple}" opacity=".18"/>`)}
+      ${plant(52, 236)}`, 'A job seeker with a CV improved by an AI writer'),
+    interviewer: () => big(`${shadow(130, 244, 34)}${shadow(272, 244, 34)}
+      ${fig({ x: 130, y: 242, s: .98, skin: SKIN[1], hair: P.plum, style: 'hijab', top: P.teal, bottom: P.navy, pose: 'hold', item: 'doc' })}
+      ${fig({ x: 272, y: 242, s: 1, flip: true, skin: SKIN[3], hair: '#1B1612', style: 'short', top: P.navy, bottom: P.grey, pose: 'point' })}
+      <g transform="translate(70 30)"><rect width="74" height="38" rx="14" fill="${C.paper}" stroke="${C.line}" stroke-width="1.5"/><path d="M30 38l-4 11 14-11" fill="${C.paper}" stroke="${C.line}" stroke-width="1.5"/><rect x="12" y="12" width="48" height="4" rx="2" fill="${C.line}"/><rect x="12" y="22" width="34" height="4" rx="2" fill="${C.line}"/></g>
+      <g transform="translate(258 26)"><rect width="74" height="38" rx="14" fill="${P.purple}"/><path d="M40 38l2 11 10-11" fill="${P.purple}"/>${[0, 1, 2].map(i => `<circle cx="${24 + i * 13}" cy="19" r="4" fill="#fff"/>`).join('')}</g>`, 'A job interview with a confident candidate'),
+    winner: () => big(`${shadow(200, 244, 40)}
+      ${fig({ x: 200, y: 242, s: 1.05, skin: SKIN[2], hair: '#24180F', style: 'long', top: P.teal, bottom: P.navy, pose: 'cheer' })}
+      <g transform="rotate(10 300 70)">${card(270, 30, 66, 84, `<rect x="10" y="12" width="30" height="6" rx="3" fill="${P.purple}"/><rect x="10" y="26" width="46" height="4" rx="2" fill="${C.line}"/><rect x="10" y="35" width="38" height="4" rx="2" fill="${C.line}"/><circle cx="46" cy="64" r="10" fill="${P.teal}"/><path d="M41 64l3 3 6-6" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round"/>`)}</g>
+      ${[[90, 60, P.coral], [120, 34, P.purple], [306, 150, P.sky], [334, 196, P.gold], [76, 150, P.teal], [150, 80, P.gold], [258, 28, P.coral], [62, 104, P.purple]].map(([x, y, c], i) => `<rect x="${x}" y="${y}" width="11" height="6" rx="2" fill="${c}" transform="rotate(${i * 41} ${x} ${y})"/>`).join('')}
+      ${spark(108, 120, 9, P.gold)}`, 'A job seeker celebrating a job offer'),
+    formfill: () => big(`${shadow(120, 244, 36)}
+      ${fig({ x: 120, y: 242, s: 1, skin: SKIN[0], hair: '#C9853F', style: 'bun', top: P.coral, bottom: P.navy, skirt: true, pose: 'point' })}
+      ${card(196, 46, 168, 168, `<rect x="16" y="16" width="64" height="7" rx="3.5" fill="${P.purple}"/>${[0, 1, 2, 3, 4].map(i => `<rect x="16" y="${38 + i * 24}" width="100" height="12" rx="4" fill="${C.soft}" stroke="${C.line}"/><circle cx="140" cy="${44 + i * 24}" r="7" fill="${i < 4 ? P.teal : C.line}"/>${i < 4 ? `<path d="M136.5 ${44 + i * 24}l2.5 2.5 5-5" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/>` : ''}`).join('')}`)}
+      <path d="M352 40l18 6v12c0 12-8 20-18 24-10-4-18-12-18-24V46z" fill="${P.teal}"/><path d="M345 58l5 5 9-10" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>`, 'A job seeker filling in an application form quickly')
   };
 
   // ---- side rails: illustrated helpers that fill the empty space on wide screens (hidden on smaller ones) ----
   const CARDS = {
-    writer: ['seeker', 'Your AI CV writer', 'Paste any advert. A senior CV writer fits the job into your own Word CV, a recruiter-reviewer checks it is realistic, and it is written in your voice.', 'Tailor for an advert', '#/new'],
-    robot: ['phone', 'Your job robot', 'Every morning it gathers new roles in your field, including LinkedIn, Totaljobs and Reed adverts via Google Jobs.', 'See jobs for you', '#/jobs'],
-    match: ['coach', 'Scored against your CVs', 'Every job is matched to the skills on all your CVs, with your town first. Pick one and press Tailor.', 'Paste an advert', '#/new'],
-    forms: ['shield', 'Workday-ready', 'Fill in your details and work history once, then copy them into Workday, Taleo or SuccessFactors in seconds.', 'Career profile', '#/profile'],
-    prep: ['interview', 'Interview prep', 'Likely questions, STAR stories and a mock interviewer for each application.', 'Open Prep', '#/prep'],
-    track: ['celebrate', 'Track every application', 'Follow-ups, interviews and offers in one pipeline, with reminders.', 'Pipeline', '#/pipeline'],
-    ask: ['ask', 'Ask AI', 'Ask anything about a job, your CV or the company, with answers from your own documents.', 'Applications', '#/pipeline']
+    writer: ['writer2', 'Your AI CV writer', 'Paste any advert. A senior CV writer fits the job into your own Word CV, a recruiter-reviewer checks it is realistic, and it is written in your voice.', 'Tailor for an advert', '#/new'],
+    robot: ['searcher', 'Your job robot', 'Every morning it gathers new roles in your field, including LinkedIn, Totaljobs and Reed adverts via Google Jobs.', 'See jobs for you', '#/jobs'],
+    match: ['team', 'Scored against your CVs', 'Every job is matched to the skills on all your CVs, with your town first. Pick one and press Tailor.', 'Paste an advert', '#/new'],
+    forms: ['formfill', 'Workday-ready', 'Fill in your details and work history once, then copy them into Workday, Taleo or SuccessFactors in seconds.', 'Career profile', '#/profile'],
+    prep: ['interviewer', 'Interview prep', 'Likely questions, STAR stories and a mock interviewer for each application.', 'Open Prep', '#/prep'],
+    track: ['winner', 'Track every application', 'Follow-ups, interviews and offers in one pipeline, with reminders.', 'Pipeline', '#/pipeline'],
+    ask: ['writer2', 'Ask AI', 'Ask anything about a job, your CV or the company, with answers from your own documents.', 'Applications', '#/pipeline']
   };
   const RAILS = { dashboard: ['writer', 'robot'], jobs: ['robot', 'match'], profile: ['forms', 'writer'], app: ['writer', 'prep'], pipeline: ['track', 'prep'], prep: ['prep', 'ask'], settings: ['forms', 'robot'] };
   const TIPS = ['Tailor the CV for every application: recruiters spend seconds on the first page.', 'Apply within 3 days of a job being posted: early applicants get read first.', 'Follow up 5 working days after applying, briefly and politely.', 'Keep one CV per skill set: Applywise picks the best one for each job.', 'Tick a new bullet only if you really did that work: it will come up at interview.', 'A short, specific cover letter beats a long generic one.'];
@@ -173,5 +247,10 @@
   }
 
   window.CVT = window.CVT || {};
-  window.CVT.art = { scene: name => (S[name] || S.search)(), names: Object.keys(S), rails };
+  /** A person illustration for each page's header. */
+  const HEAD = { dashboard: 'team', jobs: 'searcher', pipeline: 'winner', prep: 'interviewer', profile: 'formfill', settings: 'writer2', help: 'team', autopilot: 'searcher' };
+  function headArt(view) { const k = HEAD[view]; return k ? S[k]() : ''; }
+  // The welcome / getting-started picture uses the detailed people too.
+  S.welcome = S.winner;
+  window.CVT.art = { scene: name => (S[name] || S.search)(), names: Object.keys(S), rails, headArt };
 })();

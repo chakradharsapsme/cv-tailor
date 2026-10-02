@@ -143,7 +143,7 @@
   // ---------------- first-run tour ----------------
   const STEPS = [
     { sel: '.brand', title: 'Welcome to Applywise', text: 'Your job-search workspace: find roles, tailor your CV, prepare for interviews and track every application in one place.' },
-    { sel: '[data-nav="jobs"]', title: 'Find roles', text: 'Jobs gathers IT and business-analyst roles that match your profile, scored for fit. Import one to start an application.' },
+    { sel: '[data-nav="jobs"]', title: 'Find roles', text: 'Jobs gathers roles in your field from your country (your city first), scored against your CVs. Pick one to start an application.' },
     { sel: '.new-btn', title: 'Start an application', text: 'Paste a job description. Applywise analyses the fit, tailors your CV in your own Word template and drafts the cover letter.' },
     { sel: '[data-nav="pipeline"]', title: 'Track everything', text: 'Each application has Documents, Studio, interview questions and follow-ups. The pipeline shows what needs doing next.' },
     { sel: '[data-nav="prep"]', title: 'Practise', text: 'Mock interviews, drill cards and your story bank, ready for the day.' },

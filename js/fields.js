@@ -152,8 +152,11 @@
   let cur = null;
   const cached = () => { try { return JSON.parse(localStorage.getItem('cvt.field') || 'null'); } catch (_) { return null; } };
   /** Guess a field from what someone wrote about themselves. */
+  // Your saved job searches and CV names: used only while the profile has no target roles.
+  let hint = '';
+  const setHint = t => { hint = String(t || ''); };
   function infer(p) {
-    const txt = [...(p.targetRoles || []), p.currentTitle || '', p.extraSkills || ''].join(' \n ');
+    const txt = [...(p.targetRoles || []), p.currentTitle || '', p.extraSkills || '', (p.targetRoles || []).length ? '' : hint].join(' \n ');
     if (!txt.trim()) return 'any';
     if (/\b(sap|ariba|erp|s\/?4\s?hana|business analyst|it business|functional consultant|servicenow|salesforce|workday)\b/i.test(txt)) return 'it';
     let best = 'any', score = 0;
@@ -187,5 +190,5 @@
   const fill = s => typeof s === 'string' && s.includes('{{') ? s.replace(/\{\{(\w+)\}\}/g, (m, k) => { const v = vars()[k]; return v == null ? m : v; }) : s;
 
   window.CVT = window.CVT || {};
-  window.CVT.fields = { list: F, GENERAL, get: id => F[id] || F.any, idOf, infer, use, current, vars, fill };
+  window.CVT.fields = { list: F, GENERAL, get: id => F[id] || F.any, idOf, infer, setHint, use, current, vars, fill };
 })();

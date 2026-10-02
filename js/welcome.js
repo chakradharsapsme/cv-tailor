@@ -26,7 +26,7 @@
     const close = () => { wrap.remove(); document.body.classList.remove('no-scroll'); document.removeEventListener('keydown', key); };
     const key = e => { if (e.key === 'Escape') skip(); };
     document.addEventListener('keydown', key);
-    const skip = () => { S.local.set('cvt.welcomeDone', '1'); close(); window.CVT.shell && window.CVT.shell.tour(false); };
+    const skip = () => { S.local.set('cvt.welcomeDone', '1'); close(); };
 
     function draw() {
       const f = FL().get(st.field || 'any');
@@ -40,7 +40,7 @@
           <p class="hint">Pick your field so jobs, skills and interview practice fit you.</p>
           <div class="wl-fields" role="radiogroup" aria-label="Your field">${Object.values(FL().list).map(x => html`<button type="button" role="radio" aria-checked="${st.field === x.id ? 'true' : 'false'}" class="wl-chip ${st.field === x.id ? 'on' : ''}" data-field="${x.id}">${x.short}</button>`)}</div>
           <label class="field mt"><span>Job titles you want (one per line)</span><textarea id="wl-roles" rows="3" placeholder="${f.example}">${st.roles}</textarea></label>
-          ${f.titles.length ? html`<p class="muted small">Ideas: ${f.titles.slice(0, 5).map(t => html`<button type="button" class="linkish" data-add="${t}">${t}</button>`)}</p>` : ''}` : ''}
+          ${f.titles.length ? html`<p class="muted small">Ideas: ${f.titles.slice(0, 5).map((t, i) => html`${i ? ' · ' : ''}<button type="button" class="linkish" data-add="${t}">${t}</button>`)}</p>` : ''}` : ''}
         ${st.step === 1 ? html`
           <h2 id="wl-title">Where do you want to work?</h2>
           <p class="hint">Jobs come from your country, plus remote roles open to it.</p>

@@ -244,7 +244,19 @@
   }
   const CO = () => window.CVT.countries;
   /** A place in the country: your target location if it is there, else the country itself. */
-  const placeIn = (code, loc) => (loc && (CO().inCountry(code, loc) || CO().get(code).name === loc)) ? loc : CO().get(code).name;
+  const inOther = (code, loc) => Object.entries(CO().list).some(([k, c]) => k !== code && c.re.test(loc) && !CO().list[code].re.test(loc));
+  const placeIn = (code, loc) => (loc && !/^(remote|anywhere)$/i.test(loc.trim()) && (CO().inCountry(code, loc) || CO().get(code).name === loc || !inOther(code, loc))) ? loc : CO().get(code).name;
+  // Your town or city (and other preferred places in the country): jobs there rank first.
+  const ALIAS = { bangalore: 'bengaluru', bengaluru: 'bangalore', bombay: 'mumbai', mumbai: 'bombay', gurgaon: 'gurugram', gurugram: 'gurgaon', madras: 'chennai', chennai: 'madras', calcutta: 'kolkata', kolkata: 'calcutta', nyc: 'new york', 'new york': 'nyc' };
+  let NEAR = [];
+  function setNear(code, locs) {
+    const names = Object.values(CO().list).map(c => c.name.toLowerCase());
+    const out = new Set();
+    (locs || []).forEach(l => String(l || '').split(/[,/;]| or /).map(x => x.trim().toLowerCase()).filter(x => x.length > 2 && !names.includes(x) && !/^(remote|anywhere|hybrid|uk|usa|us|england|scotland|wales)$/.test(x) && !inOther(code, x)).forEach(x => { out.add(x); if (ALIAS[x]) out.add(ALIAS[x]); }));
+    NEAR = [...out].map(x => new RegExp('\\b' + x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i'));
+    return [...out];
+  }
+  const isNear = j => !!(j.location && NEAR.some(re => re.test(j.location)));
   /** Jobs found for the country you are searching now (older results had no country and were UK). */
   const inCountryNow = (j, cfg) => (j.country || 'GB') === cfg.country || j.status === 'imported' || j.status === 'saved';
   /** Fingerprint of what the searches are built from: the default CV and the target titles. */
@@ -266,9 +278,13 @@
         await saveFeed(feed);
       }
     }
-    if (feed.searches && feed.searches.queries && feed.searches.queries.length) return Object.assign({}, feed.searches, { country: code, location: placeIn(code, feed.searches.location), queries: withBA(feed.searches.queries) });
     const p = await S.getProfile();
-    return { country: code, queries: await defaultSearches(), location: placeIn(code, (p.targetLocations || [])[0]), remote: true, type: p.workPreference === 'Contract' ? 'contract' : '' };
+    if (feed.searches && feed.searches.queries && feed.searches.queries.length) {
+      const loc = placeIn(code, feed.searches.location || (p.targetLocations || [])[0]);
+      return Object.assign({}, feed.searches, { country: code, location: loc, near: setNear(code, [loc].concat(p.targetLocations || [])), queries: withBA(feed.searches.queries) });
+    }
+    const loc = placeIn(code, (p.targetLocations || [])[0]);
+    return { country: code, queries: await defaultSearches(), location: loc, near: setNear(code, [loc].concat(p.targetLocations || [])), remote: true, type: p.workPreference === 'Contract' ? 'contract' : '' };
   }
 
   let evidenceCache = null;
@@ -307,13 +323,15 @@
     const age = j.posted ? daysBetween(j.posted) : null;
     if (age != null && age > 30) flags.push({ cls: 'warn', text: `Posted ${age}d ago: may be filled` });
     if (isAgency(j.company)) flags.push({ cls: 'muted', text: 'Agency' });
+    const near = isNear(j);
+    if (near) { s += 8; flags.unshift({ cls: 'ok', text: '📍 Near you' }); }
     // With several CVs: which one covers this advert best.
     let best = null;
     if (ev.perCv && ev.perCv.length > 1 && asked.length) {
       const r = ev.perCv.map(c => ({ c, n: asked.filter(t => c.terms.has(t)).length })).sort((x, y) => y.n - x.n || (y.c.isDefault ? 1 : 0) - (x.c.isDefault ? 1 : 0))[0];
       if (r && r.n) best = { id: r.c.id, name: r.c.name, n: r.n };
     }
-    return { score: Math.max(0, Math.min(100, s)), quick: !(j.jd && asked.length >= 3), have, miss, flags, age, best };
+    return { score: Math.max(0, Math.min(100, s)), quick: !(j.jd && asked.length >= 3), have, miss, flags, age, best, near };
   }
 
   /** Pipeline duplicates: same company and similar role, or a similar role via an agency in the last 45 days. */
@@ -380,7 +398,7 @@
           return titleRel >= 0.5 || (!offTrack && titleSkill && skills >= 3) || (!offTrack && bodyRel >= 0.67 && skills >= 3 && (fl.analyst ? fl.analyst.test(j.title) : fl.fits(j)));
         };
         const W = window.CVT.websources;
-        const r = await W.search({ queries: cfg.queries, portals: cfg.portals, extraPortals: window.CVT.employers ? await window.CVT.employers.portals() : [], country: cfg.country, field: FL().current().id, relevant, onStep: t => onStep && onStep(-1, 0, t) });
+        const r = await W.search({ queries: cfg.queries, portals: cfg.portals, extraPortals: window.CVT.employers ? await window.CVT.employers.portals() : [], country: cfg.country, city: (cfg.near || [])[0] || '', field: FL().current().id, relevant, onStep: t => onStep && onStep(-1, 0, t) });
         found += r.jobs.length;
         for (const j of r.jobs) {
           const k = keyOf(j), old = feed.items[k];
@@ -605,7 +623,7 @@
             <label class="inline-field">Min match <select id="f-min">${[0, 40, 50, 60, 70].map(n => html`<option value="${n}" ${ui.min == n ? raw('selected') : ''}>${n ? n + '+' : 'Any'}</option>`)}</select></label>
             <label class="inline-field">Posted <select id="f-days">${[[3, '3 days'], [7, '7 days'], [14, '14 days'], [30, '30 days'], [9999, 'Any time']].map(([v, l]) => html`<option value="${v}" ${ui.days == v ? raw('selected') : ''}>${l}</option>`)}</select></label>
             <label class="check-line"><input id="f-all" type="checkbox" ${ui.allRoles ? raw('checked') : ''}> Show roles outside my field</label>
-            <label class="inline-field">Sort <select id="f-sort"><option value="score" ${ui.sort === 'score' ? raw('selected') : ''}>Best match</option><option value="date" ${ui.sort === 'date' ? raw('selected') : ''}>Newest</option><option value="pay" ${ui.sort === 'pay' ? raw('selected') : ''}>Highest pay</option></select></label>
+            <label class="inline-field">Sort <select id="f-sort"><option value="score" ${ui.sort === 'score' ? raw('selected') : ''}>Best match</option><option value="date" ${ui.sort === 'date' ? raw('selected') : ''}>Newest</option><option value="pay" ${ui.sort === 'pay' ? raw('selected') : ''}>Highest pay</option><option value="near" ${ui.sort === 'near' ? raw('selected') : ''}>Near me first</option></select></label>
             <label class="inline-field">Type <select id="f-kind">${[['', 'Any'], ['contract', 'Contract'], ['perm', 'Permanent']].map(([v, l]) => html`<option value="${v}" ${ui.kind === v ? raw('selected') : ''}>${l}</option>`)}</select></label>
             <label class="inline-field">Work <select id="f-mode">${[['', 'Any'], ['remote', 'Remote'], ['hybrid', 'Hybrid'], ['onsite', 'On-site']].map(([v, l]) => html`<option value="${v}" ${ui.mode === v ? raw('selected') : ''}>${l}</option>`)}</select></label>
           </div>
@@ -640,10 +658,11 @@
               ${r.errors && r.errors.length ? html`<p class="muted small">Note: ${r.errors[0]}</p>` : ''}`)
             : ''}
             <p class="hint">Runs only when you ask. Tell your AI assistant <strong>“run my job robot”</strong>: it searches Indeed, SimplyHired, Reed, ContractorUK and consultancy career pages (Deloitte, PwC, KPMG, EY, Accenture, Capgemini) for SAP, S2P/P2P and IT business-analyst roles, removes duplicates across sites and adds new matches here. LinkedIn, Totaljobs and CWJobs block automated reading; set up their free job-alert emails instead. For Indeed only, press <strong>Refresh jobs</strong> above.</p>
-            <details class="small"><summary>Optional: add Reed and Adzuna feeds</summary>
+            <details class="small"><summary>Optional: add more free job feeds (Reed, Adzuna, Jooble, Google Jobs)</summary>
               <ol class="tight small mt">
-                <li>Get a free key at <a class="link" href="https://www.reed.co.uk/developers/jobseeker" target="_blank" rel="noopener">reed.co.uk/developers</a> and a free app ID and key at <a class="link" href="https://developer.adzuna.com/signup" target="_blank" rel="noopener">developer.adzuna.com</a>.</li>
-                <li>In <a class="link" href="${REPO_URL}/settings/secrets/actions" target="_blank" rel="noopener">GitHub → Settings → Secrets → Actions</a>, add <code>REED_API_KEY</code>, <code>ADZUNA_APP_ID</code> and <code>ADZUNA_APP_KEY</code>, then <a class="link" href="${REPO_URL}/actions/workflows/fetch-jobs.yml" target="_blank" rel="noopener">run the workflow</a> once.</li>
+                <li>Free keys: <a class="link" href="https://www.reed.co.uk/developers/jobseeker" target="_blank" rel="noopener">Reed</a>, <a class="link" href="https://developer.adzuna.com/signup" target="_blank" rel="noopener">Adzuna</a> (app ID and key), <a class="link" href="https://jooble.org/api/about" target="_blank" rel="noopener">Jooble</a>, and your <a class="link" href="https://console.apify.com/settings/integrations" target="_blank" rel="noopener">Apify API token</a> for Google Jobs (which also brings LinkedIn adverts, without scraping LinkedIn).</li>
+                <li>In <a class="link" href="${REPO_URL}/settings/secrets/actions" target="_blank" rel="noopener">GitHub → Settings → Secrets → Actions</a>, add any of <code>REED_API_KEY</code>, <code>ADZUNA_APP_ID</code>, <code>ADZUNA_APP_KEY</code>, <code>JOOBLE_API_KEY</code>, <code>APIFY_TOKEN</code>, then <a class="link" href="${REPO_URL}/actions/workflows/fetch-jobs.yml" target="_blank" rel="noopener">run the workflow</a> once.</li>
+                <li>Each feed has a built-in limit that keeps it free: Jooble 1 request a day; Google Jobs about 20 jobs a day (about $2 a month), and it pauses if your Apify usage reaches $3.50 of the free $5 monthly credit.</li>
               </ol>
             </details>
           </section>`}
@@ -689,10 +708,11 @@
       const counts = {}; base.forEach(r => srcOf(r.j).forEach(x => { counts[x] = (counts[x] || 0) + 1; }));
       if (ui.src && !counts[ui.src]) ui.src = '';
       const rows = base.filter(r => !ui.src || srcOf(r.j).includes(ui.src))
-        .sort((a, b) => ui.sort === 'pay' ? payValue(b.j) - payValue(a.j) || b.sc.score - a.sc.score : ui.sort === 'date' ? (b.j.posted || '').localeCompare(a.j.posted || '') : b.sc.score - a.sc.score || (b.j.posted || '').localeCompare(a.j.posted || ''));
+        .sort((a, b) => ui.sort === 'pay' ? payValue(b.j) - payValue(a.j) || b.sc.score - a.sc.score : ui.sort === 'near' ? (b.sc.near ? 1 : 0) - (a.sc.near ? 1 : 0) || b.sc.score - a.sc.score : ui.sort === 'date' ? (b.j.posted || '').localeCompare(a.j.posted || '') : b.sc.score - a.sc.score || (b.j.posted || '').localeCompare(a.j.posted || ''));
       $('#f-src', root).innerHTML = Object.keys(counts).length > 1 ? [html`<button type="button" class="src-pill ${!ui.src ? 'on' : ''}" data-src="">All sites <b>${base.length}</b></button>`, ...Object.entries(counts).sort((a, b) => b[1] - a[1]).map(([k, n]) => html`<button type="button" class="src-pill ${ui.src === k ? 'on' : ''}" data-src="${k}">${k} <b>${n}</b></button>`)].map(String).join('') : '';
+      const nearN = rows.filter(r => r.sc.near).length;
       const strong = rows.filter(r => r.sc.score >= 70).length, fresh = rows.filter(r => r.j.status === 'new').length, multi = rows.filter(r => srcOf(r.j).length > 1).length;
-      $('#jb-sum', root).innerHTML = rows.length ? String(html`<span><b>${rows.length}</b> jobs</span><span><b>${strong}</b> strong matches</span><span><b>${fresh}</b> new</span><span><b>${Object.keys(counts).length}</b> sites</span>${multi ? html`<span><b>${multi}</b> on several sites</span>` : ''}`) : '';
+      $('#jb-sum', root).innerHTML = rows.length ? String(html`<span><b>${rows.length}</b> jobs</span><span><b>${strong}</b> strong matches</span><span><b>${fresh}</b> new</span>${nearN ? html`<span><b>${nearN}</b> near you</span>` : ''}<span><b>${Object.keys(counts).length}</b> sites</span>${multi ? html`<span><b>${multi}</b> on several sites</span>` : ''}`) : '';
       shown = rows;
       const list = $('#jb-list', root);
       if (!Object.keys(f.items).length) {

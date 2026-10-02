@@ -162,6 +162,13 @@
       const t0 = new Date().toISOString().slice(0, 10);
       const due = d ? Object.values(d.p || {}).filter(x => x.due <= t0).length : 0;
       const pb = $('#prep-badge'); if (pb) { pb.textContent = due; pb.hidden = !due; }
+      // At-a-glance chips in the top bar: what needs you today.
+      const pulse = $('#tb-pulse');
+      if (pulse) pulse.innerHTML = [
+        t.newCount ? `<a class="tb-chip hot" href="#/jobs" title="New jobs scoring 60+ against your CVs"><i></i>${t.newCount} strong new match${t.newCount > 1 ? 'es' : ''}</a>` : '',
+        n ? `<a class="tb-chip warn" href="#/pipeline" title="Follow-ups and next actions due">${n} follow-up${n > 1 ? 's' : ''} due</a>` : '',
+        due ? `<a class="tb-chip" href="#/prep" title="Interview drill cards to review">${due} card${due > 1 ? 's' : ''} to review</a>` : ''
+      ].join('') || '<span class="tb-chip calm">✓ All caught up</span>';
     } catch (_) {}
   }
 

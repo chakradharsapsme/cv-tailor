@@ -9,8 +9,8 @@
   const KEY = 'dashLayout';
   const COLS = ['left', 'mid', 'right'];
   const COL_LABEL = { left: 'left column', mid: 'middle column', right: 'right column' };
-  const NAMES = { start: 'Your next step', cvs: 'Your CVs', profile: 'Profile card', numbers: 'Your numbers', jobs: 'New jobs for you', actions: 'Next actions', recent: 'Recent applications', prep: 'Interview prep' };
-  const DEFAULT = () => ({ left: ['profile', 'cvs', 'numbers'], mid: ['start', 'jobs', 'actions', 'recent'], right: ['prep'], hidden: [] });
+  const NAMES = { start: 'Your next step', cvs: 'Your CVs', profile: 'Profile card', numbers: 'Your numbers', jobs: 'New jobs for you', actions: 'Next actions', followups: 'Follow-up overview', recent: 'Recent applications', prep: 'Interview prep' };
+  const DEFAULT = () => ({ left: ['profile', 'cvs', 'numbers'], mid: ['start', 'jobs', 'actions', 'followups', 'recent'], right: ['prep'], hidden: [] });
 
   /** Make sure every known section appears exactly once (new sections land in their default column). */
   function normalise(l) {

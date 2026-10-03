@@ -85,6 +85,7 @@
         <button class="btn ghost small" type="button" data-fu-act="eml">⬇ Save as email draft (.eml)</button>
         <button class="btn ghost small" type="button" data-fu-act="li">Copy LinkedIn note</button>
         <a class="btn ghost small" href="#/app/${a.id}/outreach">✨ Personalise with AI</a>
+        <button class="btn ghost small" type="button" data-fu-act="sent" title="Log it and schedule the next follow-up">✓ I sent it</button>
       </div>
     </div>`;
   }
@@ -109,10 +110,68 @@
       if (act === 'copy') return copy(`Subject: ${d.subject}\n\n${d.body}`, b);
       if (act === 'li') return copy(d.linkedin, b);
       if (act === 'mail') { const u = `mailto:${encodeURIComponent(d.to)}?subject=${encodeURIComponent(d.subject)}&body=${encodeURIComponent(d.body)}`; const w = window.open(u, '_blank'); if (!w) location.href = u; return; }
+      if (act === 'sent') { const a = await S.getApp(el.dataset.fu); if (!a) return; markSent(a, el.dataset.kind); await S.saveApp(a); toast('Logged as sent. The next follow-up is scheduled.'); window.CVT.app.rerender(); return; }
       if (act === 'eml') { const a = await S.getApp(el.dataset.fu); await window.CVT.ui.download(new Blob([eml(d)], { type: 'message/rfc822' }), `${((a && a.company) || 'job').replace(/[^\w]+/g, '_')}_${el.dataset.kind === 'thanks' ? 'thank_you' : 'follow_up'}.eml`); toast('Saved: open the file to send it from your email app'); }
     });
   }
 
+  /** Record that the message went out, and schedule the sensible next follow-up. */
+  function markSent(a, kind) {
+    const S = window.CVT.store, today = new Date().toISOString().slice(0, 10);
+    a.followLog = (a.followLog || []).concat({ kind, at: new Date().toISOString(), to: (a.followDraft && a.followDraft[kind] && a.followDraft[kind].to) || a.recruiterEmail || '' });
+    const nextText = { chase: 'Follow up again if no reply', thanks: 'Chase for interview feedback if no news', screening: 'Follow up after the screening call', offer: 'Confirm the offer details in writing' }[kind];
+    a.next = { text: nextText, due: S.addDays(today, kind === 'offer' ? 3 : 7) };
+    return a;
+  }
+  const ACTIVE = ['Applied', 'Screening', 'Interview', 'Offer'];
+
+  /** Overview of every follow-up: what's overdue, due, coming up and already sent. */
+  function overview(apps, profile) {
+    const { html } = window.CVT.ui;
+    const today = new Date().toISOString().slice(0, 10), week = new Date(Date.now() + 7 * 864e5).toISOString().slice(0, 10), fortnightAgo = Date.now() - 14 * 864e5;
+    const rows = apps.filter(a => (a.next && a.next.due) || (ACTIVE.includes(a.status) && (a.followLog || []).length))
+      .map(a => ({ a, d: draft(a, profile), last: (a.followLog || []).slice(-1)[0] || null }))
+      .sort((x, y) => ((x.a.next && x.a.next.due) || '9999').localeCompare((y.a.next && y.a.next.due) || '9999'));
+    const due = r => r.a.next && r.a.next.due;
+    const n = { overdue: rows.filter(r => due(r) && due(r) < today).length, today: rows.filter(r => due(r) === today).length, week: rows.filter(r => due(r) && due(r) > today && due(r) <= week).length,
+      sent: apps.reduce((m, a) => m + (a.followLog || []).filter(x => new Date(x.at) > fortnightAgo).length, 0) };
+    const when = d => { if (!d) return html`<span class="muted small">None set</span>`; const days = Math.round((new Date(d) - new Date(today)) / 864e5); return html`<span class="chip ${days < 0 ? 'bad' : days === 0 ? 'warn' : 'muted'}">${days < 0 ? `${-days}d overdue` : days === 0 ? 'Today' : `In ${days}d`}</span>`; };
+    const tile = (v, l, c) => html`<div class="fo-tile ${c}"><strong>${v}</strong><span>${l}</span></div>`;
+    return html`<div class="panel-head"><h2>Follow-up overview</h2><a class="link" href="#/pipeline">Pipeline</a></div>
+      <div class="fo-tiles">${tile(n.overdue, 'Overdue', n.overdue ? 'bad' : '')}${tile(n.today, 'Due today', n.today ? 'warn' : '')}${tile(n.week, 'Next 7 days', '')}${tile(n.sent, 'Sent in 14 days', n.sent ? 'ok' : '')}</div>
+      ${rows.length ? html`<ul class="fo-list">
+        ${rows.map(({ a, d, last }) => html`<li class="${a.next && a.next.due < today ? 'fo-late' : ''}">
+          <div class="fo-row">
+            <div class="fo-job"><a href="#/app/${a.id}/job">${a.role || 'Role'}</a><span class="muted small">${a.company || ''} · <span class="status s-${String(a.status || '').toLowerCase()}">${a.status}</span></span></div>
+            <div class="fo-meta small">
+              <span><span class="muted">To:</span> ${d.toName || 'not set'}${a.recruiterEmail ? ` (${a.recruiterEmail})` : ''}</span>
+              <span><span class="muted">Next:</span> ${a.next ? html`${d.label} ${when(a.next.due)}` : 'nothing scheduled'}</span>
+              <span><span class="muted">Last sent:</span> ${last ? `${new Date(last.at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} (${(KIND[last.kind] || '').toLowerCase()})` : 'not yet'}</span>
+            </div>
+            ${a.next ? html`<div class="fo-acts"><button class="btn ghost small" type="button" data-fo="open" data-id="${a.id}" aria-expanded="false">📎 Message</button><button class="btn primary small" type="button" data-fo="sent" data-id="${a.id}" title="I sent it: log it and schedule the next follow-up">✓ Sent</button></div>` : ''}
+          </div>
+          <div class="fo-slot" id="fo-${a.id}" hidden></div>
+        </li>`)}
+      </ul>`
+      : html`<p class="empty-note">No follow-ups yet. When you mark a job as applied, a follow-up is scheduled and its message is drafted for you.</p>`}`;
+  }
+
+  /** Clicks inside the overview: open the message, or log it as sent. */
+  function wireOverview(root) {
+    const S = window.CVT.store, { toast } = window.CVT.ui;
+    root.addEventListener('click', async e => {
+      const b = e.target.closest('[data-fo]'); if (!b) return;
+      const a = await S.getApp(b.dataset.id); if (!a) return;
+      if (b.dataset.fo === 'open') {
+        const slot = b.closest('li').querySelector('.fo-slot'); if (!slot) return;
+        slot.hidden = !slot.hidden; b.setAttribute('aria-expanded', String(!slot.hidden));
+        if (!slot.hidden && !slot.firstElementChild) slot.innerHTML = String(card(a, draft(a, await S.getProfile())));
+        return;
+      }
+      if (b.dataset.fo === 'sent') { markSent(a, kindOf(a)); await S.saveApp(a); toast(`Logged as sent. Next: ${a.next.text.toLowerCase()} in ${a.next.due === new Date().toISOString().slice(0, 10) ? '0' : Math.round((new Date(a.next.due) - Date.now()) / 864e5) + 1} days`); window.CVT.app.rerender(); }
+    });
+  }
+
   window.CVT = window.CVT || {};
-  window.CVT.followup = { draft, card, wire, eml, kindOf };
+  window.CVT.followup = { draft, card, wire, eml, kindOf, markSent, overview, wireOverview };
 })();

@@ -223,6 +223,7 @@
             </li>`)}</ul>`
             : html`<p class="empty-note">Nothing due. When you mark a job as applied, a follow-up is scheduled for 7 days later.</p>`}
         </section>
+          <section class="panel wide fo" data-sec="followups">${window.CVT.followup ? window.CVT.followup.overview(apps, profile) : ''}</section>
           <section class="panel wide" data-sec="recent">
           <div class="panel-head"><h2>Recent applications</h2><a class="link" href="#/pipeline">See all</a></div>
           ${apps.length ? html`<div class="table-wrap"><table class="list">
@@ -252,7 +253,7 @@
       el.textContent = top.length ? top.join(' · ') : 'No skills recognised yet';
     })).catch(() => {});
 
-    if (window.CVT.followup) window.CVT.followup.wire(root);
+    if (window.CVT.followup) { window.CVT.followup.wire(root); window.CVT.followup.wireOverview(root); }
     root.addEventListener('click', async e => {
       const b = e.target.closest('[data-act]'); if (!b) return;
       const a = await S.getApp(b.dataset.id); if (!a) return;

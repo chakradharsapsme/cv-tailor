@@ -200,6 +200,7 @@
           <p class="hint">Paste the advert. A full advert gives the best result, but two or three lines (or just the job title) are enough to start.</p>
           <label class="field"><span class="sr">Job description</span><textarea data-f="jd" id="jd" rows="18" placeholder="Paste the job description here, even a short one…">${a.jd}</textarea></label>
           <p class="hint short-hint" id="short-hint" hidden>Short advert: Applywise will fill in what this kind of role usually asks for and mark those points as typical, not from the advert.</p>
+          <details class="resp-prev" id="resp-prev" ${(a.jd || '').trim() ? raw('open') : ''}><summary id="resp-sum">Responsibilities in this advert</summary><div id="resp-list"></div></details>
           <label class="field"><span>What to emphasise for this job (treated as true)</span><textarea data-f="emphasis" rows="3" placeholder="e.g. Ran Guided Buying for a regulated utility; can start in 4 weeks">${a.emphasis}</textarea></label>
           <div class="grid-2">
             <label class="field"><span>Master CV to tailor</span>
@@ -265,6 +266,19 @@
     const STEPS = ['Reading your CV and profile', 'Senior CV writer fitting the job into your CV (1–2 min)', 'Recruiter review: fit, realism and your own voice', 'Writing your cover letter'];
     const shortHint = e => { const h = $('#short-hint', body); if (h) { const n = ((e && e.target ? e.target.value : a.jd) || '').trim().length; h.hidden = !(n > 0 && n < 600); } };
     $('#jd', body).addEventListener('input', shortHint); shortHint();
+    // Shows which responsibilities were picked up from the advert: every one is carried into the analysis and the tailored CV.
+    const respPrev = () => {
+      const list = window.CVT.agent.responsibilities(a.jd || ''), box = $('#resp-list', body), sum = $('#resp-sum', body);
+      if (!box) return;
+      const jd = (a.jd || '').trim();
+      sum.textContent = jd ? `Responsibilities picked up from this advert (${list.length})` : 'Responsibilities in this advert';
+      box.innerHTML = String(!jd ? html`<p class="muted small">Paste the advert above: its responsibilities are listed here and every one is carried into the analysis and your tailored CV.</p>`
+        : list.length ? html`<ol class="resp-ol small">${list.map(x => html`<li>${x}</li>`)}</ol><p class="muted small">All of these are sent to the analysis as must-cover duties; the AI also adds any it finds in the rest of the text.</p>`
+        : html`<p class="warn-text small">No responsibilities section found in this text.${/Only the advert summary/.test(a.notes || '') || jd.length < 900 ? ' This looks like a summary only: open the full advert' : ' Check the full advert was pasted'}${a.url ? html` (<a class="link" href="${a.url}" target="_blank" rel="noopener">open advert</a>)` : ''} and paste it above so the duties are included. The AI will still read the duties from the text it has.</p>`);
+    };
+    let respT = null;
+    $('#jd', body).addEventListener('input', () => { clearTimeout(respT); respT = setTimeout(respPrev, 400); });
+    respPrev();
     // Shows the background run (if any) for this job, and keeps it up to date while you stay on this page.
     let st = null;
     function paint() {
@@ -334,6 +348,27 @@
   // =====================================================================
   // FIT
   // =====================================================================
+  /** Every responsibility in the advert and where the tailored CV covers it. */
+  function respPanel(a, an) {
+    const list = Array.isArray(an.responsibilities) ? an.responsibilities : null;
+    if (!list) {
+      const scan = window.CVT.agent.responsibilities(a.jd || '');
+      if (!scan.length) return '';
+      return html`<section class="panel"><div class="panel-head"><h2>Responsibilities in the advert</h2><span class="muted small">${scan.length} found</span></div>
+        <p class="hint">This job was analysed before responsibility tracking was added. <a class="link" href="#/app/${a.id}/job">Re-analyse</a> to make sure each one is covered in your tailored CV.</p>
+        <ol class="resp-ol small">${scan.map(x => html`<li>${x}</li>`)}</ol></section>`;
+    }
+    if (!list.length) return '';
+    const L = { cv: ['ok', 'On your CV'], edit: ['ok', 'Added to a bullet'], new_bullet: ['accent', 'New bullet'], none: ['bad', 'Not covered'] };
+    const miss = list.filter(r => r.covered_by === 'none').length;
+    return html`<section class="panel"><div class="panel-head"><h2>Responsibilities in the advert</h2><span class="muted small">${list.length - miss} of ${list.length} covered</span></div>
+      <p class="hint">Every duty the advert lists, and where your tailored CV shows it. New bullets you haven't confirmed stay unticked in the CV tab until you tick them.</p>
+      <div class="table-wrap"><table class="list"><thead><tr><th>Responsibility</th><th>In your tailored CV</th></tr></thead>
+      <tbody>${list.map(r => { const l = L[r.covered_by] || L.none; return html`<tr><td>${r.text}${r.note ? html`<div class="muted small">${r.note}</div>` : ''}</td><td><span class="chip ${l[0]}">${l[1]}</span>${r.where && r.covered_by === 'new_bullet' ? html`<div class="muted small">under ${r.where}</div>` : ''}</td></tr>`; })}</tbody></table></div>
+      ${miss ? html`<p class="small warn-text">${miss} responsibilit${miss === 1 ? 'y is' : 'ies are'} not covered yet. Add ${miss === 1 ? 'it' : 'them'} to "What to emphasise" on the Job tab if you have done this work, then re-analyse; otherwise prepare to discuss ${miss === 1 ? 'it' : 'them'} at interview.</p>` : ''}
+    </section>`;
+  }
+
   async function tabFit(ctx) {
     const { a, an, body } = ctx;
     if (!an) return needAnalysis(ctx);
@@ -376,6 +411,8 @@
           ${an.keywords_missing.length ? html`<p class="small muted">Can't truthfully claim: ${an.keywords_missing.join(', ')}. Address these in the letter or at interview instead.</p>` : ''}
         </section>
       </div>
+
+      ${respPanel(a, an)}
 
       <section class="panel">
         <div class="panel-head"><h2>Requirements and your evidence</h2><span class="muted small">${an.requirements.filter(r => r.evidence === 'direct').length} direct · ${an.requirements.filter(r => r.evidence === 'adjacent').length} adjacent · ${an.requirements.filter(r => r.evidence === 'gap').length} gaps</span></div>

@@ -261,7 +261,7 @@ You know enterprise technology in depth: SAP (ECC, S/4HANA private and public cl
 NEW BULLETS UNDER THE MOST RECENT ROLES (in addition to the insertions)
 Where the job's main responsibilities are not visible anywhere in the CV, propose NEW bullets for the candidate's most recent role(s) or client engagements, so a recruiter reading the latest position sees the job's core duties there.
 - Only for the latest one or two roles or client projects (the most recent dates). "after" is the id of an existing, unlocked bullet ("bullet": true) belonging to that role; the new bullet goes right after it, in the same format. Use that role's LAST bullet so new ones land at the end of its list.
-- 2 to 6 new bullets in total, one job responsibility each. Skip anything the CV already shows (use an insertion for those instead).
+- One new bullet for each job responsibility the CV does not show yet (up to 10 in total), one responsibility each. Skip anything the CV already shows (use an insertion for those instead). Every responsibility in the advert must end up covered: by the CV as it is, by an insertion, or by a new bullet.
 - Each must be realistic for that client, industry, period and the candidate's seniority: no tool or version that did not exist then, no duties far above or below the role, no new employers, clients, dates, numbers or certifications.
 - "basis": "cv" when other parts of the CV show this work, "profile" when the profile states it, otherwise "unconfirmed" (the candidate includes it only if it is true). Never for anything on the NEVER-claim list.
 
@@ -276,11 +276,66 @@ DECISION GUIDANCE
 
 Reply with ONLY one JSON object.`;
 
+  // ---------- Responsibilities in an advert (plain text scan, no AI) ----------
+  // Used to make sure every duty the advert lists reaches the analysis and the tailored CV.
+  const RESP_HEAD = /^(?:key |main |core |primary |principal |your |the |job |role |specific )?(?:responsibilities|duties|accountabilities|key tasks|tasks|what you(?:'|’)?ll (?:be )?do(?:ing)?|what you will (?:be )?do(?:ing)?|what you(?:'|’)ll be responsible for|you will be responsible for|responsible for|the role(?: will)?(?: involve)?|role (?:overview|purpose|description|responsibilities|summary)|about the role|the job|day[- ]to[- ]day(?: responsibilities)?|in this role(?: you will)?|your role|your day|job (?:purpose|description|duties|summary)|what the (?:job|role) (?:involves|entails)|scope(?: of (?:the )?role)?|the opportunity|you will|main purpose(?: of the role)?|what's involved|what is involved)\b[^.!?]{0,40}$/i;
+  const STOP_HEAD = /^(?:essential|desirable|requirements?|key requirements|minimum requirements|skills|key skills|technical skills|skills (?:and|&) experience|experience(?: required)?|about you|who you are|what you(?:'|’)ll (?:need|bring)|what you need|what we(?:'|’)re looking for|what we are looking for|you(?:'|’)ll (?:need|have)|you should have|qualifications|person specification|the ideal candidate|ideal candidate|benefits|what we offer|what's in it for you|perks|about us|about the company|who we are|why join|why work|package|salary|remuneration|how to apply|next steps|company overview|our values|equal opportunit|diversity|additional information|please note)/i;
+  const ACTION = /^(?:lead|leading|manage|managing|own|owning|deliver|delivering|design|designing|define|defining|drive|driving|work|working|support|supporting|develop|developing|build|building|implement|implementing|configure|configuring|coordinate|coordinating|engage|engaging|gather|gathering|elicit|analy[sz]e|analy[sz]ing|document|documenting|map|mapping|translate|translating|facilitate|facilitating|run|running|ensure|ensuring|act|acting|provide|providing|partner|partnering|collaborate|collaborating|oversee|overseeing|maintain|maintaining|test|testing|create|creating|plan|planning|prepare|preparing|review|reviewing|identify|identifying|present|presenting|liaise|liaising|advise|advising|mentor|mentoring|monitor|monitoring|report|reporting|conduct|conducting|deploy|deploying|integrate|integrating|migrate|migrating|optimi[sz]e|champion|establish|establishing|be responsible|responsible for|you will|you'll|act as|serve as|take ownership|contribute|contributing|track|tracking|produce|producing|assess|assessing|validate|validating|resolve|resolving|troubleshoot|train|training|onboard|onboarding|negotiate|negotiating)\b/i;
+  const clipLine = t => String(t || '').replace(/^[\s\-–—*•●▪◦·>\d.)(]+/, '').replace(/\s+/g, ' ').trim();
+  function responsibilities(jd) {
+    let t = String(jd || '').replace(/\r/g, '');
+    // Bullets written inline ("• a • b") and adverts that arrive as one long line.
+    t = t.replace(/\s*[•●▪◦]\s*/g, '\n- ').replace(/\s+·\s+/g, '\n- ');
+    if ((t.match(/\n/g) || []).length < 3 && t.length > 200) {
+      t = t.replace(/\s(?=(?:Key |Main |Core |Your |The )?(?:Responsibilities|Duties|Accountabilities|What you(?:'|’)?ll do|What you will do|What you(?:'|’)?ll need|What you need|You(?:'|’)?ll need|What we(?:'|’)?re looking for|The role|Role overview|About the role|Day[- ]to[- ]day|Requirements|Essential|Desirable|Skills|Experience required|About you|Who you are|Benefits|What we offer|About us|Qualifications)\b\s*:)/g, '\n');
+      t = t.replace(/\s+-\s+(?=[A-Z])/g, '\n- ');
+    }
+    const lines = t.split('\n').map(l => l.trim()).filter(Boolean);
+    const out = [], seen = new Set();
+    const add = x => { x = clipLine(x).replace(/[;,.]+$/, ''); if (x.length < 12 || x.length > 400) return; if (STOP_HEAD.test(x) && x.length < 60) return; const k = x.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(); if (seen.has(k)) return; seen.add(k); out.push(x); };
+    let mode = 'none', found = false;
+    for (const raw of lines) {
+      const c = clipLine(raw), head = c.replace(/[:\-–]+$/, '').trim();
+      const colon = c.match(/^([^:]{3,60}):\s*(.+)$/);
+      if (head.length < 70 && STOP_HEAD.test(head)) { mode = 'stop'; continue; }
+      if (colon && STOP_HEAD.test(colon[1])) { mode = 'stop'; continue; }
+      const soft = h => /^(?:about the role|the role|role overview|role summary|the job|the opportunity|job (?:description|summary)|overview)$/i.test(h);
+      if (head.length < 70 && RESP_HEAD.test(head) && !/[.!?]$/.test(head)) { mode = soft(head) ? 'soft' : 'resp'; found = found || mode === 'resp'; continue; }
+      if (colon && RESP_HEAD.test(colon[1].trim())) { mode = soft(colon[1].trim()) ? 'soft' : 'resp'; found = found || mode === 'resp'; colon[2].split(/;\s*|(?<=[.!?])\s+(?=[A-Z])/).forEach(x => (mode === 'resp' || ACTION.test(clipLine(x))) && add(x)); continue; }
+      if (mode === 'resp') { if (/:$/.test(c) && c.length < 60) continue; add(c); }
+      else if (mode === 'soft' && (/^\s*[-*•●▪◦]/.test(raw) || ACTION.test(c) || /\b(?:you will|you'll) (?:be )?(?:accountable|responsible|lead|own|manage|design|deliver)/i.test(c))) add(c);
+    }
+    if (!found) {
+      // No heading: take bullet or sentence lines that read like duties, outside requirement/benefit sections.
+      mode = 'none';
+      for (const raw of lines) {
+        const c = clipLine(raw), head = c.replace(/[:\-–]+$/, '').trim();
+        if (head.length < 70 && STOP_HEAD.test(head)) { mode = 'stop'; continue; }
+        if (head.length < 70 && /^(?:about the role|the role|role|overview)$/i.test(head)) { mode = 'none'; continue; }
+        if (mode === 'stop') continue;
+        c.split(/(?<=[.!?])\s+(?=[A-Z])/).forEach(s2 => { s2 = s2.trim(); if (ACTION.test(s2) && !/^(?:must|should|ideally|you (?:must|should) have|you have|you(?:'|’)ll have)\b/i.test(s2)) add(s2); });
+      }
+    }
+    return out.slice(0, 30);
+  }
+  const respTerms = t => new Set(String(t || '').toLowerCase().replace(/s\/4\s*hana/g, 's4hana').split(/[^a-z0-9+#]+/).filter(w => w.length > 3 && !/^(with|from|that|this|their|they|them|will|your|into|across|within|including|other|such|ensure|ensuring|work|working|team|teams|role|where|when|which|what|have|been|being|also|well|more|than|each|both|support|supporting|provide|providing|deliver|delivering|manage|managing|lead|leading)$/.test(w)));
+  const overlap = (a, b) => { const A = respTerms(a), B = respTerms(b); if (!A.size || !B.size) return 0; let n = 0; A.forEach(w => { if (B.has(w)) n++; }); return n / Math.min(A.size, B.size); };
+  // Does this text show the responsibility? At least two of its key words, and most of them for longer duties.
+  const shows = (resp, text, share) => { const A = respTerms(resp), B = respTerms(text); let n = 0; A.forEach(w => { if (B.has(w)) n++; }); return A.size > 0 && n >= Math.min(2, A.size) && n / A.size >= share; };
+
   /** Adverts can be just a title or two or three lines. Then the AI fills in what such a role normally asks for. */
   const isShort = app => (app.jd || '').trim().length < 600;
   const shortNote = app => isShort(app) ? `
 NOTE: THIS ADVERT IS SHORT (only a title or a few lines). Work with what is there: infer the requirements this kind of role typically has in this market and at this seniority, and use them as the job's requirements. Mark every inferred requirement's note with "(typical for this role, not in the advert)". Keep the fit score cautious and say in the headline that the advert gave little detail. Still tailor the CV to those typical requirements.
 ` : '';
+
+  function respBlock(app) {
+    const r = responsibilities(app.jd);
+    return `
+RESPONSIBILITIES (mandatory): the advert's duties are the core of this job. List EVERY responsibility or duty the advert states in "responsibilities", in the advert's order, worded as the advert words them (shorten only past 200 characters). Do not merge, summarise away or skip any. Each one must also appear in "requirements" as a "must". For each one the CV does not already show, cover it with an insertion into the related bullet or a new bullet under the most recent role(s).
+${r.length ? 'A text scan found these responsibilities in the advert (there may be more; include all of them):\n' + r.map((x, i) => (i + 1) + '. ' + x).join('\n') : 'A text scan found no labelled responsibilities section: take the duties from the advert text itself.'}
+`;
+  }
 
   function analysePrompt({ app, profile, paras }) {
     return `JOB
@@ -288,7 +343,7 @@ ${jobBlock(app)}
 ---
 ${(app.jd || '').trim() ? app.jd.slice(0, 24000) : '(no advert text: only the job title and company above)'}
 ---
-${shortNote(app)}
+${shortNote(app)}${respBlock(app)}
 CANDIDATE PROFILE (confirmed by the candidate)
 ${profileBlock(profile)}
 
@@ -302,6 +357,7 @@ Return this JSON shape:
 {
   "job": {"title": "", "company": "", "location": "", "work_mode": "onsite|hybrid|remote|unknown", "contract_type": "permanent|contract|fixed-term|unknown", "pay": "as stated or empty", "ir35": "inside|outside|unknown|n/a", "closing_date": "", "agency": "", "seniority": "", "summary": "two sentences"},
   "decision": {"verdict": "apply|apply_with_angle|stretch|skip", "headline": "one sentence", "reasons": ["why"], "red_flags": ["concern"], "angle": "how to position the application"},
+  "responsibilities": [{"text": "responsibility as the advert states it", "evidence": "direct|adjacent|gap", "cv_ids": [ids], "covered_by": "cv|edit|new_bullet", "note": "where the tailored CV shows it"}],
   "requirements": [{"req": "short requirement", "type": "must|nice", "evidence": "direct|adjacent|gap", "cv_ids": [ids], "note": "how the CV covers it, or what is missing"}],
   "fit": {"score": 0-100, "core": 0-100, "adjacent": 0-100},
   "keywords": ["8-20 exact terms from the job an ATS would scan for"],
@@ -338,10 +394,11 @@ Check every insertion ("edits") and every new bullet ("new_bullets"):
 2. Realism: the candidate could plausibly have done this at that client, in that period, at that seniority. Fix anachronisms (tools or versions that did not exist then), inflated scope and duties that clash with the job title. Drop what cannot be made realistic.
 3. Truth: no new employers, clients, dates, titles, numbers or certifications. Keep "basis" honest: if neither the CV nor the profile shows it, it is "unconfirmed".
 4. Insertions: the edited paragraph must keep ALL its original words in the same order; only the added words may change. Keep "segments" the same length when present.
-5. New bullets: "after" must stay the id of an unlocked bullet of the role it belongs to; keep 2 to 6 of them, the strongest first.
+5. New bullets: "after" must stay the id of an unlocked bullet of the role it belongs to; keep enough of them to cover every job responsibility the CV does not show elsewhere (up to 10), the strongest first. Never drop the only change that covers a responsibility.
 6. No duplicates: no two items saying the same thing, no new bullet repeating an insertion.
 7. Voice: rewrite any wording that reads machine-written.
 8. Technology coverage: every item in "Technologies in the advert" must appear in the CV or in one of the changes (preferably the skills list). Add any that went missing.
+9. Responsibility coverage: every item in "Responsibilities in the advert" must be visible in the CV or in one of the changes. Never drop the only change covering a responsibility; add an insertion or a new bullet for any that went missing.
 
 ${VOICE}
 
@@ -354,8 +411,9 @@ Reply with ONLY one JSON object.`;
 ${jobBlock(app)}
 Requirements found: ${JSON.stringify((draft.requirements || []).slice(0, 25).map(r => r.req + (r.type === 'must' ? ' (must)' : '')))}
 Technologies in the advert: ${JSON.stringify(draft.job_technologies || [])}
+Responsibilities in the advert (every one must stay covered by the CV, an edit or a new bullet): ${JSON.stringify((draft.responsibilities || []).map(r => r.text))}
 ---
-${String(app.jd || '').slice(0, 9000) || '(no advert text)'}
+${String(app.jd || '').slice(0, 16000) || '(no advert text)'}
 ---
 CANDIDATE PROFILE
 ${profileBlock(profile)}
@@ -400,6 +458,14 @@ ${TRUTH}
 
 Reply with ONLY one JSON object.`;
 
+  const RESP_SYSTEM = `You are a senior CV writer. Some responsibilities from the job advert are not visible anywhere in the candidate's tailored CV. Write one new bullet for each, to sit under the candidate's most recent role or client engagement (the latest one or two by date). "after" is the id of an existing unlocked bullet of that role: use that role's LAST bullet. Each bullet must be realistic for that client, period and seniority, in the candidate's own voice and bullet format. No new employers, clients, dates, numbers or certifications. "basis": "cv" when other parts of the CV show this work, "profile" when the profile states it, otherwise "unconfirmed" (the candidate ticks it only if true). Skip only a responsibility that is on the NEVER-claim list.
+
+${VOICE}
+
+${TRUTH}
+
+Reply with ONLY one JSON object.`;
+
   /**
    * Fit + tailoring in four passes (time matters less than quality):
    * 1. senior CV writer plans insertions and new bullets for the latest roles,
@@ -416,7 +482,7 @@ Reply with ONLY one JSON object.`;
     const paras = opts.paras || [];
     const byId = new Map(paras.map(p => [p.id, p]));
     out.new_bullets = out.new_bullets.filter(b => b && typeof b.text === 'string' && b.text.trim() && byId.has(Number(b.after)));
-    if (!out.edits.length && !out.new_bullets.length && !arr(out.job_technologies).length) return out;
+    if (!out.edits.length && !out.new_bullets.length && !arr(out.job_technologies).length && !arr(out.responsibilities).length && !responsibilities(opts.app && opts.app.jd).length) return out;
 
     // 2. Recruiter review
     stage('review');
@@ -458,6 +524,48 @@ JSON: {"edits": [{"id": 12, "text": "full paragraph text with the technology add
       } catch (e) { if (e && e.name === 'AbortError') throw e; }
     }
     out.tech_missing = missing;
+
+    // 3b. Responsibilities: every duty in the advert is listed and covered (the text scan guards against the AI skipping any).
+    {
+      const scanned = responsibilities(opts.app && opts.app.jd);
+      let list = arr(out.responsibilities).map(r => typeof r === 'string' ? { text: r } : r).filter(r => r && typeof r.text === 'string' && r.text.trim())
+        .map(r => ({ text: r.text.trim(), evidence: r.evidence || '', cv_ids: arr(r.cv_ids), note: r.note || '' }));
+      scanned.forEach(x => { if (!list.some(r => overlap(r.text, x) >= 0.6)) list.push({ text: x, evidence: '', cv_ids: [], note: '', scanned: true }); });
+      const status = () => list.forEach(r => {
+        const nb = out.new_bullets.find(b => overlap(r.text, b.requirement || '') >= 0.8 || shows(r.text, (b.requirement || '') + ' ' + b.text, 0.5));
+        const ed = out.edits.find(e => overlap(r.text, e.requirement || '') >= 0.8 || shows(r.text, (e.requirement || '') + ' ' + (e.adds || ''), 0.5));
+        const cv = (r.evidence === 'direct' && r.cv_ids.length) || paras.some(p => shows(r.text, p.text, 0.6));
+        r.covered_by = nb ? 'new_bullet' : ed ? 'edit' : cv ? 'cv' : r.evidence === 'adjacent' && r.cv_ids.length ? 'cv' : 'none';
+        r.where = nb ? (nb.role || 'new bullet') : ed ? 'insertion' : '';
+      });
+      status();
+      const open = list.filter(r => r.covered_by === 'none');
+      if (open.length) {
+        stage('coverage');
+        try {
+          const editable = paras.filter(p => !p.locked);
+          const r = await ask({ signal: opts.signal, system: RESP_SYSTEM, maxTokens: 6000, user: `JOB: ${app_title(opts.app)}
+
+RESPONSIBILITIES FROM THE ADVERT THAT THE TAILORED CV DOES NOT SHOW YET
+${JSON.stringify(open.map(x => x.text))}
+
+CHANGES ALREADY PLANNED (do not repeat them)
+${JSON.stringify({ edits: out.edits.map(e => e.adds || e.requirement), new_bullets: out.new_bullets.map(b => b.text) })}
+
+CANDIDATE PROFILE
+${profileBlock(opts.profile)}
+
+CV PARAGRAPHS (id, text; "bullet" = list item; the most recent roles come first in most CVs, check the dates)
+${JSON.stringify(editable)}
+
+JSON: {"new_bullets": [{"after": 42, "role": "role or client it sits under", "text": "the new bullet", "requirement": "the responsibility it covers, as given above", "basis": "cv|profile|unconfirmed", "reason": "why it fits"}]}` });
+          arr(r.new_bullets).forEach(b => { if (b && typeof b.text === 'string' && b.text.trim() && byId.has(Number(b.after)) && out.new_bullets.length < 12) out.new_bullets.push(b); });
+          status();
+        } catch (e) { if (e && e.name === 'AbortError') throw e; }
+      }
+      out.responsibilities = list;
+      out.resp_missing = list.filter(r => r.covered_by === 'none').map(r => r.text);
+    }
 
     // 4. Humanise whatever still reads machine-written
     const lines = [];
@@ -887,5 +995,5 @@ ${STUDIO[kind]}`
     return [r.summary ? 'SUMMARY: ' + r.summary : '', r.text || ''].filter(Boolean).join('\n\n');
   }
 
-  window.CVT.agent = { aiTells, appChat, employersFromCv, cvHistory, similarEmployers, loadPuter, chromeAIStatus, docStudio, myAnswer, docQuestions, docDigest, docMindmap, docAsk, describeImages, mockQuestion, mockGrade, storyDrafts, counterOffer, moreCards, listGemini, claudeSample, analyse, coverLetter, outreach, interviewPrep, answers, linkedin, parseJSON, profileBlock };
+  window.CVT.agent = { responsibilities, aiTells, appChat, employersFromCv, cvHistory, similarEmployers, loadPuter, chromeAIStatus, docStudio, myAnswer, docQuestions, docDigest, docMindmap, docAsk, describeImages, mockQuestion, mockGrade, storyDrafts, counterOffer, moreCards, listGemini, claudeSample, analyse, coverLetter, outreach, interviewPrep, answers, linkedin, parseJSON, profileBlock };
 })();

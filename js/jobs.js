@@ -171,12 +171,12 @@
       if (old) {
         old.sources = [...new Set([...(old.sources || [old.source]), ...(c.sources || [c.source])])];
         if (!old.pay && c.pay) old.pay = c.pay;
-        if (!old.jd && c.snippet) { old.jd = c.snippet; old.snippetOnly = true; }
+        if (c.snippet && (!old.jd || (old.snippetOnly && c.snippet.length > old.jd.length))) { old.jd = c.snippet; old.snippetOnly = c.snippet.length < 1200; }
         if (!old.posted && c.posted) old.posted = c.posted;
         continue;
       }
       feed.items[k] = { key: k, title: c.title, company: c.company || '', location: c.location || '', type: c.type || '', pay: c.pay || '', url: c.url || '', posted: c.posted || '',
-        source: c.source || 'Web', sources: c.sources || [c.source || 'Web'], jd: c.snippet || '', snippetOnly: true, query: c.query || '',
+        source: c.source || 'Web', sources: c.sources || [c.source || 'Web'], jd: c.snippet || '', snippetOnly: (c.snippet || '').length < 1200, query: c.query || '',
         firstSeen: new Date().toISOString(), lastSeen: c.lastSeen || new Date().toISOString(), status: 'new' };
       added++;
     }
@@ -429,15 +429,15 @@
   }
 
   /** Full advert for one feed item. Indeed ids are short-lived, so the answer is checked against the title. */
-  async function details(key) {
+  async function details(key, force) {
     const feed = await loadFeed();
     const j = feed.items[key]; if (!j) throw new Error('This job is no longer in the feed.');
-    if (j.jd) return j;
+    if (j.jd && !(force && j.snippetOnly)) return j;
     if (!j.jobId) throw new Error('Open the advert and paste it instead.');
     const res = await call('get_job_details', { job_id: j.jobId });
     const d = parseDetails(res.result || res.text || '');
     if (!d.jd || (d.title && jaccard(d.title, j.title) < 0.5)) { const e = new Error('Indeed returned a different advert. Refresh the feed and try again, or open the advert.'); e.code = 'mismatch'; throw e; }
-    Object.assign(j, { jd: d.jd.slice(0, 20000), pay: j.pay || d.pay, type: j.type || d.type, detailsAt: new Date().toISOString() });
+    Object.assign(j, { jd: d.jd.slice(0, 20000), snippetOnly: false, pay: j.pay || d.pay, type: j.type || d.type, detailsAt: new Date().toISOString() });
     if (d.url) j.url = d.url;
     await saveFeed(feed);
     return j;
@@ -458,9 +458,11 @@
     return ranked[0] && (ranked[0].n > 0 || ranked.length === 1) ? Object.assign({ hits: ranked[0].n, of: want.length }, ranked[0].c) : null;
   }
   async function importJob(key) {
-    const feed = await loadFeed();
-    const j = feed.items[key]; if (!j) throw new Error('This job is no longer in the feed.');
+    let feed = await loadFeed();
+    let j = feed.items[key]; if (!j) throw new Error('This job is no longer in the feed.');
     if (j.appId && await S.getApp(j.appId)) return j.appId;
+    // Fetch the full advert first when only a summary is held, so the responsibilities come across.
+    if (j.jobId && (!j.jd || j.snippetOnly)) { try { await details(key, true); feed = await loadFeed(); j = feed.items[key] || j; } catch (_) {} }
     const masters = await S.listMasters();
     const best = masters.length > 1 ? await bestCv(j) : null;
     const a = S.newApp((best && best.id) || (masters.find(m => m.isDefault) || masters[0] || {}).id);

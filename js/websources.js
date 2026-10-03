@@ -14,7 +14,15 @@
   // A loose first look at a title, used to decide which Greenhouse adverts to open in full.
   const MAYBE = /analyst|consultant|sap|ariba|procure|sourc|purchas|business|functional|erp|product owner|project|programme|program|implementation|solution|finance|supply|systems|process/i;
 
-  const textOf = h => { if (!h) return ''; const d = new DOMParser().parseFromString(String(h).replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&'), 'text/html'); return (d.body.textContent || '').replace(/\s+/g, ' ').trim(); };
+  // HTML advert -> text that keeps headings, paragraphs and bullet points on their own lines (so responsibilities survive).
+  const textOf = h => {
+    if (!h) return '';
+    const d = new DOMParser().parseFromString(String(h).replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&'), 'text/html');
+    d.querySelectorAll('li').forEach(li => li.prepend('\n- '));
+    d.querySelectorAll('br').forEach(br => br.replaceWith('\n'));
+    d.querySelectorAll('p,div,h1,h2,h3,h4,h5,h6,ul,ol,tr,section').forEach(el => { el.prepend('\n'); el.append('\n'); });
+    return (d.body.textContent || '').replace(/[ \t\u00a0]+/g, ' ').replace(/ *\n */g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+  };
   const day = v => { if (!v) return ''; const t = typeof v === 'number' ? v : Date.parse(v); return isNaN(t) ? '' : new Date(t).toISOString().slice(0, 10); };
   const nice = s => String(s || '').replace(/[-_]+/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
   async function getJSON(url, ms = 15000) {
@@ -62,11 +70,11 @@
     if (p.kind === 'lever') {
       const d = await getJSON(`https://api.lever.co/v0/postings/${encodeURIComponent(p.slug)}?mode=json`);
       return (d || []).map(j => ({ title: j.text, company: co, location: (j.categories || {}).location || '', type: (j.categories || {}).commitment || '', url: j.hostedUrl, posted: day(j.createdAt),
-        jd: [j.descriptionPlain, ...(j.lists || []).map(l => l.text + ': ' + textOf(l.content))].join('\n').slice(0, 4000) }));
+        jd: [j.descriptionPlain, ...(j.lists || []).map(l => l.text + ': ' + textOf(l.content))].join('\n').slice(0, 20000) }));
     }
     if (p.kind === 'ashby') {
       const d = await getJSON(`https://api.ashbyhq.com/posting-api/job-board/${encodeURIComponent(p.slug)}?includeCompensation=true`);
-      return (d.jobs || []).map(j => ({ title: j.title, company: co, location: j.location || '', type: j.employmentType || '', url: j.jobUrl, posted: day(j.publishedAt), pay: (j.compensation || {}).compensationTierSummary || '', jd: (j.descriptionPlain || '').slice(0, 4000) }));
+      return (d.jobs || []).map(j => ({ title: j.title, company: co, location: j.location || '', type: j.employmentType || '', url: j.jobUrl, posted: day(j.publishedAt), pay: (j.compensation || {}).compensationTierSummary || '', jd: (j.descriptionPlain || '').slice(0, 20000) }));
     }
     if (p.kind === 'smartrecruiters') {
       const d = await getJSON(`https://api.smartrecruiters.com/v1/companies/${encodeURIComponent(p.slug)}/postings?limit=100&country=${K().get(cc).sr}`);
@@ -82,7 +90,7 @@
     if (p.kind === 'recruitee') {
       const d = await getJSON(`https://${p.slug}.recruitee.com/api/offers/`);
       return (d.offers || []).map(j => ({ title: j.title, company: j.company_name || co, location: [j.location || j.city, j.country].filter(Boolean).join(', ') + (j.remote ? ' (remote)' : ''),
-        type: (j.employment_type_code || '').replace(/_/g, ' '), url: j.careers_url, posted: day(j.published_at || j.created_at), jd: textOf((j.description || '') + ' ' + (j.requirements || '')).slice(0, 4000) }));
+        type: (j.employment_type_code || '').replace(/_/g, ' '), url: j.careers_url, posted: day(j.published_at || j.created_at), jd: textOf((j.description || '') + ' ' + (j.requirements || '')).slice(0, 20000) }));
     }
     if (p.kind === 'personio') {
       const doc = xmlDoc(await getText(`https://${p.slug}.jobs.personio.${p.tld || 'com'}/xml?language=en`));
@@ -90,7 +98,7 @@
         const id = tag(el, 'id');
         const jd = [...el.getElementsByTagName('jobDescription')].map(x => tag(x, 'name') + ': ' + textOf(tag(x, 'value'))).join('\n');
         return { title: tag(el, 'name'), company: tag(el, 'subcompany') || co, location: tag(el, 'office'), type: [tag(el, 'employmentType'), tag(el, 'schedule')].filter(Boolean).join(', '),
-          url: `https://${p.slug}.jobs.personio.${p.tld || 'com'}/job/${id}`, posted: day(tag(el, 'createdAt')), jd: jd.slice(0, 4000) };
+          url: `https://${p.slug}.jobs.personio.${p.tld || 'com'}/job/${id}`, posted: day(tag(el, 'createdAt')), jd: jd.slice(0, 20000) };
       });
     }
     if (p.kind === 'teamtailor') {
@@ -98,7 +106,7 @@
       const title = tag(doc, 'title').replace(/\s*-\s*(career|jobs).*$/i, '');
       return [...doc.getElementsByTagName('item')].map(el => {
         const locs = [...el.getElementsByTagName('*')].filter(n => n.localName === 'location').map(n => [tag(n, 'city'), tag(n, 'country')].filter(Boolean).join(', ')).filter(Boolean);
-        return { title: tag(el, 'title'), company: title || co, location: locs.join(' / ') || tag(el, 'locations'), url: tag(el, 'link'), posted: day(tag(el, 'pubDate')), jd: textOf(tag(el, 'description')).slice(0, 4000),
+        return { title: tag(el, 'title'), company: title || co, location: locs.join(' / ') || tag(el, 'locations'), url: tag(el, 'link'), posted: day(tag(el, 'pubDate')), jd: textOf(tag(el, 'description')).slice(0, 20000),
           remote: /remote/i.test(tag(el, 'remoteStatus')) };
       });
     }
@@ -156,7 +164,7 @@
   }
 
   async function ghDetail(j) {
-    try { const d = await getJSON(`https://boards-api.greenhouse.io/v1/boards/${encodeURIComponent(j._gh[0])}/jobs/${j._gh[1]}`, 10000); j.jd = textOf(d.content).slice(0, 4000); } catch (_) {}
+    try { const d = await getJSON(`https://boards-api.greenhouse.io/v1/boards/${encodeURIComponent(j._gh[0])}/jobs/${j._gh[1]}`, 10000); j.jd = textOf(d.content).slice(0, 20000); } catch (_) {}
     delete j._gh; return j;
   }
 
@@ -173,7 +181,7 @@
           const here = (j.locations || []).map(l => l.name).filter(n => K().inCountry(cc, n));
           if (!here.length) return;
           out.push({ title: j.name, company: (j.company || {}).name || '', location: here.join(' / '), type: (j.levels || []).map(l => l.name).join(', '),
-            url: (j.refs || {}).landing_page || '', posted: day(j.publication_date), jd: textOf(j.contents).slice(0, 4000) });
+            url: (j.refs || {}).landing_page || '', posted: day(j.publication_date), jd: textOf(j.contents).slice(0, 20000) });
         });
         if (page + 1 >= (d.page_count || 0)) break;
       }
@@ -187,7 +195,7 @@
     for (let page = 1; page <= 2; page++) {
       const d = await getJSON(`https://www.arbeitnow.com/api/job-board-api?page=${page}`, 20000);
       (d.data || []).forEach(j => out.push({ title: j.title, company: j.company_name, location: (j.location || '') + ', Germany' + (j.remote ? ' (remote)' : ''), type: (j.job_types || []).join(', '),
-        url: j.url && /arbeitnow/.test(j.url) ? j.url : `https://www.arbeitnow.com/jobs/companies/${j.slug}`, posted: day((j.created_at || 0) * 1000), jd: [(j.tags || []).join(', '), textOf(j.description)].join('\n').slice(0, 4000), remote: !!j.remote }));
+        url: j.url && /arbeitnow/.test(j.url) ? j.url : `https://www.arbeitnow.com/jobs/companies/${j.slug}`, posted: day((j.created_at || 0) * 1000), jd: [(j.tags || []).join(', '), textOf(j.description)].join('\n').slice(0, 20000), remote: !!j.remote }));
       if (!(d.links || {}).next) break;
     }
     return out;
@@ -196,13 +204,13 @@
   async function remotive(q, cc) {
     const d = await getJSON(`https://remotive.com/api/remote-jobs?search=${encodeURIComponent(q)}&limit=50`);
     return (d.jobs || []).filter(j => K().remoteOk(cc, j.candidate_required_location || 'Worldwide'))
-      .map(j => ({ title: j.title, company: j.company_name, location: 'Remote · ' + (j.candidate_required_location || 'Worldwide'), type: j.job_type || '', pay: j.salary || '', url: j.url, posted: day(j.publication_date), jd: textOf(j.description).slice(0, 4000), remote: true }));
+      .map(j => ({ title: j.title, company: j.company_name, location: 'Remote · ' + (j.candidate_required_location || 'Worldwide'), type: j.job_type || '', pay: j.salary || '', url: j.url, posted: day(j.publication_date), jd: textOf(j.description).slice(0, 20000), remote: true }));
   }
   async function jobicy(q, cc) {
     const c = K().get(cc);
     const d = await getJSON(`https://jobicy.com/api/v2/remote-jobs?count=50&geo=${c.jobicy}&tag=${encodeURIComponent(q)}`);
     return (d.jobs || []).map(j => ({ title: textOf(j.jobTitle), company: j.companyName, location: 'Remote · ' + (j.jobGeo || c.name), type: [].concat(j.jobType || []).join(', '),
-      pay: j.annualSalaryMin ? `${j.salaryCurrency === 'GBP' ? '£' : j.salaryCurrency === 'USD' ? '$' : j.salaryCurrency === 'EUR' ? '€' : j.salaryCurrency === 'INR' ? '₹' : (j.salaryCurrency || '') + ' '}${j.annualSalaryMin}${j.annualSalaryMax ? '-' + j.annualSalaryMax : ''} per year` : '', url: j.url, posted: day(j.pubDate), jd: textOf(j.jobDescription || j.jobExcerpt).slice(0, 4000), remote: true }));
+      pay: j.annualSalaryMin ? `${j.salaryCurrency === 'GBP' ? '£' : j.salaryCurrency === 'USD' ? '$' : j.salaryCurrency === 'EUR' ? '€' : j.salaryCurrency === 'INR' ? '₹' : (j.salaryCurrency || '') + ' '}${j.annualSalaryMin}${j.annualSalaryMax ? '-' + j.annualSalaryMax : ''} per year` : '', url: j.url, posted: day(j.pubDate), jd: textOf(j.jobDescription || j.jobExcerpt).slice(0, 20000), remote: true }));
   }
 
   /**

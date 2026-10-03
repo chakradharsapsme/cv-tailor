@@ -132,8 +132,15 @@
     // This job's technologies first, then the rest of YOUR skill set; nothing that matches neither.
     const relevant = GROUPS.filter(g => g.key === 'pro' || g.match.test(t) || g.match.test(jdAll))
       .sort((x, y) => (inJob(y) - inJob(x)) || ((x.key === 'pro') - (y.key === 'pro')));
+    const onCv = g => g.key !== 'pro' && g.match.test(t);
+    // In a job: show the sites for what THIS advert asks for (marked if it is also on your CV), plus LinkedIn.
+    // The rest of your CV's technologies wait behind "More from your CV". No advert match: fall back to your CV.
+    const jobGroups = app ? relevant.filter(g => inJob(g) || g.key === 'pro') : relevant;
+    const useJob = app && jobGroups.some(g => g.key !== 'pro');
+    const primary = useJob ? jobGroups : relevant;
+    const extra = useJob ? relevant.filter(g => !inJob(g) && g.key !== 'pro') : [];
     // No CV or adverts yet: show every group so the section is never empty.
-    const shown = st.showAll || relevant.length < 2 ? GROUPS : relevant;
+    const shown = st.showAll ? GROUPS : primary.length < 2 ? GROUPS : primary;
     const own = (st.own || []).map(o => Object.assign({ own: true, group: 'own', ic: '★', col: '#6D28D9' }, o));
     const byId = Object.fromEntries(ALL.concat(own).map(l => [l.id, l]));
     const appsWith = g => apps.filter(a => g.match.test((a.jd || '') + ' ' + (a.role || ''))).length;
@@ -144,12 +151,13 @@
 
     host.innerHTML = `
       <div class="panel-head"><div><h2>${app ? 'Community: official sites for this job' : 'Community and official resources'}</h2>
-        <p class="hint" style="margin:2px 0 0">${app ? 'Official, professional sites for the technologies in this advert' + (app.company ? ' at ' + esc(app.company) : '') + ', then the rest of your skill set. Handy to brush up before the interview.' : 'Official, professional sites only, picked from your skill set.'} Links open in a new tab.</p></div>
+        <p class="hint" style="margin:2px 0 0">${app ? 'Official, professional sites matched to this advert' + (app.company ? ' at ' + esc(app.company) : '') + ' and your CV. Anything the advert asks for that is new for you is flagged, so you can brush up before the interview.' : 'Official, professional sites only, picked from your skill set.'} Links open in a new tab.</p></div>
         <label class="check-line small"><input type="checkbox" id="cm-all" ${st.showAll ? 'checked' : ''}> Show all technologies</label></div>
-      <div class="cm-chips">${relevant.filter(g => g.key !== 'pro').map(g => `<span class="chip${inJob(g) ? ' ok' : ''}">${inJob(g) ? '✓ ' : ''}${esc(g.name)}${inJob(g) ? ' · in this advert' : ''}</span>`).join('') || '<span class="muted small">Add your CV or the job advert to see the technologies that matter.</span>'}</div>
+      <div class="cm-chips">${(useJob ? primary : relevant).filter(g => g.key !== 'pro').map(g => `<span class="chip${inJob(g) ? ' ok' : ''}">${esc(g.name)}${inJob(g) ? (onCv(g) ? ' · in advert and on your CV' : ' · in advert, new for you') : ' · on your CV'}</span>`).join('') || '<span class="muted small">Add your CV or the job advert to see the technologies that matter.</span>'}</div>
       ${pinned.length ? `<h3 class="cm-h">★ Pinned</h3><div class="cm-grid">${pinned.map(l => tile(l, true, 0)).join('')}</div>` : ''}
-      ${shown.map(g => `<h3 class="cm-h">${esc(g.name)}${inJob(g) ? ' <span class="chip ok">In this advert</span>' : (app && g.key !== 'pro' ? ' <span class="muted small">· from your skill set</span>' : (!app && appsWith(g) && g.key !== 'pro' ? ` <span class="muted small">· in ${appsWith(g)} of your applications</span>` : ''))}</h3>
+      ${shown.map(g => `<h3 class="cm-h">${esc(g.name)}${inJob(g) ? (onCv(g) ? ' <span class="chip ok">In this advert · on your CV</span>' : ' <span class="chip warn">In this advert · new for you</span>') : (g.key !== 'pro' && onCv(g) ? ' <span class="muted small">· on your CV</span>' : '')}</h3>
         <div class="cm-grid">${g.links.filter(l => !st.pins.includes(l.id)).map(l => tile(l, false, 0)).join('')}</div>`).join('')}
+      ${!st.showAll && extra.length ? `<details class="cm-more"><summary>More official sites from your CV (${extra.length}): ${extra.map(g => esc(g.name)).join(', ')}</summary>${extra.map(g => `<h3 class="cm-h">${esc(g.name)} <span class="muted small">· on your CV</span></h3><div class="cm-grid">${g.links.filter(l => !st.pins.includes(l.id)).map(l => tile(l, false, 0)).join('')}</div>`).join('')}</details>` : ''}
       ${own.filter(l => !st.pins.includes(l.id)).length ? `<h3 class="cm-h">Your links</h3><div class="cm-grid">${own.filter(l => !st.pins.includes(l.id)).map(l => tile(l, false, 0)).join('')}</div>` : ''}
       <div class="cm-cols">
         <div class="cm-box">

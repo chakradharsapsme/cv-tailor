@@ -1751,3 +1751,5 @@ a.tb-chip:hover { transform: translateY(-1px); border-color: var(--accent); }
 .cm-certs li { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: .86rem; }
 .cm-add { display: flex; gap: 6px; flex-wrap: wrap; }
 .cm-add input { flex: 1 1 140px; min-width: 0; }
+.cm-more { margin-top: 14px; border: 1px dashed var(--line); border-radius: 12px; padding: 8px 12px; }
+.cm-more summary { cursor: pointer; font-weight: 600; font-size: .88rem; color: var(--accent); }

@@ -1,5 +1,5 @@
 /*
- * community.js — "Community and official resources" on the Pipeline page.
+ * community.js — "Community" tab: the last tab of every application (Pipeline > open a job).
  * Tiles for OFFICIAL, professional sites only (vendor portals and professional bodies; no open forums),
  * picked from the technologies in your CV, skills and the adverts you are tracking.
  * Extras: pin favourites, add your own official link, certification shortcuts and a weekly
@@ -55,6 +55,35 @@
     { key: 'sf', name: 'Salesforce', match: /salesforce/i, links: [
       L('trailhead', 'Trailhead', 'Official Salesforce learning and certification', 'https://trailhead.salesforce.com/', 'TH', '#00A1E0')
     ] },
+    { key: 'oracle', name: 'Oracle', match: /\boracle\b|netsuite|peoplesoft|\bjava\b/i, links: [
+      L('oracle-docs', 'Oracle Help Center', 'Official Oracle product documentation', 'https://docs.oracle.com/', 'O', '#C74634'),
+      L('oracle-university', 'Oracle University', 'Official Oracle training and certification', 'https://education.oracle.com/', 'OU', '#C74634')
+    ] },
+    { key: 'workday', name: 'Workday', match: /\bworkday\b/i, links: [
+      L('workday', 'Workday', 'Official Workday product site', 'https://www.workday.com/', 'WD', '#0875E1')
+    ] },
+    { key: 'servicenow', name: 'ServiceNow', match: /servicenow/i, links: [
+      L('sn-docs', 'ServiceNow Docs', 'Official ServiceNow product documentation', 'https://docs.servicenow.com/', 'SN', '#62D84E'),
+      L('sn-learn', 'ServiceNow University', 'Official ServiceNow training and certification', 'https://learning.servicenow.com/', 'NU', '#293E40')
+    ] },
+    { key: 'atlassian', name: 'Atlassian (Jira, Confluence)', match: /\bjira\b|confluence|atlassian/i, links: [
+      L('atl-support', 'Atlassian Support', 'Official Jira and Confluence documentation', 'https://support.atlassian.com/', 'At', '#0052CC'),
+      L('atl-uni', 'Atlassian University', 'Official Atlassian learning and certification', 'https://university.atlassian.com/', 'AU', '#0052CC')
+    ] },
+    { key: 'agile', name: 'Agile and Scrum', match: /\bscrum\b|\bagile\b|\bsafe\b|product owner/i, links: [
+      L('scrumorg', 'Scrum.org', 'Official Professional Scrum training and certification', 'https://www.scrum.org/', 'SO', '#009FDA'),
+      L('scaled', 'Scaled Agile (SAFe)', 'Official SAFe framework and certification', 'https://scaledagile.com/', 'SA', '#0B5394')
+    ] },
+    { key: 'cncf', name: 'Cloud native (Kubernetes)', match: /kubernetes|\bk8s\b|docker|cloud native/i, links: [
+      L('k8s', 'Kubernetes documentation', 'Official Kubernetes docs', 'https://kubernetes.io/docs/', 'K8', '#326CE5'),
+      L('lf-training', 'Linux Foundation Training', 'Official CKA, CKAD and Linux certification', 'https://training.linuxfoundation.org/', 'LF', '#003366')
+    ] },
+    { key: 'data', name: 'Data and analytics', match: /snowflake|databricks|tableau|\bpython\b|data engineer|data analy/i, links: [
+      L('python', 'Python documentation', 'Official Python language docs', 'https://docs.python.org/3/', 'Py', '#3776AB'),
+      L('tableau', 'Tableau Help', 'Official Tableau documentation and training', 'https://help.tableau.com/', 'Tb', '#E97627'),
+      L('snowflake', 'Snowflake documentation', 'Official Snowflake docs', 'https://docs.snowflake.com/', 'Sf', '#29B5E8'),
+      L('databricks', 'Databricks documentation', 'Official Databricks docs', 'https://docs.databricks.com/', 'Db', '#FF3621')
+    ] },
     { key: 'pro', name: 'Your professional profile', match: /./, links: [
       L('linkedin', 'LinkedIn', 'Your professional profile, recruiters and company pages', 'https://www.linkedin.com/', 'in', '#0A66C2')
     ] }
@@ -88,16 +117,23 @@
     </a>`;
   }
 
-  async function render(host) {
+  /** host: element to draw into. opts.app: the application being viewed (its advert drives the list). */
+  async function render(host, opts = {}) {
     if (!host) return;
+    const app = opts.app || null;
     const st = Object.assign({ pins: [], own: [], week: '', done: [], showAll: false }, (await S().getKV('community', null)) || {});
     if (st.week !== weekKey()) { st.week = weekKey(); st.done = []; }
     const save = () => S().setKV('community', st);
     const { p, t } = await evidenceText();
     const apps = await S().listApps();
-    const jdAll = apps.map(a => (a.jd || '') + ' ' + (a.role || '')).join('\n');
-    const relevant = GROUPS.filter(g => g.key === 'pro' || g.match.test(t) || g.match.test(jdAll));
-    const shown = st.showAll ? GROUPS : relevant;
+    const jobText = app ? [app.role, app.jd, app.company].join(' ') : '';
+    const jdAll = app ? jobText : apps.map(a => (a.jd || '') + ' ' + (a.role || '')).join('\n');
+    const inJob = g => !!jobText && g.key !== 'pro' && g.match.test(jobText);
+    // This job's technologies first, then the rest of YOUR skill set; nothing that matches neither.
+    const relevant = GROUPS.filter(g => g.key === 'pro' || g.match.test(t) || g.match.test(jdAll))
+      .sort((x, y) => (inJob(y) - inJob(x)) || ((x.key === 'pro') - (y.key === 'pro')));
+    // No CV or adverts yet: show every group so the section is never empty.
+    const shown = st.showAll || relevant.length < 2 ? GROUPS : relevant;
     const own = (st.own || []).map(o => Object.assign({ own: true, group: 'own', ic: '★', col: '#6D28D9' }, o));
     const byId = Object.fromEntries(ALL.concat(own).map(l => [l.id, l]));
     const appsWith = g => apps.filter(a => g.match.test((a.jd || '') + ' ' + (a.role || ''))).length;
@@ -107,12 +143,12 @@
     const doneN = st.done.length;
 
     host.innerHTML = `
-      <div class="panel-head"><div><h2>Community and official resources</h2>
-        <p class="hint" style="margin:2px 0 0">Official, professional sites only, picked from the technologies in your CV and the adverts you are tracking. Links open in a new tab.</p></div>
+      <div class="panel-head"><div><h2>${app ? 'Community: official sites for this job' : 'Community and official resources'}</h2>
+        <p class="hint" style="margin:2px 0 0">${app ? 'Official, professional sites for the technologies in this advert' + (app.company ? ' at ' + esc(app.company) : '') + ', then the rest of your skill set. Handy to brush up before the interview.' : 'Official, professional sites only, picked from your skill set.'} Links open in a new tab.</p></div>
         <label class="check-line small"><input type="checkbox" id="cm-all" ${st.showAll ? 'checked' : ''}> Show all technologies</label></div>
-      <div class="cm-chips">${relevant.filter(g => g.key !== 'pro').map(g => `<span class="chip">${esc(g.name)}${appsWith(g) ? ` · ${appsWith(g)} job${appsWith(g) > 1 ? 's' : ''}` : ''}</span>`).join('') || '<span class="muted small">Add your CV to see the technologies that matter to you.</span>'}</div>
+      <div class="cm-chips">${relevant.filter(g => g.key !== 'pro').map(g => `<span class="chip${inJob(g) ? ' ok' : ''}">${inJob(g) ? '✓ ' : ''}${esc(g.name)}${inJob(g) ? ' · in this advert' : ''}</span>`).join('') || '<span class="muted small">Add your CV or the job advert to see the technologies that matter.</span>'}</div>
       ${pinned.length ? `<h3 class="cm-h">★ Pinned</h3><div class="cm-grid">${pinned.map(l => tile(l, true, 0)).join('')}</div>` : ''}
-      ${shown.map(g => `<h3 class="cm-h">${esc(g.name)}${appsWith(g) && g.key !== 'pro' ? ` <span class="muted small">· in ${appsWith(g)} of your applications</span>` : ''}</h3>
+      ${shown.map(g => `<h3 class="cm-h">${esc(g.name)}${inJob(g) ? ' <span class="chip ok">In this advert</span>' : (app && g.key !== 'pro' ? ' <span class="muted small">· from your skill set</span>' : (!app && appsWith(g) && g.key !== 'pro' ? ` <span class="muted small">· in ${appsWith(g)} of your applications</span>` : ''))}</h3>
         <div class="cm-grid">${g.links.filter(l => !st.pins.includes(l.id)).map(l => tile(l, false, 0)).join('')}</div>`).join('')}
       ${own.filter(l => !st.pins.includes(l.id)).length ? `<h3 class="cm-h">Your links</h3><div class="cm-grid">${own.filter(l => !st.pins.includes(l.id)).map(l => tile(l, false, 0)).join('')}</div>` : ''}
       <div class="cm-cols">
@@ -134,13 +170,13 @@
 
     host.onclick = async e => {
       const pin = e.target.closest('[data-pin]'), del = e.target.closest('[data-cmdel]');
-      if (pin) { e.preventDefault(); const id = pin.dataset.pin; st.pins = st.pins.includes(id) ? st.pins.filter(x => x !== id) : [id].concat(st.pins); await save(); return render(host); }
-      if (del) { e.preventDefault(); const id = del.dataset.cmdel; st.own = st.own.filter(x => x.id !== id); st.pins = st.pins.filter(x => x !== id); await save(); return render(host); }
+      if (pin) { e.preventDefault(); const id = pin.dataset.pin; st.pins = st.pins.includes(id) ? st.pins.filter(x => x !== id) : [id].concat(st.pins); await save(); return render(host, opts); }
+      if (del) { e.preventDefault(); const id = del.dataset.cmdel; st.own = st.own.filter(x => x.id !== id); st.pins = st.pins.filter(x => x !== id); await save(); return render(host, opts); }
     };
     host.onchange = async e => {
-      if (e.target.id === 'cm-all') { st.showAll = e.target.checked; await save(); return render(host); }
+      if (e.target.id === 'cm-all') { st.showAll = e.target.checked; await save(); return render(host, opts); }
       const k = e.target.dataset.wk; if (!k) return;
-      st.done = e.target.checked ? [...new Set(st.done.concat(k))] : st.done.filter(x => x !== k); await save(); render(host);
+      st.done = e.target.checked ? [...new Set(st.done.concat(k))] : st.done.filter(x => x !== k); await save(); render(host, opts);
     };
     const form = host.querySelector('#cm-add');
     form.onsubmit = async e => {
@@ -148,7 +184,7 @@
       const title = host.querySelector('#cm-title').value.trim(), url = host.querySelector('#cm-url').value.trim();
       if (!/^https:\/\//i.test(url) || !title) { window.CVT.ui.toast('Please enter a name and an https:// link'); return; }
       st.own = (st.own || []).concat({ id: 'own-' + Date.now().toString(36), title: title.slice(0, 60), sub: 'Your link', url });
-      await save(); render(host);
+      await save(); render(host, opts);
     };
   }
 

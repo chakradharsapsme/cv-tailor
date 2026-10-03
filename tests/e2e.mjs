@@ -292,8 +292,8 @@ await page.click('#run');
 await page.waitForSelector('.decision', { timeout: 15000 });
 log('analyse prompt includes achievements:', calls.analyse.includes('4,000 users at a UK water utility'));
 log('fit tab verdict:', await page.textContent('.decision-verdict'), '| coverage:', (await page.textContent('.cov')).trim());
-log('responsibilities sent to analysis:', /RESPONSIBILITIES \(mandatory\)/.test(calls.analyse || ''), '| coverage pass ran:', !!calls.resp,
-  '| fit panel:', JSON.stringify(await page.evaluate(() => { const h = [...document.querySelectorAll('.panel h2')].find(x => /Responsibilities in the advert/.test(x.textContent)); const p = h && h.closest('.panel'); return p ? { head: p.querySelector('.panel-head span').textContent, rows: [...p.querySelectorAll('tbody tr')].map(r => r.querySelector('.chip').textContent) } : null; })));
+log('responsibilities sent to analysis:', /MAP THE WHOLE ADVERT TO THE CV/.test(calls.analyse || ''), '| coverage pass ran:', !!calls.resp,
+  '| job map:', JSON.stringify(await page.evaluate(() => { const p = document.querySelector('.panel.jm'); return p ? { head: p.querySelector('.panel-head span').textContent, groups: [...p.querySelectorAll('.jm-group th')].map(x => x.textContent.replace(/\s+/g, ' ').trim()), rows: p.querySelectorAll('tbody tr:not(.jm-group)').length, withWhere: p.querySelectorAll('.jm-where').length } : null; })));
 await shot('03-fit');
 log('cover letter written automatically:', await page.evaluate(async () => { const apps = await window.CVT.store.listApps(); const a = apps.find(x => x.analysis); return !!(a && a.letter && a.letter.length > 100); }));
 { // Ask AI drawer on the application

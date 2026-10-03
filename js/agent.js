@@ -227,9 +227,53 @@
 - Vary the length a little, as real CVs do. Numbers only when the CV or profile gives them: never invent percentages, savings, volumes or team sizes.`;
 
   // ---------- 1. analyse + tailor ----------
+  // ---------- The CV writer's craft (shared by the writer, the reviewer and the gap-filler) ----------
+  const CV_CRAFT = `HOW A TOP CV WRITER COMPOSES A TAILORED CV (apply all of it)
+SENIORITY: write at the candidate's real level and pitch it at the job's level, never above what the CV supports.
+- Graduate / junior (0-3 years): hands-on verbs (built, configured, tested, supported, documented), tools and learning curve, team contribution. One page of substance.
+- Mid-level (3-7 years): ownership of modules, features or processes (owned, delivered, configured end to end, resolved), measurable delivery.
+- Senior (7-12 years): led workstreams and workshops, designed solutions, guided juniors, handled stakeholders and suppliers.
+- Lead / principal / architect (12-18 years): design authority, end-to-end solution ownership, governance, client and C-level stakeholders, pre-sales and estimates, mentoring a team, cross-workstream integration.
+- Director / head / executive (18+ years or such titles): strategy, transformation outcomes, budgets and commercial results, operating model, building and leading teams.
+- If the job is pitched LOWER than the candidate, keep the seniority but lead with hands-on delivery. If HIGHER, surface the leadership the CV already shows; never invent it.
+COMPOSITION AND BALANCE: a hiring manager reads the top third first and spends about 7 seconds.
+- Profile / summary: 3-5 lines. Job title the advert uses (if true), years of experience, the 2-3 must-haves the candidate is strongest on, sector. Additions here must keep it within 5 lines.
+- Skills: grouped lists (functional, technical, methods/tools); every advert technology the candidate can claim appears here; most relevant first.
+- Weight by recency and relevance: the latest 1-2 roles carry most of the evidence (typically 5-8 bullets each), earlier relevant roles 3-5, roles older than about 10 years 1-3 bullets. Never pile all changes into one role: at most 4 new bullets under any single role; spread insertions across the summary, skills and the latest two or three roles.
+- Inside each role, the bullet most relevant to this job should come first: propose "reorder" for adjacent bullets of the same role when that clearly helps.
+- Length: about 2 pages for experienced candidates (UK norm), 1-2 pages for juniors. If the changes add a lot, propose "remove" for weak or irrelevant bullets in roles older than about 10 years (never the only bullet of a role). Reorder and remove are suggestions the candidate opts into.
+BULLET CRAFT
+- Start with a strong past-tense verb (present tense for the current role, matching the CV), no "I", "responsible for" or "duties included".
+- One idea per bullet, 15-30 words: action + what/scope + how (method, tool, module) + result or purpose. Use scope and results only when the CV or profile states them; never invent numbers.
+- Match the candidate's existing bullet style (punctuation, tense, British spelling, abbreviations).
+- Spell out an acronym once where it first appears (e.g. "Cloud Integration Gateway (CIG)"), then use the short form.
+- Vary the opening verbs; no two adjacent bullets starting the same way.
+ATS AND RECRUITER READING
+- Use the advert's exact terms for skills, tools and the job title (once, where true); keep standard section headings; no tables, graphics or columns in anything you add.
+- Each must-have should be visible in at least two places when the CV supports it (skills list plus a bullet), nice-to-haves at least once.
+FIELD KNOWLEDGE: you know what hiring managers look for in every field (IT and enterprise systems, business analysis, project and programme management, procurement and supply chain, finance, HR, sales and marketing, operations, engineering, healthcare, education, legal, public sector): the skills, certifications, tools, methods and outcomes each values, and how seniority shows in each.`;
+
+  /** Rough career level from the profile and CV text, so the writer pitches the CV at the right level. */
+  function levelOf(profile, paras, app) {
+    const now = new Date().getFullYear();
+    const years = [];
+    (profile && profile.experience || []).forEach(x => { const y = parseInt(String(x && x.from || '').slice(0, 4), 10); if (y > 1960 && y <= now) years.push(y); });
+    if (!years.length) (paras || []).forEach(p => { const m = String(p.text || '').match(/\b(19[6-9]\d|20[0-4]\d)\b\s*(?:[–—-]|to)\s*(?:present|current|now|(?:19|20)\d\d)/gi); (m || []).forEach(x => years.push(parseInt(x, 10))); });
+    const stated = (String((paras || []).slice(0, 12).map(p => p.text).join(' ')).match(/\b(\d{1,2})\+?\s+years\b/i) || [])[1];
+    const yrs = stated ? Number(stated) : years.length ? now - Math.min(...years) : null;
+    const title = String((profile && profile.currentTitle) || '') + ' ' + String((paras || []).slice(0, 6).map(p => p.text).join(' '));
+    const t = s => /\b(chief|cxo|cio|cto|cfo|vp|vice president|director|head of)\b/i.test(s) ? 'Director / executive' : /\b(principal|architect|lead|staff|programme manager|program manager)\b/i.test(s) ? 'Lead / principal' : /\b(senior|sr\.?|manager)\b/i.test(s) ? 'Senior' : /\b(junior|graduate|trainee|intern|apprentice|assistant|associate)\b/i.test(s) ? 'Junior' : '';
+    const byYears = yrs == null ? '' : yrs >= 18 ? 'Lead / principal' : yrs >= 12 ? 'Lead / principal' : yrs >= 7 ? 'Senior' : yrs >= 3 ? 'Mid-level' : 'Junior';
+    const level = t(title) || byYears || 'Not clear';
+    const target = t(String(app && app.role || '')) || 'Not stated';
+    return { years: yrs, level, target };
+  }
+
   const ANALYSE_SYSTEM = `You are a senior {{MARKET}} job-search coach, {{EXPERT}}, an experienced CV writer who has written CVs for {{FIELD}} professionals for over 15 years, and a senior technology expert who knows enterprise systems end to end. You assess a job for the candidate and tailor their EXISTING Word CV to it by inserting the job's requirements into the right places, never by rewriting.
 
 ${TRUTH}
+
+${CV_CRAFT}
 
 CV EDITING RULES: INSERT, DON'T REWRITE (the Word template must not move)
 You are a meticulous CV editor. The candidate's own wording is sacred. You never rewrite, paraphrase or reorder their sentences. You only INSERT short, natural additions so each important job requirement is visible in the most relevant place.
@@ -249,7 +293,7 @@ You are a meticulous CV editor. The candidate's own wording is sacred. You never
    - "unconfirmed": the job needs it and it is plausible for this candidate, but nothing provided proves it. Still propose it (the candidate will tick it only if true), but never for anything on the NEVER-claim list.
 8. Cover every must-have requirement that is not already visible in the CV text, then the nice-to-haves. One requirement per edit where possible; group only when they belong in the same list.
 9. At most ONE edit per paragraph: combine several additions for the same paragraph into one edit.
-10. Do not use "reorder" or "remove". Return them as empty arrays.
+10. "reorder" and "remove" are only for balance (see COMPOSITION AND BALANCE): reorder adjacent bullets of the same role so the most relevant comes first; remove at most 4 weak or irrelevant bullets from roles older than about 10 years. Never reorder or remove locked paragraphs, headings, dates or a role's only bullet. Return empty arrays when the CV is already balanced.
 
 TECHNOLOGY COVERAGE (every technology the job names must appear somewhere in the tailored CV)
 You know enterprise technology in depth: SAP (ECC, S/4HANA private and public cloud, Ariba, Fieldglass, Concur, BTP, Integration Suite/CPI, CIG, MDG, SuccessFactors, Signavio, Analytics Cloud), Coupa, Jaggaer, Ivalua, GEP, Oracle, Workday, Salesforce, ServiceNow, Microsoft Dynamics, integration (APIs, EDI, cXML, IDoc, MuleSoft), data and reporting (SQL, Power BI, Tableau, Excel), cloud (Azure, AWS, GCP), delivery methods (SAP Activate, Agile, Scrum, Waterfall, PRINCE2) and tools (Jira, Confluence, Solution Manager, Cloud ALM, Visio). You know what each does, which ones are used together, and when each became available.
@@ -385,8 +429,10 @@ ${r.length || items.length ? 'A text scan of the advert found these items (there
   }
 
   function analysePrompt({ app, profile, paras }) {
+    const lv = levelOf(profile, paras, app);
     return `JOB
 ${jobBlock(app)}
+CANDIDATE LEVEL (estimated from the CV): ${lv.level}${lv.years != null ? ', about ' + lv.years + ' years of experience' : ''}. Level the job asks for: ${lv.target}. Write at the candidate's level and pitch it at the job (see SENIORITY).
 ---
 ${(app.jd || '').trim() ? app.jd.slice(0, 24000) : '(no advert text: only the job title and company above)'}
 ---
@@ -446,6 +492,9 @@ Check every insertion ("edits") and every new bullet ("new_bullets"):
 7. Voice: rewrite any wording that reads machine-written.
 8. Technology coverage: every item in "Technologies in the advert" must appear in the CV or in one of the changes (preferably the skills list). Add any that went missing.
 9. Responsibility coverage: every item in "Responsibilities in the advert" must be visible in the CV or in one of the changes. Never drop the only change covering a responsibility; add an insertion or a new bullet for any that went missing.
+10. Level and balance: wording fits the candidate's seniority and the job's level; no more than 4 new bullets under one role; changes spread across the summary, skills and the latest roles; each new bullet follows BULLET CRAFT (verb first, one idea, 15-30 words, no invented numbers).
+
+${CV_CRAFT}
 
 ${VOICE}
 
@@ -505,7 +554,9 @@ ${TRUTH}
 
 Reply with ONLY one JSON object.`;
 
-  const RESP_SYSTEM = `You are a senior CV writer. Some responsibilities from the job advert are not visible anywhere in the candidate's tailored CV. Write one new bullet for each, to sit under the candidate's most recent role or client engagement (the latest one or two by date). "after" is the id of an existing unlocked bullet of that role: use that role's LAST bullet. Each bullet must be realistic for that client, period and seniority, in the candidate's own voice and bullet format. No new employers, clients, dates, numbers or certifications. "basis": "cv" when other parts of the CV show this work, "profile" when the profile states it, otherwise "unconfirmed" (the candidate ticks it only if true). Skip only a responsibility that is on the NEVER-claim list.
+  const RESP_SYSTEM = `You are a senior CV writer. Some responsibilities from the job advert are not visible anywhere in the candidate's tailored CV. Write one new bullet for each, to sit under the candidate's most recent role or client engagement (the latest one or two by date). "after" is the id of an existing unlocked bullet of that role: use that role's LAST bullet. Each bullet must be realistic for that client, period and seniority, in the candidate's own voice and bullet format. No new employers, clients, dates, numbers or certifications. "basis": "cv" when other parts of the CV show this work, "profile" when the profile states it, otherwise "unconfirmed" (the candidate ticks it only if true). Skip only a responsibility that is on the NEVER-claim list. Spread the bullets over the latest one or two roles (at most 4 new bullets under any one role in total, counting those already planned) and write at the candidate's level.
+
+${CV_CRAFT}
 
 ${VOICE}
 
@@ -529,6 +580,14 @@ Reply with ONLY one JSON object.`;
     const paras = opts.paras || [];
     const byId = new Map(paras.map(p => [p.id, p]));
     out.new_bullets = out.new_bullets.filter(b => b && typeof b.text === 'string' && b.text.trim() && byId.has(Number(b.after)));
+    // Balance: never more than 4 new bullets under one role (the strongest come first), at most 4 removals.
+    const balance = () => {
+      const per = {};
+      out.new_bullets = out.new_bullets.filter(b => { const k = String(b.role || b.after).toLowerCase().trim(); per[k] = (per[k] || 0) + 1; return per[k] <= 4; });
+      out.remove = arr(out.remove).filter(x => x && byId.has(Number(x.id))).slice(0, 4);
+      out.reorder = arr(out.reorder).filter(o => o && Array.isArray(o.ids) && o.ids.every(id => byId.has(Number(id))));
+    };
+    balance();
     if (!out.edits.length && !out.new_bullets.length && !arr(out.job_technologies).length && !arr(out.responsibilities).length && !advertItems(opts.app && opts.app.jd).length) return out;
 
     // 2. Recruiter review
@@ -537,7 +596,7 @@ Reply with ONLY one JSON object.`;
       const r = await ask({ signal: opts.signal, system: REVIEW_SYSTEM, user: reviewPrompt({ ...opts, draft: out }), maxTokens: 14000 });
       if (Array.isArray(r.edits)) out.edits = r.edits.filter(e => e && byId.has(Number(e.id)));
       if (Array.isArray(r.new_bullets)) out.new_bullets = r.new_bullets.filter(b => b && typeof b.text === 'string' && b.text.trim() && byId.has(Number(b.after)));
-      out.review_notes = arr(r.notes).slice(0, 12); out.reviewed = true;
+      out.review_notes = arr(r.notes).slice(0, 12); out.reviewed = true; balance();
     } catch (e) { if (e && e.name === 'AbortError') throw e; out.review_error = (e && e.message) || 'review skipped'; }
 
     // 3. Technology coverage: anything the advert names that is still nowhere in the CV or the changes gets placed.
@@ -604,7 +663,7 @@ RESPONSIBILITIES FROM THE ADVERT THAT THE TAILORED CV DOES NOT SHOW YET
 ${JSON.stringify(open.map(x => x.text))}
 
 CHANGES ALREADY PLANNED (do not repeat them)
-${JSON.stringify({ edits: out.edits.map(e => e.adds || e.requirement), new_bullets: out.new_bullets.map(b => b.text) })}
+${JSON.stringify({ edits: out.edits.map(e => e.adds || e.requirement), new_bullets: out.new_bullets.map(b => (b.role ? b.role + ': ' : '') + b.text) })}
 
 CANDIDATE PROFILE
 ${profileBlock(opts.profile)}
@@ -614,7 +673,7 @@ ${JSON.stringify(editable)}
 
 JSON: {"new_bullets": [{"after": 42, "role": "role or client it sits under", "text": "the new bullet", "requirement": "the responsibility it covers, as given above", "basis": "cv|profile|unconfirmed", "reason": "why it fits"}]}` });
           arr(r.new_bullets).forEach(b => { if (b && typeof b.text === 'string' && b.text.trim() && byId.has(Number(b.after)) && out.new_bullets.length < 12) out.new_bullets.push(b); });
-          status();
+          balance(); status();
         } catch (e) { if (e && e.name === 'AbortError') throw e; }
       }
       out.responsibilities = list;
@@ -643,6 +702,8 @@ JSON: {"new_bullets": [{"after": 42, "role": "role or client it sits under", "te
       const refs = {};
       [...reqs, ...arr(out.responsibilities)].forEach(r => arr(r.cv_ids).forEach(id => { const p = byId.get(Number(id)); if (p) refs[p.id] = String(p.text).slice(0, 160); }));
       out.cv_refs = refs;
+      const per = {}; out.new_bullets.forEach(b => { const k = b.role || 'latest role'; per[k] = (per[k] || 0) + 1; });
+      out.writer = Object.assign(levelOf(opts.profile, paras, opts.app), { newPerRole: per, edits: out.edits.length, removals: out.remove.length, reorders: out.reorder.length });
     }
 
     // 4. Humanise whatever still reads machine-written

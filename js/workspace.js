@@ -416,6 +416,8 @@
             </div>
           </div>
           ${j.summary ? html`<p class="summary">${j.summary}</p>` : ''}
+          ${an.writer ? html`<div class="writer-note small"><strong>How your CV was tailored:</strong> written at <strong>${an.writer.level}</strong> level${an.writer.years != null ? html` (about ${an.writer.years} years)` : ''}${an.writer.target && an.writer.target !== 'Not stated' ? html` for a <strong>${an.writer.target}</strong> role` : ''}.
+            ${an.writer.edits} insertion${an.writer.edits === 1 ? '' : 's'}${Object.keys(an.writer.newPerRole || {}).length ? html`; new bullets spread as ${Object.entries(an.writer.newPerRole).map(([r, n]) => `${r} ${n}`).join(', ')}` : ''}${an.writer.reorders || an.writer.removals ? html`; ${an.writer.reorders} reorder and ${an.writer.removals} trim suggestion${an.writer.removals === 1 ? '' : 's'} to keep it balanced (optional, on the CV tab)` : ''}.</div>` : ''}
         </section>
         <section class="panel">
           <div class="panel-head"><h2>ATS keywords</h2>${before && after ? html`<span class="cov"><span class="muted">${before.pct}%</span> → <strong class="${scoreCls(after.pct)}-text">${after.pct}%</strong></span>` : ''}</div>

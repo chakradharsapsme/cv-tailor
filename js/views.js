@@ -213,11 +213,13 @@
               <div class="action-main">
                 <a href="#/app/${a.id}/${a.status === 'Interview' || a.status === 'Screening' ? 'interview' : 'outreach'}">${a.next.text}</a>
                 <span class="muted small">${appTitle(a)}</span>
+                <button class="fu-chip" type="button" data-act="kit" data-id="${a.id}" aria-expanded="false">📎 ${window.CVT.followup ? window.CVT.followup.draft(a, profile).label : 'Follow-up message'} · ready to send</button>
               </div>
               <div class="action-side">${dueChip(a.next)}
                 <button class="icon-btn" data-act="done" data-id="${a.id}" title="Mark done" aria-label="Mark done">✓</button>
                 <button class="icon-btn" data-act="snooze" data-id="${a.id}" title="Snooze 2 days" aria-label="Snooze 2 days">+2d</button>
               </div>
+              <div class="fu-slot" id="fu-${a.id}" hidden></div>
             </li>`)}</ul>`
             : html`<p class="empty-note">Nothing due. When you mark a job as applied, a follow-up is scheduled for 7 days later.</p>`}
         </section>
@@ -250,9 +252,17 @@
       el.textContent = top.length ? top.join(' · ') : 'No skills recognised yet';
     })).catch(() => {});
 
+    if (window.CVT.followup) window.CVT.followup.wire(root);
     root.addEventListener('click', async e => {
       const b = e.target.closest('[data-act]'); if (!b) return;
       const a = await S.getApp(b.dataset.id); if (!a) return;
+      if (b.dataset.act === 'kit') {
+        // Open or close the follow-up "attachment" under this action (no page reload, so edits stay put).
+        const slot = root.querySelector('#fu-' + CSS.escape(a.id)); if (!slot) return;
+        const open = slot.hidden; slot.hidden = !open; b.setAttribute('aria-expanded', String(open));
+        if (open && !slot.firstElementChild) slot.innerHTML = String(window.CVT.followup.card(a, window.CVT.followup.draft(a, await S.getProfile())));
+        return;
+      }
       if (b.dataset.act === 'done') { a.next = null; toast('Marked done'); }
       if (b.dataset.act === 'snooze') { a.next.due = S.addDays(a.next.due < today() ? today() : a.next.due, 2); toast('Snoozed 2 days'); }
       await S.saveApp(a); window.CVT.app.rerender();

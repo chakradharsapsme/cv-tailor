@@ -275,7 +275,9 @@
         </div>
       </header>
       ${apps.length ? '' : html`<section class="panel empty-hero"><div class="empty-art">${raw(window.CVT.art ? window.CVT.art.scene('growth') : '')}</div><div><h2>Your pipeline is empty</h2><p class="hint">Start an application from a job you like, or paste any advert. Every step from tailoring to offer is tracked here.</p><div class="row gap wrap"><a class="btn primary" href="#/jobs">Find jobs</a><a class="btn ghost" href="#/new">Paste an advert</a></div></div></section>`}
-      <div class="board-wrap"><div class="board" id="board"></div></div>`;
+      <div class="board-wrap"><div class="board" id="board"></div></div>
+      <section class="panel community" id="community-panel" aria-label="Community and official resources"></section>`;
+    if (window.CVT.community) window.CVT.community.render($('#community-panel', root)).catch(() => {});
 
     const draw = () => {
       const q = $('#pl-search', root).value.toLowerCase().trim();

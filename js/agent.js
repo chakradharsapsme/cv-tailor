@@ -281,7 +281,9 @@ Reply with ONLY one JSON object.`;
   const RESP_HEAD = /^(?:key |main |core |primary |principal |your |the |job |role |specific )?(?:responsibilities|duties|accountabilities|key tasks|tasks|what you(?:'|’)?ll (?:be )?do(?:ing)?|what you will (?:be )?do(?:ing)?|what you(?:'|’)ll be responsible for|you will be responsible for|responsible for|the role(?: will)?(?: involve)?|role (?:overview|purpose|description|responsibilities|summary)|about the role|the job|day[- ]to[- ]day(?: responsibilities)?|in this role(?: you will)?|your role|your day|job (?:purpose|description|duties|summary)|what the (?:job|role) (?:involves|entails)|scope(?: of (?:the )?role)?|the opportunity|you will|main purpose(?: of the role)?|what's involved|what is involved)\b[^.!?]{0,40}$/i;
   const STOP_HEAD = /^(?:essential|desirable|requirements?|key requirements|minimum requirements|skills|key skills|technical skills|skills (?:and|&) experience|experience(?: required)?|about you|who you are|what you(?:'|’)ll (?:need|bring)|what you need|what we(?:'|’)re looking for|what we are looking for|you(?:'|’)ll (?:need|have)|you should have|qualifications|person specification|the ideal candidate|ideal candidate|benefits|what we offer|what's in it for you|perks|about us|about the company|who we are|why join|why work|package|salary|remuneration|how to apply|next steps|company overview|our values|equal opportunit|diversity|additional information|please note)/i;
   const ACTION = /^(?:lead|leading|manage|managing|own|owning|deliver|delivering|design|designing|define|defining|drive|driving|work|working|support|supporting|develop|developing|build|building|implement|implementing|configure|configuring|coordinate|coordinating|engage|engaging|gather|gathering|elicit|analy[sz]e|analy[sz]ing|document|documenting|map|mapping|translate|translating|facilitate|facilitating|run|running|ensure|ensuring|act|acting|provide|providing|partner|partnering|collaborate|collaborating|oversee|overseeing|maintain|maintaining|test|testing|create|creating|plan|planning|prepare|preparing|review|reviewing|identify|identifying|present|presenting|liaise|liaising|advise|advising|mentor|mentoring|monitor|monitoring|report|reporting|conduct|conducting|deploy|deploying|integrate|integrating|migrate|migrating|optimi[sz]e|champion|establish|establishing|be responsible|responsible for|you will|you'll|act as|serve as|take ownership|contribute|contributing|track|tracking|produce|producing|assess|assessing|validate|validating|resolve|resolving|troubleshoot|train|training|onboard|onboarding|negotiate|negotiating)\b/i;
-  const clipLine = t => String(t || '').replace(/^[\s\-–—*•●▪◦·>\d.)(]+/, '').replace(/\s+/g, ' ').trim();
+  const clipLine = t => String(t || '').replace(/^[\s\-–—*•●▪◦·>]+/, '').replace(/^\(?\d{1,2}[.)]\s+/, '').replace(/\s+/g, ' ').trim();
+  const bulleted = raw => /^\s*(?:[-–—*•●▪◦·>]|\(?\d{1,2}[.)]\s)/.test(raw);
+  const headLike = (raw, h) => !bulleted(raw) && (/:\s*$/.test(raw) || h.split(/\s+/).length <= 6);
   function responsibilities(jd) {
     let t = String(jd || '').replace(/\r/g, '');
     // Bullets written inline ("• a • b") and adverts that arrive as one long line.
@@ -297,11 +299,11 @@ Reply with ONLY one JSON object.`;
     for (const raw of lines) {
       const c = clipLine(raw), head = c.replace(/[:\-–]+$/, '').trim();
       const colon = c.match(/^([^:]{3,60}):\s*(.+)$/);
-      if (head.length < 70 && STOP_HEAD.test(head)) { mode = 'stop'; continue; }
-      if (colon && STOP_HEAD.test(colon[1])) { mode = 'stop'; continue; }
+      if (head.length < 70 && headLike(raw, head) && STOP_HEAD.test(head)) { mode = 'stop'; continue; }
+      if (colon && !bulleted(raw) && STOP_HEAD.test(colon[1])) { mode = 'stop'; continue; }
       const soft = h => /^(?:about the role|the role|role overview|role summary|the job|the opportunity|job (?:description|summary)|overview)$/i.test(h);
-      if (head.length < 70 && RESP_HEAD.test(head) && !/[.!?]$/.test(head)) { mode = soft(head) ? 'soft' : 'resp'; found = found || mode === 'resp'; continue; }
-      if (colon && RESP_HEAD.test(colon[1].trim())) { mode = soft(colon[1].trim()) ? 'soft' : 'resp'; found = found || mode === 'resp'; colon[2].split(/;\s*|(?<=[.!?])\s+(?=[A-Z])/).forEach(x => (mode === 'resp' || ACTION.test(clipLine(x))) && add(x)); continue; }
+      if (head.length < 70 && headLike(raw, head) && RESP_HEAD.test(head) && !/[.!?]$/.test(head)) { mode = soft(head) ? 'soft' : 'resp'; found = found || mode === 'resp'; continue; }
+      if (colon && !bulleted(raw) && RESP_HEAD.test(colon[1].trim())) { mode = soft(colon[1].trim()) ? 'soft' : 'resp'; found = found || mode === 'resp'; colon[2].split(/;\s*|(?<=[.!?])\s+(?=[A-Z])/).forEach(x => (mode === 'resp' || ACTION.test(clipLine(x))) && add(x)); continue; }
       if (mode === 'resp') { if (/:$/.test(c) && c.length < 60) continue; add(c); }
       else if (mode === 'soft' && (/^\s*[-*•●▪◦]/.test(raw) || ACTION.test(c) || /\b(?:you will|you'll) (?:be )?(?:accountable|responsible|lead|own|manage|design|deliver)/i.test(c))) add(c);
     }
@@ -310,7 +312,7 @@ Reply with ONLY one JSON object.`;
       mode = 'none';
       for (const raw of lines) {
         const c = clipLine(raw), head = c.replace(/[:\-–]+$/, '').trim();
-        if (head.length < 70 && STOP_HEAD.test(head)) { mode = 'stop'; continue; }
+        if (head.length < 70 && headLike(raw, head) && STOP_HEAD.test(head)) { mode = 'stop'; continue; }
         if (head.length < 70 && /^(?:about the role|the role|role|overview)$/i.test(head)) { mode = 'none'; continue; }
         if (mode === 'stop') continue;
         c.split(/(?<=[.!?])\s+(?=[A-Z])/).forEach(s2 => { s2 = s2.trim(); if (ACTION.test(s2) && !/^(?:must|should|ideally|you (?:must|should) have|you have|you(?:'|’)ll have)\b/i.test(s2)) add(s2); });
@@ -318,6 +320,47 @@ Reply with ONLY one JSON object.`;
     }
     return out.slice(0, 30);
   }
+  // ---------- Everything else the advert asks for (must-haves, nice-to-haves, qualifications) ----------
+  const MUST_HEAD = /^(?:essential(?: (?:skills|criteria|experience|requirements))?|requirements?|key requirements|minimum requirements|job requirements|skills|key skills|technical skills|core skills|required skills|skills (?:and|&) experience|skills,? experience (?:and|&) qualifications|experience(?: required)?|what experience you need|about you|who you are|what you(?:'|’)ll (?:need|bring)|what you need|what we(?:'|’)re looking for|what we are looking for|we(?:'|’)re looking for|we are looking for|you(?:'|’)ll (?:need|have)|you should have|you will have|you have|must haves?|must have|person specification|the ideal candidate|ideal candidate|candidate profile|your skills|your experience|your profile|knowledge|competencies|key competencies)\b[^.!?]{0,40}$/i;
+  const NICE_HEAD = /^(?:desirable(?: (?:skills|criteria|experience))?|nice to have|nice-to-have|bonus(?: points)?|would be (?:great|nice|good|a plus)|preferred(?: skills| qualifications)?|ideally|advantageous|beneficial|it would be great|extra credit|plus points|good to have)\b[^.!?]{0,40}$/i;
+  const QUAL_HEAD = /^(?:qualifications?|certifications?|education|education (?:and|&) qualifications|accreditations?|licen[cs]es?)\b[^.!?]{0,30}$/i;
+  const END_HEAD = /^(?:benefits|what we offer|what's in it for you|perks|about us|about the company|who we are|why join|why work|package|salary|remuneration|how to apply|next steps|company overview|our values|equal opportunit|diversity|additional information|please note|our offer|rewards)/i;
+  const NICE_WORDS = /\b(?:desirable|nice to have|a plus|an advantage|advantageous|beneficial|ideally|preferred|bonus|would be (?:great|nice|good)|is a plus|helpful)\b/i;
+  /** Every item the advert lists, by section: resp (duties), must (essential), nice (desirable), qual (qualifications). */
+  function advertItems(jd) {
+    const items = responsibilities(jd).map(text => ({ section: 'resp', text }));
+    let t = String(jd || '').replace(/\r/g, '').replace(/\s*[•●▪◦]\s*/g, '\n- ').replace(/\s+·\s+/g, '\n- ');
+    if ((t.match(/\n/g) || []).length < 3 && t.length > 200) {
+      t = t.replace(/\s(?=(?:Essential|Desirable|Requirements|Key Requirements|Skills|Key Skills|Experience required|About you|Who you are|What you(?:'|’)?ll need|What you need|You(?:'|’)?ll need|What we(?:'|’)?re looking for|Nice to have|Qualifications|Certifications|Education|Benefits|What we offer|About us)\b\s*:)/g, '\n');
+      t = t.replace(/\s+-\s+(?=[A-Z])/g, '\n- ');
+    }
+    const seen = new Set(items.map(x => x.text.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()));
+    const add = (section, x) => {
+      x = clipLine(x).replace(/[;,.]+$/, '');
+      if (x.length < 4 || x.length > 400 || END_HEAD.test(x)) return;
+      if ((section === 'must' || section === 'qual') && NICE_WORDS.test(x)) section = 'nice';
+      const k = x.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(); if (seen.has(k)) return; seen.add(k);
+      items.push({ section, text: x });
+    };
+    let mode = '';
+    for (const raw of t.split('\n').map(l => l.trim()).filter(Boolean)) {
+      const c = clipLine(raw), head = c.replace(/[:\-–]+$/, '').trim(), colon = c.match(/^([^:]{3,60}):\s*(.+)$/);
+      const which = h => (h.length < 70 && !/[.!?]$/.test(h) && headLike(raw, h)) ? (END_HEAD.test(h) ? 'end' : NICE_HEAD.test(h) ? 'nice' : QUAL_HEAD.test(h) ? 'qual' : MUST_HEAD.test(h) ? 'must' : RESP_HEAD.test(h) ? 'resp' : '') : '';
+      // "Desirable: A, B, C" written as one bullet: split it into separate items.
+      if (colon && bulleted(raw)) { const lab = colon[1].trim(); const sec = NICE_HEAD.test(lab) ? 'nice' : QUAL_HEAD.test(lab) ? 'qual' : /^(?:essential|must haves?|required)\b/i.test(lab) ? 'must' : ''; if (sec) { colon[2].split(/;\s*|,\s*/).forEach(x => add(sec, x)); continue; } }
+      const hw = which(head) || (colon ? which(colon[1].trim()) : '');
+      if (hw) { mode = hw; if (colon && which(colon[1].trim()) && /^(must|nice|qual)$/.test(mode)) colon[2].split(/;\s*|,\s+(?=[A-Z])|(?<=[.!?])\s+(?=[A-Z])/).forEach(x => add(mode, x)); continue; }
+      if (/^(must|nice|qual)$/.test(mode)) { if (/:$/.test(c) && c.length < 60) continue; add(mode, c); }
+    }
+    // No labelled requirement sections: pick up sentences that state requirements.
+    if (!items.some(x => x.section !== 'resp')) {
+      for (const sn of String(jd || '').replace(/\s+/g, ' ').split(/(?<=[.!?])\s+/)) {
+        if (/\b(?:must have|must be|essential|required|you (?:will )?(?:need|have|bring)|experience (?:of|in|with)|\d+\+? years|proven|strong (?:knowledge|experience|understanding)|certification|certified|degree)\b/i.test(sn) && sn.length < 300 && !items.some(x => x.text === clipLine(sn).replace(/[;,.]+$/, ''))) add(/certif|degree|qualif/i.test(sn) ? 'qual' : 'must', sn);
+      }
+    }
+    return items.slice(0, 60);
+  }
+
   const respTerms = t => new Set(String(t || '').toLowerCase().replace(/s\/4\s*hana/g, 's4hana').split(/[^a-z0-9+#]+/).filter(w => w.length > 3 && !/^(with|from|that|this|their|they|them|will|your|into|across|within|including|other|such|ensure|ensuring|work|working|team|teams|role|where|when|which|what|have|been|being|also|well|more|than|each|both|support|supporting|provide|providing|deliver|delivering|manage|managing|lead|leading)$/.test(w)));
   const overlap = (a, b) => { const A = respTerms(a), B = respTerms(b); if (!A.size || !B.size) return 0; let n = 0; A.forEach(w => { if (B.has(w)) n++; }); return n / Math.min(A.size, B.size); };
   // Does this text show the responsibility? At least two of its key words, and most of them for longer duties.
@@ -330,10 +373,14 @@ NOTE: THIS ADVERT IS SHORT (only a title or a few lines). Work with what is ther
 ` : '';
 
   function respBlock(app) {
-    const r = responsibilities(app.jd);
+    const items = advertItems(app.jd), by = k => items.filter(x => x.section === k).map(x => x.text);
+    const list = (title, arr) => arr.length ? `${title}:\n${arr.map((x, i) => '  ' + (i + 1) + '. ' + x).join('\n')}\n` : '';
+    const r = by('resp');
     return `
-RESPONSIBILITIES (mandatory): the advert's duties are the core of this job. List EVERY responsibility or duty the advert states in "responsibilities", in the advert's order, worded as the advert words them (shorten only past 200 characters). Do not merge, summarise away or skip any. Each one must also appear in "requirements" as a "must". For each one the CV does not already show, cover it with an insertion into the related bullet or a new bullet under the most recent role(s).
-${r.length ? 'A text scan found these responsibilities in the advert (there may be more; include all of them):\n' + r.map((x, i) => (i + 1) + '. ' + x).join('\n') : 'A text scan found no labelled responsibilities section: take the duties from the advert text itself.'}
+MAP THE WHOLE ADVERT TO THE CV (mandatory). Use everything the job states, not only the duties:
+- "responsibilities": EVERY responsibility or duty the advert states, in the advert's order, worded as the advert words them (shorten only past 200 characters). Do not merge, summarise away or skip any. For each one the CV does not already show, cover it with an insertion into the related bullet or a new bullet under the most recent role(s).
+- "requirements": EVERY skill, experience, qualification and certification the advert asks for, essential ("must") AND desirable ("nice"), one item each, worded close to the advert. For each: "evidence" (direct = the CV clearly shows it, adjacent = related or partial, gap = not shown), "cv_ids" = the ids of the CV paragraphs that show it (empty for a gap), and "note" = where in the CV it shows (role or client) or what is missing.
+${r.length || items.length ? 'A text scan of the advert found these items (there may be more in the text; include ALL of them):\n' + list('Responsibilities', r) + list('Essential / must-have', by('must')) + list('Desirable / nice-to-have', by('nice')) + list('Qualifications / certifications', by('qual')) : 'A text scan found no labelled sections: take the duties and requirements from the advert text itself.'}
 `;
   }
 
@@ -358,7 +405,7 @@ Return this JSON shape:
   "job": {"title": "", "company": "", "location": "", "work_mode": "onsite|hybrid|remote|unknown", "contract_type": "permanent|contract|fixed-term|unknown", "pay": "as stated or empty", "ir35": "inside|outside|unknown|n/a", "closing_date": "", "agency": "", "seniority": "", "summary": "two sentences"},
   "decision": {"verdict": "apply|apply_with_angle|stretch|skip", "headline": "one sentence", "reasons": ["why"], "red_flags": ["concern"], "angle": "how to position the application"},
   "responsibilities": [{"text": "responsibility as the advert states it", "evidence": "direct|adjacent|gap", "cv_ids": [ids], "covered_by": "cv|edit|new_bullet", "note": "where the tailored CV shows it"}],
-  "requirements": [{"req": "short requirement", "type": "must|nice", "evidence": "direct|adjacent|gap", "cv_ids": [ids], "note": "how the CV covers it, or what is missing"}],
+  "requirements": [{"req": "requirement as the advert states it", "type": "must|nice", "kind": "skill|experience|qualification|responsibility", "evidence": "direct|adjacent|gap", "cv_ids": [ids], "note": "where the CV shows it (role or client), or what is missing"}],
   "fit": {"score": 0-100, "core": 0-100, "adjacent": 0-100},
   "keywords": ["8-20 exact terms from the job an ATS would scan for"],
   "job_technologies": ["every technology, product, module, tool and method the advert names"],
@@ -482,7 +529,7 @@ Reply with ONLY one JSON object.`;
     const paras = opts.paras || [];
     const byId = new Map(paras.map(p => [p.id, p]));
     out.new_bullets = out.new_bullets.filter(b => b && typeof b.text === 'string' && b.text.trim() && byId.has(Number(b.after)));
-    if (!out.edits.length && !out.new_bullets.length && !arr(out.job_technologies).length && !arr(out.responsibilities).length && !responsibilities(opts.app && opts.app.jd).length) return out;
+    if (!out.edits.length && !out.new_bullets.length && !arr(out.job_technologies).length && !arr(out.responsibilities).length && !advertItems(opts.app && opts.app.jd).length) return out;
 
     // 2. Recruiter review
     stage('review');
@@ -537,6 +584,13 @@ JSON: {"edits": [{"id": 12, "text": "full paragraph text with the technology add
         const cv = (r.evidence === 'direct' && r.cv_ids.length) || paras.some(p => shows(r.text, p.text, 0.6));
         r.covered_by = nb ? 'new_bullet' : ed ? 'edit' : cv ? 'cv' : r.evidence === 'adjacent' && r.cv_ids.length ? 'cv' : 'none';
         r.where = nb ? (nb.role || 'new bullet') : ed ? 'insertion' : '';
+        if (!r.evidence || r.scanned) {
+          // Not assessed by the AI: judge the original CV by the duty's key words.
+          const full = paras.filter(p => shows(r.text, p.text, 0.6)).map(p => p.id), part = full.length ? [] : paras.filter(p => shows(r.text, p.text, 0.34)).map(p => p.id);
+          r.evidence = full.length ? 'direct' : part.length || ed ? 'adjacent' : 'gap';
+          if (!r.cv_ids.length) r.cv_ids = (full.length ? full : part).slice(0, 3);
+          if (!r.note) r.note = full.length || part.length ? 'Matched to your CV by its key words' : '';
+        }
       });
       status();
       const open = list.filter(r => r.covered_by === 'none');
@@ -565,6 +619,30 @@ JSON: {"new_bullets": [{"after": 42, "role": "role or client it sits under", "te
       }
       out.responsibilities = list;
       out.resp_missing = list.filter(r => r.covered_by === 'none').map(r => r.text);
+    }
+
+    // 3c. Requirements: every must-have, nice-to-have and qualification in the advert is listed and mapped to the CV.
+    {
+      const scanned = advertItems(opts.app && opts.app.jd).filter(x => x.section !== 'resp');
+      const reqs = out.requirements.filter(r => r && typeof r.req === 'string' && r.req.trim()).map(r => Object.assign({}, r, { cv_ids: arr(r.cv_ids).map(Number).filter(id => byId.has(id)) }));
+      scanned.forEach(x => {
+        const hit = reqs.find(r => overlap(r.req, x.text) >= 0.6);
+        if (hit) { if (!hit.source) hit.source = x.text; if (x.section === 'qual' && !hit.kind) hit.kind = 'qualification'; return; }
+        // The AI skipped it: map it to the CV by its key words.
+        const ids = paras.filter(p => shows(x.text, p.text, 0.6)).map(p => p.id).slice(0, 3);
+        const part = ids.length ? [] : paras.filter(p => shows(x.text, p.text, 0.34)).map(p => p.id).slice(0, 3);
+        reqs.push({ req: x.text, type: x.section === 'nice' ? 'nice' : 'must', kind: x.section === 'qual' ? 'qualification' : 'skill', evidence: ids.length ? 'direct' : part.length ? 'adjacent' : 'gap', cv_ids: ids.length ? ids : part, note: ids.length || part.length ? 'Matched to your CV by its key words' : 'Not found in your CV', scanned: true });
+      });
+      reqs.forEach(r => {
+        const nb = out.new_bullets.find(b => overlap(r.req, b.requirement || '') >= 0.8 || shows(r.req, (b.requirement || '') + ' ' + b.text, 0.5));
+        const ed = out.edits.find(e => overlap(r.req, e.requirement || '') >= 0.8 || shows(r.req, (e.requirement || '') + ' ' + (e.adds || ''), 0.5));
+        r.tailored = nb ? 'new_bullet' : ed ? 'edit' : '';
+      });
+      out.requirements = reqs;
+      // Short CV excerpts for every paragraph the map points at, so the Fit tab can show where each item sits.
+      const refs = {};
+      [...reqs, ...arr(out.responsibilities)].forEach(r => arr(r.cv_ids).forEach(id => { const p = byId.get(Number(id)); if (p) refs[p.id] = String(p.text).slice(0, 160); }));
+      out.cv_refs = refs;
     }
 
     // 4. Humanise whatever still reads machine-written
@@ -995,5 +1073,5 @@ ${STUDIO[kind]}`
     return [r.summary ? 'SUMMARY: ' + r.summary : '', r.text || ''].filter(Boolean).join('\n\n');
   }
 
-  window.CVT.agent = { responsibilities, aiTells, appChat, employersFromCv, cvHistory, similarEmployers, loadPuter, chromeAIStatus, docStudio, myAnswer, docQuestions, docDigest, docMindmap, docAsk, describeImages, mockQuestion, mockGrade, storyDrafts, counterOffer, moreCards, listGemini, claudeSample, analyse, coverLetter, outreach, interviewPrep, answers, linkedin, parseJSON, profileBlock };
+  window.CVT.agent = { responsibilities, advertItems, aiTells, appChat, employersFromCv, cvHistory, similarEmployers, loadPuter, chromeAIStatus, docStudio, myAnswer, docQuestions, docDigest, docMindmap, docAsk, describeImages, mockQuestion, mockGrade, storyDrafts, counterOffer, moreCards, listGemini, claudeSample, analyse, coverLetter, outreach, interviewPrep, answers, linkedin, parseJSON, profileBlock };
 })();

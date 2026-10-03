@@ -268,13 +268,15 @@
     $('#jd', body).addEventListener('input', shortHint); shortHint();
     // Shows which responsibilities were picked up from the advert: every one is carried into the analysis and the tailored CV.
     const respPrev = () => {
-      const list = window.CVT.agent.responsibilities(a.jd || ''), box = $('#resp-list', body), sum = $('#resp-sum', body);
+      const items = window.CVT.agent.advertItems(a.jd || ''), box = $('#resp-list', body), sum = $('#resp-sum', body);
       if (!box) return;
-      const jd = (a.jd || '').trim();
-      sum.textContent = jd ? `Responsibilities picked up from this advert (${list.length})` : 'Responsibilities in this advert';
-      box.innerHTML = String(!jd ? html`<p class="muted small">Paste the advert above: its responsibilities are listed here and every one is carried into the analysis and your tailored CV.</p>`
-        : list.length ? html`<ol class="resp-ol small">${list.map(x => html`<li>${x}</li>`)}</ol><p class="muted small">All of these are sent to the analysis as must-cover duties; the AI also adds any it finds in the rest of the text.</p>`
-        : html`<p class="warn-text small">No responsibilities section found in this text.${/Only the advert summary/.test(a.notes || '') || jd.length < 900 ? ' This looks like a summary only: open the full advert' : ' Check the full advert was pasted'}${a.url ? html` (<a class="link" href="${a.url}" target="_blank" rel="noopener">open advert</a>)` : ''} and paste it above so the duties are included. The AI will still read the duties from the text it has.</p>`);
+      const jd = (a.jd || '').trim(), by = k => items.filter(x => x.section === k).map(x => x.text);
+      const G = [['resp', 'Responsibilities'], ['must', 'Must-haves'], ['nice', 'Nice-to-haves'], ['qual', 'Qualifications']].map(([k, l]) => [l, by(k)]).filter(g => g[1].length);
+      sum.textContent = jd ? `Picked up from this advert: ${G.map(([l, v]) => v.length + ' ' + l.toLowerCase()).join(' · ') || 'nothing labelled yet'}` : 'What this advert asks for';
+      box.innerHTML = String(!jd ? html`<p class="muted small">Paste the advert above: its responsibilities, must-haves, nice-to-haves and qualifications are listed here, and every one is mapped to your CV in the analysis.</p>`
+        : html`${G.map(([l, v]) => html`<h4 class="resp-h">${l}</h4><ol class="resp-ol small">${v.map(x => html`<li>${x}</li>`)}</ol>`)}
+          ${!by('resp').length ? html`<p class="warn-text small">No responsibilities section found in this text.${/Only the advert summary/.test(a.notes || '') || jd.length < 900 ? ' This looks like a summary only: open the full advert' : ' Check the full advert was pasted'}${a.url ? html` (<a class="link" href="${a.url}" target="_blank" rel="noopener">open advert</a>)` : ''} and paste it above. The AI still reads the duties from the text it has.</p>` : ''}
+          <p class="muted small">All of these go to the analysis and each is mapped to your CV on the Fit tab; the AI also adds anything else it finds in the text.</p>`);
     };
     let respT = null;
     $('#jd', body).addEventListener('input', () => { clearTimeout(respT); respT = setTimeout(respPrev, 400); });
@@ -348,24 +350,37 @@
   // =====================================================================
   // FIT
   // =====================================================================
-  /** Every responsibility in the advert and where the tailored CV covers it. */
-  function respPanel(a, an) {
-    const list = Array.isArray(an.responsibilities) ? an.responsibilities : null;
-    if (!list) {
-      const scan = window.CVT.agent.responsibilities(a.jd || '');
-      if (!scan.length) return '';
-      return html`<section class="panel"><div class="panel-head"><h2>Responsibilities in the advert</h2><span class="muted small">${scan.length} found</span></div>
-        <p class="hint">This job was analysed before responsibility tracking was added. <a class="link" href="#/app/${a.id}/job">Re-analyse</a> to make sure each one is covered in your tailored CV.</p>
-        <ol class="resp-ol small">${scan.map(x => html`<li>${x}</li>`)}</ol></section>`;
-    }
-    if (!list.length) return '';
-    const L = { cv: ['ok', 'On your CV'], edit: ['ok', 'Added to a bullet'], new_bullet: ['accent', 'New bullet'], none: ['bad', 'Not covered'] };
-    const miss = list.filter(r => r.covered_by === 'none').length;
-    return html`<section class="panel"><div class="panel-head"><h2>Responsibilities in the advert</h2><span class="muted small">${list.length - miss} of ${list.length} covered</span></div>
-      <p class="hint">Every duty the advert lists, and where your tailored CV shows it. New bullets you haven't confirmed stay unticked in the CV tab until you tick them.</p>
-      <div class="table-wrap"><table class="list"><thead><tr><th>Responsibility</th><th>In your tailored CV</th></tr></thead>
-      <tbody>${list.map(r => { const l = L[r.covered_by] || L.none; return html`<tr><td>${r.text}${r.note ? html`<div class="muted small">${r.note}</div>` : ''}</td><td><span class="chip ${l[0]}">${l[1]}</span>${r.where && r.covered_by === 'new_bullet' ? html`<div class="muted small">under ${r.where}</div>` : ''}</td></tr>`; })}</tbody></table></div>
-      ${miss ? html`<p class="small warn-text">${miss} responsibilit${miss === 1 ? 'y is' : 'ies are'} not covered yet. Add ${miss === 1 ? 'it' : 'them'} to "What to emphasise" on the Job tab if you have done this work, then re-analyse; otherwise prepare to discuss ${miss === 1 ? 'it' : 'them'} at interview.</p>` : ''}
+  /** The whole advert mapped to the CV: responsibilities, must-haves, nice-to-haves and qualifications. */
+  function jobMap(a, an) {
+    const refs = an.cv_refs || {};
+    const EV = { direct: ['ok', 'Shown'], adjacent: ['warn', 'Partly'], gap: ['bad', 'Not shown'] };
+    const TL = { edit: ['ok', 'Added to a bullet'], new_bullet: ['accent', 'New bullet'] };
+    const where = r => { const ex = (r.cv_ids || []).map(id => refs[id]).filter(Boolean); return ex.length ? html`<div class="jm-where">“${ex[0]}${ex[0].length >= 160 ? '…' : ''}”${ex.length > 1 ? html` <span class="muted">+${ex.length - 1} more</span>` : ''}</div>` : ''; };
+    const row = (text, ev, r, tl) => { const e = EV[ev] || EV.gap, t = TL[tl]; return html`<tr><td>${text}${r.note ? html`<div class="muted small">${r.note}</div>` : ''}</td>
+      <td><span class="chip ${e[0]}">${e[1]}</span>${where(r)}</td>
+      <td>${t ? html`<span class="chip ${t[0]}">${t[1]}</span>${r.where ? html`<div class="muted small">under ${r.where}</div>` : ''}` : ev === 'gap' ? html`<span class="muted small">Not added</span>` : html`<span class="muted small">As it is</span>`}</td></tr>`; };
+    const resp = Array.isArray(an.responsibilities) ? an.responsibilities : (window.CVT.agent.responsibilities(a.jd || '').map(t => ({ text: t, covered_by: '' })));
+    const respEv = r => r.evidence || (r.covered_by === 'cv' ? 'direct' : r.covered_by === 'edit' || r.covered_by === 'new_bullet' ? 'gap' : r.covered_by === 'none' ? 'gap' : '');
+    const reqs = an.requirements || [];
+    const isQual = r => r.kind === 'qualification' || /\b(certif|certified|degree|qualification|diploma|accredit|licen[cs]e|PMP|PRINCE2|MBA|BSc|MSc)\b/i.test(r.req);
+    const isResp = r => r.kind === 'responsibility' && resp.some(x => x.text && r.req && x.text.toLowerCase().slice(0, 40) === r.req.toLowerCase().slice(0, 40));
+    const must = reqs.filter(r => r.type !== 'nice' && !isQual(r) && !isResp(r)), nice = reqs.filter(r => r.type === 'nice' && !isQual(r)), qual = reqs.filter(isQual);
+    const all = [...resp.map(r => respEv(r)), ...reqs.map(r => r.evidence)];
+    const n = k => all.filter(x => x === k).length;
+    const group = (title, hint, rows) => rows.length ? html`<tr class="jm-group"><th colspan="3">${title} <span class="muted small">${hint}</span></th></tr>${rows}` : '';
+    const legacy = !Array.isArray(an.responsibilities);
+    return html`<section class="panel jm">
+      <div class="panel-head"><h2>Job vs your CV</h2><span class="muted small">${n('direct')} shown · ${n('adjacent')} partly · ${n('gap')} not shown</span></div>
+      <p class="hint">Everything the advert asks for, item by item, and where your CV shows it. "In your tailored CV" shows what Applywise added; new bullets you haven't confirmed stay unticked in the CV tab.${legacy ? html` This job was analysed before the full map was added: <a class="link" href="#/app/${a.id}/job">re-analyse</a> to map every item.` : ''}</p>
+      <div class="table-wrap"><table class="list jm-table">
+        <thead><tr><th>What the job asks for</th><th>Your CV</th><th>In your tailored CV</th></tr></thead>
+        <tbody>
+          ${group('Responsibilities', `${resp.length} duties`, resp.map(r => row(r.text, respEv(r), r, r.covered_by === 'edit' || r.covered_by === 'new_bullet' ? r.covered_by : '')))}
+          ${group('Must-haves', `${must.length} essential`, must.map(r => row(r.req, r.evidence, r, r.tailored)))}
+          ${group('Nice-to-haves', `${nice.length} desirable`, nice.map(r => row(r.req, r.evidence, r, r.tailored)))}
+          ${group('Qualifications and certifications', `${qual.length}`, qual.map(r => row(html`${r.req} <span class="chip ${r.type === 'must' ? 'ink' : 'outline'}">${r.type === 'must' ? 'must' : 'nice'}</span>`, r.evidence, r, r.tailored)))}
+        </tbody></table></div>
+      ${n('gap') ? html`<p class="small warn-text">${n('gap')} item${n('gap') === 1 ? ' is' : 's are'} not shown in your CV. If you have done ${n('gap') === 1 ? 'it' : 'them'}, add a line to "What to emphasise" on the Job tab and re-analyse; otherwise prepare to discuss ${n('gap') === 1 ? 'it' : 'them'} at interview.</p>` : ''}
     </section>`;
   }
 
@@ -378,8 +393,6 @@
     const before = mm ? D.keywordCoverage(D.plainText(mm.model), an.keywords) : null;
     const dec = an.decision || {}, v = VERDICT[dec.verdict] || { label: 'Assessed', cls: 'muted' };
     const bar = (label, val) => html`<div class="fit-bar"><span>${label}</span><div class="track"><div class="fill" style="width:${Math.max(0, Math.min(100, Number(val) || 0))}%"></div></div><span class="v">${Math.round(Number(val) || 0)}</span></div>`;
-    const order = { gap: 0, adjacent: 1, direct: 2 };
-    const reqs = an.requirements.slice().sort((x, y) => (x.type === 'must' ? 0 : 1) - (y.type === 'must' ? 0 : 1) || (order[x.evidence] ?? 3) - (order[y.evidence] ?? 3));
     const j = an.job || {};
 
     body.innerHTML = String(html`
@@ -412,17 +425,7 @@
         </section>
       </div>
 
-      ${respPanel(a, an)}
-
-      <section class="panel">
-        <div class="panel-head"><h2>Requirements and your evidence</h2><span class="muted small">${an.requirements.filter(r => r.evidence === 'direct').length} direct · ${an.requirements.filter(r => r.evidence === 'adjacent').length} adjacent · ${an.requirements.filter(r => r.evidence === 'gap').length} gaps</span></div>
-        <div class="table-wrap"><table class="list">
-          <thead><tr><th>Requirement</th><th>Type</th><th>Evidence</th></tr></thead>
-          <tbody>${reqs.map(q => html`<tr><td><div>${q.req}</div>${q.note ? html`<div class="muted small">${q.note}</div>` : ''}</td>
-            <td><span class="chip ${q.type === 'must' ? 'ink' : 'outline'}">${q.type === 'must' ? 'must' : 'nice'}</span></td>
-            <td><span class="chip ${{ direct: 'ok', adjacent: 'warn', gap: 'bad' }[q.evidence] || 'muted'}">${q.evidence || '—'}</span></td></tr>`)}</tbody>
-        </table></div>
-      </section>
+      ${jobMap(a, an)}
 
       ${an.talking_points.length ? html`<section class="panel"><div class="panel-head"><h2>Talking points</h2></div><ul class="tight">${an.talking_points.map(t => html`<li>${t}</li>`)}</ul></section>` : ''}
 

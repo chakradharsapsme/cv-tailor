@@ -1773,3 +1773,9 @@ a.tb-chip:hover { transform: translateY(-1px); border-color: var(--accent); }
 .resp-prev { margin: 4px 0 12px; border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px; background: var(--surface-2); }
 .resp-prev summary { cursor: pointer; font-weight: 600; font-size: .9rem; }
 .resp-ol { margin: 8px 0 6px; padding-left: 22px; display: grid; gap: 3px; max-height: 320px; overflow: auto; }
+.resp-h { margin: 10px 0 2px; font-size: .82rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+.jm-table td { vertical-align: top; }
+.jm-table td:nth-child(2), .jm-table td:nth-child(3) { width: 26%; }
+.jm-group th { background: var(--surface-2); text-align: left; font-size: .86rem; padding-top: 10px; }
+.jm-where { margin-top: 4px; font-size: .78rem; color: var(--muted); font-style: italic; line-height: 1.35; }
+@media (max-width: 700px) { .jm-table td:nth-child(2), .jm-table td:nth-child(3) { width: auto; } }

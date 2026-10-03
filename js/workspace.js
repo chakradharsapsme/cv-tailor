@@ -1,10 +1,10 @@
-/* workspace.js — one job application: Job, Fit, CV, Letter, Outreach, Interview, Apply. */
+/* workspace.js — one job application: Job, Fit, CV, Letter, Outreach, Interview, Apply, My questions, Community. */
 (function () {
   const { html, raw, esc, $, $$, toast, download, copy, today, ukDate, daysBetween, slug, VERDICT, scoreCls, gauge, progress, state, masterModel } = window.CVT.ui;
   const S = window.CVT.store, A = window.CVT.agent, D = window.CVT.docx;
   const TABS = [
     ['job', 'Job'], ['fit', 'Fit & decision'], ['cv', 'CV'], ['compare', 'Compare CVs'], ['letter', 'Cover letter'],
-    ['outreach', 'Outreach'], ['interview', 'Interview prep'], ['docs', 'Documents'], ['apply', 'Apply'], ['myqs', 'My questions']
+    ['outreach', 'Outreach'], ['interview', 'Interview prep'], ['docs', 'Documents'], ['apply', 'Apply'], ['myqs', 'My questions'], ['community', '🌐 Community']
   ];
   const opts = (list, cur) => list.map(o => html`<option value="${o}" ${o === cur ? raw('selected') : ''}>${o || '—'}</option>`);
 
@@ -181,7 +181,7 @@
 
     const body = $('#ws-body', root);
     const ctx = { a, an, profile, masters, body, saveSoon, saveNow, go, root };
-    await ({ job: tabJob, fit: tabFit, cv: tabCv, compare: tabCompare, letter: tabLetter, outreach: tabOutreach, interview: tabInterview, docs: c => window.CVT.docs.tab(c), apply: tabApply, myqs: c => window.CVT.myqs.tab(c) })[tab](ctx);
+    await ({ job: tabJob, fit: tabFit, cv: tabCv, compare: tabCompare, letter: tabLetter, outreach: tabOutreach, interview: tabInterview, docs: c => window.CVT.docs.tab(c), apply: tabApply, community: c => { c.body.innerHTML = '<section class="panel community" id="cm-app"></section>'; return window.CVT.community ? window.CVT.community.render(c.body.querySelector('#cm-app'), { app: c.a }) : null; }, myqs: c => window.CVT.myqs.tab(c) })[tab](ctx);
   }
 
   const needAnalysis = ctx => { ctx.body.innerHTML = String(html`<div class="empty-state"><h2>Analyse the job first</h2><p class="hint">Paste the job description on the Job tab and run the analysis. Everything else builds on it.</p><a class="btn primary" href="#/app/${ctx.a.id}/job">Go to Job</a></div>`); };

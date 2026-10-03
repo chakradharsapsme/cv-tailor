@@ -1,18 +1,151 @@
 {
- "updated": "2026-10-02T11:13:26+00:00",
+ "updated": "2026-10-03T10:23:37+00:00",
  "sources": [
   "Jooble",
   "Google Jobs"
  ],
- "added": 2,
+ "added": 14,
  "errors": [],
  "usage": {
   "apify_month": "2026-10",
-  "apify_results": 50,
-  "apify_spent_usd": 0.72,
-  "jooble_requests": 3
+  "apify_results": 66,
+  "apify_spent_usd": 0.75,
+  "jooble_requests": 4
  },
  "jobs": [
+  {
+   "title": "Senior SAP Ariba Contracts Lead | CLM, Integrations",
+   "company": "Next Ventures",
+   "location": "London",
+   "pay": "£70,000-£90,000 per year",
+   "url": "https://talents.studysmarter.co.uk/companies/next-ventures/london/senior-sap-ariba-contracts-lead-clm-integrations-36032289/?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "",
+   "source": "Google Jobs · Talents By StudySmarter",
+   "sourceId": "HnGBQjSiNfQRL3RFAAAAAA==",
+   "snippet": "A leading consultancy firm is seeking an experienced SAP ARIBA Lead Consultant in London to support contract lifecycle management and procurement transformation across pharmaceutical and manufacturing clients. The role involves configuring SAP ARIBA Contracts solutions, engaging stakeholders, and ensuring compliance in contract processes. Successful candidates will possess proven experience in ARI BA implementations and strong knowledge of procurement processes in relevant industries. This position requires onsite presence for 2-3 days per week. #J-18808-Ljbffr Experience: 2 years required",
+   "type": "",
+   "query": "SAP Ariba in the last week",
+   "key": "seniorsaparibacontractsleadclmintegrations|nextventures",
+   "firstSeen": "2026-10-03T10:23:37+00:00",
+   "lastSeen": "2026-10-03T10:23:37+00:00",
+   "sources": [
+    "Google Jobs · Talents By StudySmarter"
+   ]
+  },
+  {
+   "title": "Senior SAP Ariba Consultant (guided Buying)",
+   "company": "Linkedin",
+   "location": "Nottingham",
+   "pay": "£48,000-£72,000 per year",
+   "url": "https://talents.studysmarter.co.uk/companies/linkedin/senior-sap-ariba-consultant-guided-buying-6805864/?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "",
+   "source": "Google Jobs · Talents By StudySmarter",
+   "sourceId": "oW2CHyv2NDco0PyIAAAAAA==",
+   "snippet": "Senior SAP Ariba Consultant (Guided Buying)About NTT DATA Business Solutions: NTT DATA Business Solutions Group is part of the NTT DATA Corporate Group a top 10 global IT services provider, headquartered in Tokyo, operating in more than 50 countries. We combine a global reach with local intimacy to provide premier professional SAP services from deep industry expertise consulting to applied innovat ions in digital, cloud, automation, and system development to business IT outsourcing.As a global SAP Platinum Partner, NTT DATA Business Solutions Group leverages its global expertise to deliver quality outcomes whether you are a multi-national or operate in a single country. With over 15,000 SAP experts across 31 countries, we have the capability and reach to help you solve real problems and seize the next opportunity for growth around your SAP strategy and operations.Our global award-winning SAP practice, differentiated by innovation is the undisputed leader in SAP S/4HANA. With about 500 SAP HANA clients and more than 300 SAP S/4HANA clients.Our clients trust our deep experience and proven approaches - all around the world.Job Summary:The Senior Ariba role is a key and influencing role within the NTT DATA Business Solutions (NDBS) Supply Chain practice . The successful candidate will be part of a wider team responsible for the design and implementation of SAP solutions to our customer base and to meet our customer’s needs. As a Senior Expert you will support customer engagements",
+   "type": "",
+   "query": "SAP Ariba in the last week",
+   "key": "seniorsaparibaconsultantguidedbuying|linkedin",
+   "firstSeen": "2026-10-03T10:23:37+00:00",
+   "lastSeen": "2026-10-03T10:23:37+00:00",
+   "sources": [
+    "Google Jobs · Talents By StudySmarter"
+   ]
+  },
+  {
+   "title": "SAP Ariba Lead: S2P, Contracts & Integrations",
+   "company": "SoftNice UG",
+   "location": "United Kingdom",
+   "pay": "£48,000-£72,000 per year",
+   "url": "https://talents.studysmarter.co.uk/companies/softnice-ug/sap-ariba-lead-s2p-contracts-integrations-23488309/?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "",
+   "source": "Google Jobs · Talents By StudySmarter",
+   "sourceId": "nIst5YbfrmZK23_DAAAAAA==",
+   "snippet": "A consulting firm in the UK is looking for a Mid-Senior Level SAP Ariba Consultant to join their team. The successful candidate will be responsible for designing and configuring SAP Ariba solutions while collaborating with businesses to streamline procurement processes. Applicants should have at least 3 years of SAP ARIBA implementation experience and a solid understanding of the Source to Pay pro cess. This is a full-time position based in London with opportunities to work across European markets. #J-18808-Ljbffr",
+   "type": "",
+   "query": "SAP Ariba in the last week",
+   "key": "saparibaleads2pcontractsintegrations|softniceug",
+   "firstSeen": "2026-10-03T10:23:37+00:00",
+   "lastSeen": "2026-10-03T10:23:37+00:00",
+   "sources": [
+    "Google Jobs · Talents By StudySmarter"
+   ]
+  },
+  {
+   "title": "Senior SAP Ariba SLP, Contracts Consultant",
+   "company": "NTT DATA Business Solutions",
+   "location": "Watford",
+   "pay": "£48,000-£84,000 per year",
+   "url": "https://talents.studysmarter.co.uk/companies/ntt-data-business-solutions/senior-sap-ariba-slp-contracts-consultant-14640085/?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "",
+   "source": "Google Jobs · Talents By StudySmarter",
+   "sourceId": "HbHW1D14blVfLoMrAAAAAA==",
+   "snippet": "Senior SAP Ariba SLP, Contracts Consultant About NTT DATA Business Solutions: NTT DATA Business Solutions Group is part of the NTT DATA Corporate Group a top 10 global IT services provider, headquartered in Tokyo, operating in more than 50 countries. We combine a global reach with local intimacy to provide premier professional SAP services from deep industry expertise consulting to applied innov ations in digital, cloud, automation, and system development to business IT outsourcing. As a global SAP Platinum Partner, NTT DATA Business Solutions Group leverages its global expertise to deliver quality outcomes whether you are a multi-national or operate in a single country. With over 15,000 SAP experts across 31 countries, we have the capability and reach to help you solve real problems and seize the next opportunity for growth around your SAP strategy and operations. Our global award-winning SAP practice, differentiated by innovation is the undisputed leader in SAP S/4HANA. With about 500 SAP HANA clients and more than 300 SAP S/4HANA clients. Our clients trust our deep experience and proven approaches - all around the world. Job Summary: The Senior Ariba role is a key and influencing role within the NTT DATA Business Solutions (NDBS) Supply Chain practice . The successful candidate will be part of a wider team responsible for the design and implementation of SAP solutions to our customer base and to meet our customer’s needs. As a Senior Expert you will support customer engage",
+   "type": "",
+   "query": "SAP Ariba in the last week",
+   "key": "seniorsaparibaslpcontractsconsultant|nttdatabusinesssolutions",
+   "firstSeen": "2026-10-03T10:23:37+00:00",
+   "lastSeen": "2026-10-03T10:23:37+00:00",
+   "sources": [
+    "Google Jobs · Talents By StudySmarter"
+   ]
+  },
+  {
+   "title": "SAP Ariba Solution Architect",
+   "company": "N Consulting Global",
+   "location": "High Wycombe",
+   "pay": "",
+   "url": "https://talents.studysmarter.co.uk/companies/n-consulting-global/high-wycombe/sap-ariba-solution-architect-17105722/?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "",
+   "source": "Google Jobs · Talents By StudySmarter",
+   "sourceId": "yDUQdFh8SXpmTatDAAAAAA==",
+   "snippet": "Role: SAP Ariba Solution Architect Location: London, UK Permanent Role Work Mode : 4 days per week from office for the first few months and then 3 days per week from office Job Description: Program Context: Global S/4HANA Implementation – Finance, Procurement (Ariba), HCM (SuccessFactors), Concur ________________________________________ Role Overview: We are seeking a hands-on SAP Ariba So lution Architect to lead the design and implementation of a multi-country, multi-currency procurement solution as part of a global S/4HANA transformation program. This role will architect and deliver scalable procurement processes across Source-to-Contract (S2C) and Procure-to-Pay (P2P), ensuring compliance with country-specific regulatory and operational nuances, and seamless integration with S/4HANA, Azure Fabric, and other enterprise systems. ________________________________________ Key Responsibilities: Solution Architecture & Design • Lead the end-to-end architecture of SAP Ariba across sourcing, contracts, procurement, and supplier management. • Design solutions that support multi-country operations, multi-currency transactions, and localized procurement requirements. • Ensure integration with S/4HANA, including master data, purchase requisitions, orders, invoices, and supplier lifecycle. Hands-On Delivery • Work directly with business users and procurement teams across regions to gather requirements, design solutions, and configure Ariba modules. • Support the design and delivery of ",
+   "type": "",
+   "query": "SAP Ariba in the last week",
+   "key": "saparibasolutionarchitect|nconsultingglobal",
+   "firstSeen": "2026-10-03T10:23:37+00:00",
+   "lastSeen": "2026-10-03T10:23:37+00:00",
+   "sources": [
+    "Google Jobs · Talents By StudySmarter"
+   ]
+  },
+  {
+   "title": "Manager SAP – Source to Pay The Americas",
+   "company": "Smurfit Kappa",
+   "location": "United Kingdom",
+   "pay": "",
+   "url": "https://bebee.com/gb/jobs/manager-sap-source-to-pay-the-americas-smurfit-kappa--t7xk-795322292?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "",
+   "source": "Google Jobs · BeBee",
+   "sourceId": "DHOC1SSSgmug1xRrAAAAAA==",
+   "snippet": "Manager SAP - Source to Pay The Americas Location: The Americas Permanent - Hybrid Quarterly travel to our Global SAP CoE hubs in France and Mexico may be required. Please note that this position is required to be based in Atlanta or Mexico City. Smurfit WestRock operates under a hybrid work model, requiring employees to attend our office 2-3 days per week. Only CVs submitted in English will be considered. Smurfit Westrock is a global leader in sustainable paper and packaging solutions. Our Global SAP Centre of Excellence (CoE) drives SAP strategy, governance, standardization, and continuous improvement across our global organization. About The Role The Manager SAP - Source to Pay The Americas oversees the lifecycle and roadmap of SAP products within the Source value stream, ensuring solutions meet evolving business needs and deliver long-term value. The role leads a team of SAP Source-to-Pay Consultants responsible for designing, configuring, enhancing, and supporting solutions across end-to-end procurement processes, including sourcing, purchasing, supplier management, inbound logistics, inventory and warehouse management, and integration with payment processes. Working closely with Business Relationship Managers, Solution Architects, SAP Managers, and global business stakeholders, the Manager ensures effective solution delivery, protects SAP standards, manages product priorities and resources, and drives continuous improvement across the Source-to-Pay landscape. Key respon",
+   "type": "",
+   "query": "SAP S2P in the last week",
+   "key": "managersapsourcetopaytheamericas|smurfitkappa",
+   "firstSeen": "2026-10-03T10:23:37+00:00",
+   "lastSeen": "2026-10-03T10:23:37+00:00",
+   "sources": [
+    "Google Jobs · BeBee"
+   ]
+  },
+  {
+   "title": "Senior SAP Specialist (S2P)",
+   "company": "Certes IT Service Solutions",
+   "location": "Newport-on-Tay",
+   "pay": "£56,710-£69,471 per year",
+   "url": "https://talents.studysmarter.co.uk/companies/certes-it-service-solutions/senior-sap-specialist-s2p-7433565/?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "",
+   "source": "Google Jobs · Talents By StudySmarter",
+   "sourceId": "eV5_DSm-bgDp8oW6AAAAAA==",
+   "snippet": "Senior SAP Specialist (S2P) Role Type: Permanent role Location: South Wales and Remote (Hybrid) Salary: £56,710 - £69,471 per annum + excellent benefits Start: ASAP Role Overview/Responsibilities A Senior SAP Specialist (S2P) is required for our utilities client to lead the proactive drive across the business to seek opportunities to innovate business processes and associated SAP solutions to enab le delivery of their business plan for the assigned area of expertise, whilst ensuring that investments in the SAP platform are cost effective for the long term whilst ensuring maximum benefit from spend. To be responsible for increasing speed of innovation and enhancement within the SAP Solutions and eliminate problems and introduce benefit by undertaking potentially complex root cause analysis and finding innovative and fast delivery of system solutions for which there may or may not be a quick or standard solution. Also to continually assess the impact of emerging SAP technologies and product road maps against business process needs and interpreting business value against their business plan for SAP stakeholders so that a clear road map can be agreed and maintained for the future of SAP solutions within the business. Work with a number of stakeholders and externally to promote 'the art of the possible' relating to latest SAP technologies (HANA, Mobile, Cloud solutions etc.) understanding where the benefit of the technology can be applied to improve the performance against the Bus",
+   "type": "",
+   "query": "SAP S2P in the last week",
+   "key": "seniorsapspecialists2p|certesitservicesolutions",
+   "firstSeen": "2026-10-03T10:23:37+00:00",
+   "lastSeen": "2026-10-03T10:23:37+00:00",
+   "sources": [
+    "Google Jobs · Talents By StudySmarter"
+   ]
+  },
   {
    "title": "SAP MM & Procurement Consultant for S/4HANA (6m)",
    "company": "Whitehall Resources Ltd",
@@ -183,6 +316,25 @@
    "lastSeen": "2026-10-02T07:56:57+00:00",
    "sources": [
     "Google Jobs · LinkedIn"
+   ]
+  },
+  {
+   "title": "SAP Ariba Solution Architect - S/4HANA / BTP in SL4",
+   "company": "Energy Jobline ZR",
+   "location": "Windsor",
+   "pay": "",
+   "url": "https://www.energyjobline.com/job/sap-ariba-solution-architect-s-4hana-btp-sl4-31552021?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "2026-10-02",
+   "source": "Google Jobs · Energy Jobline",
+   "sourceId": "brgKZiie98z060tcAAAAAA==",
+   "snippet": "Job DescriptionSAP Ariba Solution Architect Location: Windsor, UK – Hybrid, 1 day per week onsite initially Contract: 6 months We are looking for an experienced SAP Ariba Solution Architect to lead the design and delivery of a large-scale procurement transformation programme. The successful candidate will own the end-to-end SAP Ariba solution architecture, ensuring effective integration across SAP and non-SAP platforms and alignment with enterprise architecture and procurement strategy. Key Responsibilities Define and own end-to-end SAP Ariba solution architecture. Lead solution design workshops with Procurement, Finance, IT and business stakeholders. Design scalable and secure solutions across the SAP Ariba Suite. Design and govern integrations between SAP Ariba, SAP ECC, S/4HANA and SAP BTP/CPI. Produce architecture diagrams, solution blueprints and integration specifications. Provide technical and architecture leadership throughout the delivery lifecycle. Conduct architecture reviews, risk assessments and solution assurance. Support future-state procurement architecture and transformation roadmaps. Work closely with implementation partners and technical delivery teams. Essential Skills & Experience 10+ years' relevant SAP Ariba Solution Architecture experience. Extensive experience delivering enterprise-scale SAP Ariba procurement transformations. Deep expertise across Ariba Buying, Sourcing, Contracts, Supplier Lifecycle & Performance (SLP) and Guided Buying. Strong Sourc",
+   "type": "",
+   "query": "SAP Ariba in the last week",
+   "key": "saparibasolutionarchitects4hanabtpinsl4|energyjoblinezr",
+   "firstSeen": "2026-10-03T10:23:37+00:00",
+   "lastSeen": "2026-10-03T10:23:37+00:00",
+   "sources": [
+    "Google Jobs · Energy Jobline"
    ]
   },
   {
@@ -377,6 +529,25 @@
    ]
   },
   {
+   "title": "Senior Consultant SAP Ariba P2P",
+   "company": "apsolut",
+   "location": "Metropolitan Borough of Kirklees (+2 others)",
+   "pay": "",
+   "url": "https://uk.jobrapido.com/jobpreview/783987385145753600?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "2026-10-01",
+   "source": "Google Jobs · Jobrapido",
+   "sourceId": "7pMh0uPnK9x5ngunAAAAAA==",
+   "snippet": "Salary: £49,000 - 89,000 per year Requirements: • We require excellent Procurement / P2P / Ariba process and configuration experience, with at least 6 years of experience. • We require a high level of knowledge of SAP P2P or MM processes related to S2P Procurement, strategic sourcing, catalogue content management, and workflows from both a process and configuration perspective. • We require stron g client-facing and communication skills at management level. • We require experience managing complex IT projects with multicultural teams. • We require very good written and spoken English. • We require willingness to travel nationally and internationally. Responsibilities: • We guide customers through the lifecycle of an SAP Ariba implementation and take on the role of project manager. • We support the blueprinting process, gather customer requirements, and lead design workshops leveraging best practices. • We may assist in developing processes and procedures that leverage SAP Ariba solutions within the customer organization. • We lead the final configuration of the solution and provide guidance on user acceptance testing, including support in resolving issues and defects. Technologies: • Support • Network • Project Manager • SAP More: We are passionate about Intelligent Spend Management, Business Network, Procurement, Supply Chain, External Workforce Management, and Business Transformation. In procurement with SAP, we are leaders and pioneers, and our expertise has made us an SAP",
+   "type": "",
+   "query": "SAP Ariba in the last week",
+   "key": "seniorconsultantsaparibap2p|apsolut",
+   "firstSeen": "2026-10-03T10:23:37+00:00",
+   "lastSeen": "2026-10-03T10:23:37+00:00",
+   "sources": [
+    "Google Jobs · Jobrapido"
+   ]
+  },
+  {
    "title": "Business Analyst",
    "company": "Pearson Whiffin IT & Digital",
    "location": "Maidstone",
@@ -548,6 +719,25 @@
    ]
   },
   {
+   "title": "P2P Delivery Officer (SAP Ariba)",
+   "company": "Harvey Nash UK",
+   "location": "West Yorkshire",
+   "pay": "",
+   "url": "https://www.harveynash.co.uk/jobs/299249-P2P-Delivery-Officer-SAP-Ariba?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "2026-09-29",
+   "source": "Google Jobs · Harvey Nash UK",
+   "sourceId": "6FCJHnsU6nAwsR2eAAAAAA==",
+   "snippet": "P2P Delivery Officer Salary: £60,000 Location: Hybrid (2 days per week on site) Contract Type: FTC The Opportunity We are supporting a major transformation programme that has implemented new procurement technology and is now entering a critical phase focused on business adoption, operational readiness and successful delivery through to go-live and hypercare. The organisation is seeking an exper ienced P2P Delivery Officer to play a key role in ensuring the effective embedding of new Purchase-to-Pay processes across the business. This position will work closely with procurement, finance, change and project teams to support the transition to new ways of working and drive readiness across impacted stakeholders. The programme is scheduled to go live in March 2027, with post-go-live hypercare continuing through to June 2027. Key Responsibilities • Support the delivery of an end-to-end Purchase-to-Pay (P2P) transformation programme. • Drive business readiness, operational readiness and change readiness activities across impacted teams. • Work closely with Procurement, Finance and business stakeholders to ensure successful adoption of new processes. • Support transition activities leading up to go-live and throughout the hypercare period. • Identify and manage process impacts, risks and readiness gaps. • Facilitate stakeholder engagement, training support and adoption activities. • Collaborate with project teams to ensure business requirements are effectively translated into operati",
+   "type": "",
+   "query": "SAP Ariba in the last week",
+   "key": "p2pdeliveryofficersapariba|harveynash",
+   "firstSeen": "2026-10-03T10:23:37+00:00",
+   "lastSeen": "2026-10-03T10:23:37+00:00",
+   "sources": [
+    "Google Jobs · Harvey Nash UK"
+   ]
+  },
+  {
    "title": "ERP Specialist / Business Systems Analyst",
    "company": "Big Red Recruitment",
    "location": "United Kingdom",
@@ -621,6 +811,82 @@
    "lastSeen": "2026-10-02T11:13:26+00:00",
    "sources": [
     "Google Jobs · JobLeads"
+   ]
+  },
+  {
+   "title": "SAP Source-to-Pay Manager",
+   "company": "PwC",
+   "location": "England",
+   "pay": "",
+   "url": "https://bebee.com/gb/jobs/sap-source-to-pay-manager-pwc-bristol--fj-2374193510?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "2026-09-21",
+   "source": "Google Jobs · BeBee",
+   "sourceId": "kQttKbovVNGHUfF_AAAAAA==",
+   "snippet": "Line of Service AdvisoryIndustry/Sector TechnologySpecialism SAPManagement Level ManagerJob Description & Summary At PwC, our people in business application consulting specialise in consulting services for a variety of business applications, helping clients optimise operational efficiency. These individuals analyse client needs, implement software solutions, and provide training and support f or seamless integration and utilisation of business applications, enabling clients to achieve their strategic objectives. As a SAP consulting generalist at PwC, you will focus on providing consulting services across various SAP applications to clients, analysing their needs, implementing software solutions, and offering training and support for effective utilisation of SAP applications. Your versatile knowledge will allow you to assist clients in optimising operational efficiency and achieving their strategic objectives.About the role Shape the future of business transformation with PwC At PwC, we're growing one of the leading SAP consulting practices in our global network. Our multidisciplinary teams bring together deep SAP expertise across Finance, Supply Chain, Human Capital and Business Change, complemented by Data, AI and Cloud capabilities, working alongside specialists from across PwC to help clients deliver complex business transformation programmes. Our team partners with some of the world's leading organisations to deliver complex, multinational SAP transformation programmes sp",
+   "type": "",
+   "query": "SAP S2P in the last week",
+   "key": "sapsourcetopaymanager|pwc",
+   "firstSeen": "2026-10-03T10:23:37+00:00",
+   "lastSeen": "2026-10-03T10:23:37+00:00",
+   "sources": [
+    "Google Jobs · BeBee"
+   ]
+  },
+  {
+   "title": "Senior SAP Ariba Solution Architect – S/4HANA & S2P Design",
+   "company": "Talan Group",
+   "location": "England",
+   "pay": "",
+   "url": "https://www.jobilize.com/job/gb-england-london-senior-sap-ariba-solution-architect-s-4hana-s2p?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "2026-09-17",
+   "source": "Google Jobs · Jobilize",
+   "sourceId": "1c7sQcJqbdIq4yoPAAAAAA==",
+   "snippet": "A global consulting firm is seeking an experienced SAP Ariba Solution Architect to support the expansion of their Source-to-Pay landscape. This role involves leading the Detailed Level Design for new Ariba Sourcing and Reporting modules while integrating them with S/4HANA. The ideal candidate will have a strong background in SAP Ariba and its integration patterns. Strong technical documentation an d stakeholder engagement skills are essential. This position offers the opportunity to collaborate closely with internal teams and clients to shape impactful solutions in a dynamic environment. •",
+   "type": "",
+   "query": "SAP S2P in the last week",
+   "key": "seniorsaparibasolutionarchitects4hanas2pdesign|talan",
+   "firstSeen": "2026-10-03T10:23:37+00:00",
+   "lastSeen": "2026-10-03T10:23:37+00:00",
+   "sources": [
+    "Google Jobs · Jobilize"
+   ]
+  },
+  {
+   "title": "SAP Source-to-Pay (S2P) Senior Manager",
+   "company": "Pwc UK",
+   "location": "Birmingham",
+   "pay": "",
+   "url": "https://bebee.com/gb/jobs/sap-source-to-pay-s2p-senior-manager-pwc-uk-birmingham--fj-2354977492?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "2026-09-09",
+   "source": "Google Jobs · BeBee",
+   "sourceId": "EhUWQyZ2PFSwm1RgAAAAAA==",
+   "snippet": "About the role Shape the future of business transformation with PwC Business transformation is evolving faster than ever. AI, automation and intelligent technologies are reshaping how organisations operate, and clients are looking for trusted advisors who can combine deep SAP expertise with consulting, business change and innovation to deliver lasting outcomes. At PwC, we're growing one of the leading SAP consulting practices in our global network. Our multidisciplinary teams bring together deep SAP expertise across Finance, Supply Chain, Human Capital and Business Change, complemented by Data, AI and Cloud capabilities, working alongside specialists from across PwC to help clients deliver complex business transformation programmes. Our team partners with some of the world's leading organisations to deliver complex, multinational SAP transformation programmes spanning Finance, Supply Chain, Human Capital and business adoption. We work across the full transformation lifecycle, from strategy and business case through solution design, implementation and business adoption, helping clients realise long-term value from their SAP investments. As our practice continues to grow, we're looking for people who want more than simply delivering projects. We're proud of the collaborative culture we're building - one where people are encouraged to share ideas, challenge thinking, develop others and succeed together. We're looking for leaders who enjoy solving clients' most complex business c",
+   "type": "",
+   "query": "SAP S2P in the last week",
+   "key": "sapsourcetopays2pseniormanager|pwc",
+   "firstSeen": "2026-10-03T10:23:37+00:00",
+   "lastSeen": "2026-10-03T10:23:37+00:00",
+   "sources": [
+    "Google Jobs · BeBee"
+   ]
+  },
+  {
+   "title": "Global SAP S/4HANA S2P Transformation Leader",
+   "company": "RS UK & Ireland",
+   "location": "England",
+   "pay": "",
+   "url": "https://bebee.com/gb/jobs/global-sap-s-4hana-s2p-transformation-leader-rs-uk-ireland-greater-london-england-united-kingdom--jobgoal-22539_9ef0707427936e3d7246f67544d940ed?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "2026-09-06",
+   "source": "Google Jobs · BeBee",
+   "sourceId": "UOnuY3UZmMpA3oZlAAAAAA==",
+   "snippet": "RS UK & Ireland is seeking a senior S2P Workstream Lead to own the global design and governance of SAP S/4HANA within the Source to Pay domain. This role will drive fit-to-standard, manage RICEFW governance, and oversee multi-country deployment with strong SI and business stakeholder interaction. As the primary decision authority, you will ensure standardized solutions across geographies, collabo rate with IT and architecture, and align with commercial processes and revenue recognition",
+   "type": "",
+   "query": "SAP S2P in the last week",
+   "key": "globalsaps4hanas2ptransformationleader|rsireland",
+   "firstSeen": "2026-10-03T10:23:37+00:00",
+   "lastSeen": "2026-10-03T10:23:37+00:00",
+   "sources": [
+    "Google Jobs · BeBee"
    ]
   }
  ]

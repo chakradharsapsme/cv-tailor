@@ -643,5 +643,5 @@
     });
   }
 
-  window.CVT.docs = { tab, kindOf, extract, passagesOf, retrieve, found, verifyTree, verifyQuestions };
+  window.CVT.docs = { tab, kindOf, extract, pdfText, passagesOf, retrieve, found, verifyTree, verifyQuestions };
 })();

@@ -69,6 +69,19 @@ def clean(text, limit=1500):
     return text[:limit]
 
 
+def clean_advert(text, limit=8000):
+    """Full advert text that keeps line breaks and bullet points, so the responsibilities section survives."""
+    text = str(text or '')
+    text = re.sub(r'(?i)<li[^>]*>', '\n- ', text)
+    text = re.sub(r'(?i)<br\s*/?>|</p>|</div>|</h[1-6]>|</ul>|</ol>', '\n', text)
+    text = re.sub(r'<[^>]+>', ' ', text)
+    text = re.sub(r'&nbsp;|&#160;', ' ', text).replace('&amp;', '&')
+    text = re.sub(r'[ \t]+', ' ', text)
+    text = re.sub(r' *\n *', '\n', text)
+    text = re.sub(r'\n{3,}', '\n\n', text).strip()
+    return text[:limit]
+
+
 def money(lo, hi, per='year'):
     vals = [v for v in (lo, hi) if isinstance(v, (int, float)) and v > 0]
     if not vals:
@@ -138,7 +151,7 @@ def adzuna(query, cfg, app_id, app_key):
             'location': (j.get('location') or {}).get('display_name', ''),
             'pay': '' if predicted else money(lo, hi, per), 'url': j.get('redirect_url', ''),
             'posted': (j.get('created') or '')[:10], 'source': 'Adzuna', 'sourceId': str(j.get('id', '')),
-            'snippet': clean(j.get('description')), 'type': ', '.join(x for x in (ctype, ctime) if x), 'query': query
+            'snippet': clean_advert(j.get('description'), 3000), 'type': ', '.join(x for x in (ctype, ctime) if x), 'query': query
         })
     return out
 
@@ -191,7 +204,7 @@ def apify_google(queries, cfg, token, per_query):
             'title': clean(j.get('title'), 200), 'company': j.get('company') or '', 'location': j.get('location') or '',
             'pay': pay or clean(j.get('salaryRaw'), 80), 'url': link, 'posted': ago(j.get('postedAt') or j.get('postedRelative')),
             'source': 'Google Jobs' + (f' \u00b7 {via}' if via else ''), 'sourceId': str(j.get('jobId') or '')[:120],
-            'snippet': clean(j.get('description') or j.get('descriptionSnippet')), 'type': j.get('employmentType') or '',
+            'snippet': clean_advert(j.get('description') or j.get('descriptionSnippet'), 6000), 'type': j.get('employmentType') or '',
             'query': j.get('query') or ''
         })
     return out

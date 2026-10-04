@@ -4,7 +4,7 @@
   const S = window.CVT.store, A = window.CVT.agent, D = window.CVT.docx;
   const TABS = [
     ['job', 'Job'], ['fit', 'Fit & decision'], ['cv', 'CV'], ['compare', 'Compare CVs'], ['letter', 'Cover letter'],
-    ['outreach', 'Outreach'], ['interview', 'Interview prep'], ['docs', 'Documents'], ['apply', 'Apply'], ['myqs', 'My questions'], ['community', '🌐 Community']
+    ['outreach', 'Outreach'], ['interview', 'Interview prep'], ['docs', 'Documents'], ['apply', 'Apply'], ['myqs', 'My questions'], ['atlas', '🗺 Solution Atlas'], ['community', '🌐 Community']
   ];
   const opts = (list, cur) => list.map(o => html`<option value="${o}" ${o === cur ? raw('selected') : ''}>${o || '—'}</option>`);
 
@@ -181,7 +181,7 @@
 
     const body = $('#ws-body', root);
     const ctx = { a, an, profile, masters, body, saveSoon, saveNow, go, root };
-    await ({ job: tabJob, fit: tabFit, cv: tabCv, compare: tabCompare, letter: tabLetter, outreach: tabOutreach, interview: tabInterview, docs: c => window.CVT.docs.tab(c), apply: tabApply, community: c => { c.body.innerHTML = '<section class="panel community" id="cm-app"></section>'; return window.CVT.community ? window.CVT.community.render(c.body.querySelector('#cm-app'), { app: c.a }) : null; }, myqs: c => window.CVT.myqs.tab(c) })[tab](ctx);
+    await ({ job: tabJob, fit: tabFit, cv: tabCv, compare: tabCompare, letter: tabLetter, outreach: tabOutreach, interview: tabInterview, docs: c => window.CVT.docs.tab(c), apply: tabApply, atlas: c => { c.body.innerHTML = '<section class="panel atlas" id="atl-app"></section>'; return window.CVT.atlas ? window.CVT.atlas.render(c.body.querySelector('#atl-app'), c.a, () => c.saveNow()) : null; }, community: c => { c.body.innerHTML = '<section class="panel community" id="cm-app"></section>'; return window.CVT.community ? window.CVT.community.render(c.body.querySelector('#cm-app'), { app: c.a }) : null; }, myqs: c => window.CVT.myqs.tab(c) })[tab](ctx);
   }
 
   const needAnalysis = ctx => { ctx.body.innerHTML = String(html`<div class="empty-state"><h2>Analyse the job first</h2><p class="hint">Paste the job description on the Job tab and run the analysis. Everything else builds on it.</p><a class="btn primary" href="#/app/${ctx.a.id}/job">Go to Job</a></div>`); };
@@ -356,7 +356,8 @@
     const EV = { direct: ['ok', 'Shown'], adjacent: ['warn', 'Partly'], gap: ['bad', 'Not shown'] };
     const TL = { edit: ['ok', 'Added to a bullet'], new_bullet: ['accent', 'New bullet'] };
     const where = r => { const ex = (r.cv_ids || []).map(id => refs[id]).filter(Boolean); return ex.length ? html`<div class="jm-where">“${ex[0]}${ex[0].length >= 160 ? '…' : ''}”${ex.length > 1 ? html` <span class="muted">+${ex.length - 1} more</span>` : ''}</div>` : ''; };
-    const row = (text, ev, r, tl) => { const e = EV[ev] || EV.gap, t = TL[tl]; return html`<tr><td>${text}${r.note ? html`<div class="muted small">${r.note}</div>` : ''}</td>
+    const atl = t => window.CVT.atlas ? html` <button type="button" class="jm-atl" data-atlas="${window.CVT.atlas.termFor(typeof t === 'string' ? t : (t && t.text) || '', a)}" title="Open a mind map of this in Solution Atlas" aria-label="Mind map in Solution Atlas">🗺</button>` : '';
+    const row = (text, ev, r, tl) => { const e = EV[ev] || EV.gap, t = TL[tl]; return html`<tr><td>${text}${atl(r.req || r.text)}${r.note ? html`<div class="muted small">${r.note}</div>` : ''}</td>
       <td><span class="chip ${e[0]}">${e[1]}</span>${where(r)}</td>
       <td>${t ? html`<span class="chip ${t[0]}">${t[1]}</span>${r.where ? html`<div class="muted small">under ${r.where}</div>` : ''}` : ev === 'gap' ? html`<span class="muted small">Not added</span>` : html`<span class="muted small">As it is</span>`}</td></tr>`; };
     const resp = Array.isArray(an.responsibilities) ? an.responsibilities : (window.CVT.agent.responsibilities(a.jd || '').map(t => ({ text: t, covered_by: '' })));
@@ -436,6 +437,7 @@
         <a class="btn ghost" href="#/app/${a.id}/letter">Cover letter</a>
         <a class="btn ghost" href="#/app/${a.id}/outreach">Outreach</a>
       </div>`);
+    body.addEventListener('click', async e => { const b = e.target.closest('[data-atlas]'); if (!b) return; a.atlasQ = b.dataset.atlas; await ctx.saveNow(); ctx.go('atlas'); });
   }
 
   // =====================================================================

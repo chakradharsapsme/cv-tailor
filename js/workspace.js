@@ -184,7 +184,7 @@
     await ({ job: tabJob, fit: tabFit, cv: tabCv, compare: tabCompare, letter: tabLetter, outreach: tabOutreach, interview: tabInterview, docs: c => window.CVT.docs.tab(c), apply: tabApply, atlas: c => {
       c.body.innerHTML = '<section class="panel atlas" id="atl-app"></section><section class="panel thinkmap" id="tm-app"></section>';
       let tm = null;
-      const at = window.CVT.atlas ? window.CVT.atlas.render(c.body.querySelector('#atl-app'), c.a, () => c.saveNow(), () => tm && tm.refresh()) : null;
+      const at = window.CVT.atlas ? window.CVT.atlas.render(c.body.querySelector('#atl-app'), c.a, () => c.saveNow(), () => tm && tm.refresh(), q => tm && tm.buildTopic(q)) : null;
       tm = window.CVT.thinkmap ? window.CVT.thinkmap.render(c.body.querySelector('#tm-app'), c.a, () => c.saveNow(), { onAtlas: q => at && at.show(q) }) : null;
       return null;
     }, community: c => { c.body.innerHTML = '<section class="panel community" id="cm-app"></section>'; return window.CVT.community ? window.CVT.community.render(c.body.querySelector('#cm-app'), { app: c.a }) : null; }, myqs: c => window.CVT.myqs.tab(c) })[tab](ctx);

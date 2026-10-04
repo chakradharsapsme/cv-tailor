@@ -230,7 +230,7 @@
       if (e.target.closest('[data-tm-close]')) { out = null; draw(); }
     });
     draw();
-    return { refresh: () => { typed = null; draw(); } };
+    return { refresh: () => { typed = null; draw(); }, buildTopic: q => { from = 'topic'; frame = 'map'; typed = q; draw(); host.scrollIntoView({ behavior: 'smooth', block: 'start' }); build(); } };
   }
 
   window.CVT = window.CVT || {};

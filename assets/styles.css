@@ -1824,7 +1824,7 @@ a.tb-chip:hover { transform: translateY(-1px); border-color: var(--accent); }
 .atl-bar select { width: auto; display: inline-block; margin-left: 6px; }
 
 /* 5.9.17 thinking maps (Solution Atlas tab) */
-.thinkmap { margin-top: 14px; }
+.thinkmap { margin-top: 0; }
 .tm-build { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; margin: 10px 0 8px; }
 .tm-build label { display: flex; flex-direction: column; gap: 3px; }
 .tm-build .tm-grow { flex: 1 1 240px; }

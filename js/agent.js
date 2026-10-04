@@ -966,6 +966,46 @@ Write a polite, confident UK counter-offer. Anchor on value and market, never th
   });
 
 
+  // ---------- 7c. thinking maps (FunBlocks-style: topic, framework or own material → map; expand; talking points) ----------
+  const FRAMES = {
+    map: 'MIND MAP of the topic: its main areas, how each works, key terms, and how it matters in this job. Facts must be accurate; where something depends on version or configuration, say so.',
+    brainstorm: 'BRAINSTORM: varied, practical ideas on the topic for this job (approaches, quick wins, risks to watch, questions to ask, things to learn). Group ideas into 5-7 themes.',
+    swot: 'SWOT of THE CANDIDATE versus THIS ROLE. Exactly four branches: "Strengths", "Weaknesses", "Opportunities", "Threats". Strengths only with evidence from the CV (name it in the detail). Weaknesses = advert requirements the CV does not show. Opportunities = how to close gaps or stand out. Threats = what could count against the candidate and how to answer it.',
+    whys: '5 WHYS: for the topic, branches are the problems or questions it raises; children drill down "why?" step by step to a root cause, and the last child is the fix.',
+    hats: 'SIX THINKING HATS on the topic for this job. Exactly six branches: "White: facts", "Red: feelings", "Black: risks", "Yellow: benefits", "Green: ideas", "Blue: process and next steps".',
+    first: 'FIRST PRINCIPLES: break the topic down to its basic truths and building blocks, then rebuild: what it is for, the core components, how they connect, what must be true, and a simple way to explain it in an interview.',
+    gap: 'GAP-CLOSING PLAN between the candidate (CV) and this job: branches are the requirements the CV does not clearly show; children are concrete steps (learn, practise, evidence to gather, how to talk about it honestly) with a realistic time each. Never claim experience the CV does not show.',
+    questions: 'INTERVIEW QUESTION MAP: branches are the areas an interviewer for this job would probe on the topic; children are likely questions, each with a one-sentence hint for a strong answer in detail.'
+  };
+  const MAP_RULES = `Return JSON only: {"center": "short title", "branches": [{"label": "", "detail": "", "children": [{"label": "", "detail": "", "children": [...]}]}]}
+- 4-7 branches, 2-5 children each, at most 3 levels deep.
+- label: 1-6 words. detail: one or two plain sentences that teach or justify the node.
+- Ground everything in the material given. Never invent the candidate's experience, employers, numbers or qualifications.
+- Professional British English, no emojis.`;
+  const thinkMap = ({ frame = 'map', topic = '', material = '', job = '', cv = '', signal }) => ask({
+    signal, maxTokens: 6000, system: COACH,
+    user: `Build a thinking map.
+METHOD: ${FRAMES[frame] || FRAMES.map}
+TOPIC: ${topic || '(the material below)'}
+${job ? 'JOB ADVERT:\n' + job.slice(0, 9000) + '\n' : ''}${cv ? 'CANDIDATE CV:\n' + cv.slice(0, 9000) + '\n' : ''}${material ? 'MATERIAL TO MAP (use this as the source):\n' + material.slice(0, 16000) + '\n' : ''}
+${MAP_RULES}`
+  });
+  const thinkExpand = ({ path = [], node = {}, how = 'expand', job = '', signal }) => ask({
+    signal, maxTokens: 3000, system: COACH,
+    user: `A thinking map for this job${path.length ? ' has the path: ' + path.join(' → ') : ''}.
+Node: "${node.label}"${node.detail ? ' (' + node.detail + ')' : ''}.
+${how === 'questions' ? 'Add 3-5 interview questions an interviewer for this job could ask about this node. label = the question (short), detail = a one-sentence hint for a strong answer.' : how === 'explain' ? 'Explain this node simply and accurately for interview preparation in 2-4 sentences, then add 2-4 sub-topics worth knowing.' : 'Expand this node into 3-6 useful sub-topics for this job.'}
+${job ? 'JOB ADVERT (for relevance):\n' + job.slice(0, 5000) + '\n' : ''}Return JSON only: {"explain": "${how === 'explain' ? '2-4 sentences' : ''}", "children": [{"label": "1-6 words or a short question", "detail": "one or two sentences"}]}`
+  });
+  const thinkTalk = ({ outline = '', job = '', cv = '', signal }) => ask({
+    signal, maxTokens: 5000, system: COACH, textKey: 'text',
+    user: `Turn this thinking map into interview talking points for the candidate.
+For each main branch write a heading, then 2-4 bullet talking points. Where a branch suits a STAR example, give a short STAR outline using only evidence in the CV; if the CV has no evidence, write "[Add your own example]" instead of inventing one. End with 3 smart questions to ask the interviewer.
+MAP:
+${outline.slice(0, 8000)}
+${job ? 'JOB ADVERT:\n' + job.slice(0, 6000) + '\n' : ''}${cv ? 'CANDIDATE CV:\n' + cv.slice(0, 9000) + '\n' : ''}Return JSON: {"text": "Markdown"}`
+  });
+
   // ---------- 8a. ask-anything assistant for one application ----------
   const appChat = ({ context, history = [], question, signal }) => ask({
     signal, maxTokens: 2500, textKey: 'answer',
@@ -1134,5 +1174,5 @@ ${STUDIO[kind]}`
     return [r.summary ? 'SUMMARY: ' + r.summary : '', r.text || ''].filter(Boolean).join('\n\n');
   }
 
-  window.CVT.agent = { responsibilities, advertItems, aiTells, appChat, employersFromCv, cvHistory, similarEmployers, loadPuter, chromeAIStatus, docStudio, myAnswer, docQuestions, docDigest, docMindmap, docAsk, describeImages, mockQuestion, mockGrade, storyDrafts, counterOffer, moreCards, listGemini, claudeSample, analyse, coverLetter, outreach, interviewPrep, answers, linkedin, parseJSON, profileBlock };
+  window.CVT.agent = { thinkMap, thinkExpand, thinkTalk, THINK_FRAMES: Object.keys(FRAMES), responsibilities, advertItems, aiTells, appChat, employersFromCv, cvHistory, similarEmployers, loadPuter, chromeAIStatus, docStudio, myAnswer, docQuestions, docDigest, docMindmap, docAsk, describeImages, mockQuestion, mockGrade, storyDrafts, counterOffer, moreCards, listGemini, claudeSample, analyse, coverLetter, outreach, interviewPrep, answers, linkedin, parseJSON, profileBlock };
 })();

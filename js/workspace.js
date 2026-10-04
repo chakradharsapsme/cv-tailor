@@ -181,7 +181,13 @@
 
     const body = $('#ws-body', root);
     const ctx = { a, an, profile, masters, body, saveSoon, saveNow, go, root };
-    await ({ job: tabJob, fit: tabFit, cv: tabCv, compare: tabCompare, letter: tabLetter, outreach: tabOutreach, interview: tabInterview, docs: c => window.CVT.docs.tab(c), apply: tabApply, atlas: c => { c.body.innerHTML = '<section class="panel atlas" id="atl-app"></section>'; return window.CVT.atlas ? window.CVT.atlas.render(c.body.querySelector('#atl-app'), c.a, () => c.saveNow()) : null; }, community: c => { c.body.innerHTML = '<section class="panel community" id="cm-app"></section>'; return window.CVT.community ? window.CVT.community.render(c.body.querySelector('#cm-app'), { app: c.a }) : null; }, myqs: c => window.CVT.myqs.tab(c) })[tab](ctx);
+    await ({ job: tabJob, fit: tabFit, cv: tabCv, compare: tabCompare, letter: tabLetter, outreach: tabOutreach, interview: tabInterview, docs: c => window.CVT.docs.tab(c), apply: tabApply, atlas: c => {
+      c.body.innerHTML = '<section class="panel atlas" id="atl-app"></section><section class="panel thinkmap" id="tm-app"></section>';
+      let tm = null;
+      const at = window.CVT.atlas ? window.CVT.atlas.render(c.body.querySelector('#atl-app'), c.a, () => c.saveNow(), () => tm && tm.refresh()) : null;
+      tm = window.CVT.thinkmap ? window.CVT.thinkmap.render(c.body.querySelector('#tm-app'), c.a, () => c.saveNow(), { onAtlas: q => at && at.show(q) }) : null;
+      return null;
+    }, community: c => { c.body.innerHTML = '<section class="panel community" id="cm-app"></section>'; return window.CVT.community ? window.CVT.community.render(c.body.querySelector('#cm-app'), { app: c.a }) : null; }, myqs: c => window.CVT.myqs.tab(c) })[tab](ctx);
   }
 
   const needAnalysis = ctx => { ctx.body.innerHTML = String(html`<div class="empty-state"><h2>Analyse the job first</h2><p class="hint">Paste the job description on the Job tab and run the analysis. Everything else builds on it.</p><a class="btn primary" href="#/app/${ctx.a.id}/job">Go to Job</a></div>`); };

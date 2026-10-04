@@ -21,18 +21,19 @@
   }
 
   function svg(tree, collapsed) {
-    const ROW = 30, GAP = 14, X = [0, 180, 420, 615], LABEL = [0, 26, 24, 22];
+    const ROW = 30, GAP = 14, X = [0, 180, 420, 615, 800], LABEL = [0, 26, 24, 22, 20];
     const branches = tree.branches || [];
     const sides = [[], []];
     branches.forEach((b, i) => sides[i % 2].push(b));
     const leaves = n => (collapsed.has(n._id) || !(n.children || []).length) ? 1 : n.children.reduce((a, c) => a + leaves(c), 0);
     const sideH = side => side.reduce((a, b) => a + leaves(b) * ROW, 0) + Math.max(0, side.length - 1) * GAP;
     const H = Math.max(sideH(sides[0]), sideH(sides[1]), 120) + 40;
-    const W = 1600, cx = W / 2, cy = H / 2;
+    let deep = 1; const dep = (n, d) => { deep = Math.max(deep, d); (n.children || []).forEach(c => dep(c, d + 1)); }; branches.forEach(b => dep(b, 1));
+    const W = deep >= 4 ? 2000 : 1600, cx = W / 2, cy = H / 2;
     const parts = [];
     const place = (n, dir, top) => {
       const h = leaves(n) * ROW;
-      const y = top + h / 2, x = cx + dir * X[n._depth];
+      const y = top + h / 2, x = cx + dir * (X[n._depth] || X[4] + 160 * (n._depth - 4));
       n._x = x; n._y = y;
       let t = top;
       if (!collapsed.has(n._id)) (n.children || []).forEach(c => { place(c, dir, t); t += leaves(c) * ROW; });
@@ -48,9 +49,9 @@
       const cls = 'mm-node d' + n._depth;
       labels.push(`<g class="${cls}" data-mm="${n._id}" tabindex="0" role="button" aria-label="${esc(n.label)}">
         <circle cx="${n._x}" cy="${n._y}" r="${n._depth === 1 ? 5.5 : 4}" fill="${kids && isCol ? n._color : 'var(--surface)'}" stroke="${n._color}" stroke-width="2"/>
-        <text x="${tx}" y="${n._y + 4}" text-anchor="${anchor}" class="mm-t" ${n._depth === 1 ? `fill="${n._color}"` : ''}>${esc(clip(n.label, LABEL[n._depth]))}${kids && isCol ? ` (+${kids})` : ''}</text>
+        <text x="${tx}" y="${n._y + 4}" text-anchor="${anchor}" class="mm-t" ${n._depth === 1 ? `fill="${n._color}"` : ''}>${esc(clip(n.label, (LABEL[n._depth] || 20)))}${kids && isCol ? ` (+${kids})` : ''}</text>
         <title>${esc(n.label)}${n.detail ? ' — ' + esc(n.detail) : ''}</title></g>`);
-      const tw = clip(n.label, LABEL[n._depth]).length * (n._depth === 1 ? 7.8 : 7) + 14;
+      const tw = clip(n.label, (LABEL[n._depth] || 20)).length * (n._depth === 1 ? 7.8 : 7) + 14;
       if (!isCol) (n.children || []).forEach(c => draw(c, dir, n._x + dir * tw, n._y));
     };
     sides.forEach((side, s) => {
@@ -80,14 +81,14 @@
     let mode = opts.mode || 'map', selected = null;
     const detail = id => {
       const n = nodes[id]; if (!n) return '';
-      return `<div class="mm-detail" style="border-left-color:${n._color}"><strong>${esc(n.label)}</strong>${n.detail ? `<p class="small">${esc(n.detail)}</p>` : ''}${(n.children || []).length ? `<button type="button" class="btn ghost small" data-mm-toggle="${n._id}">${collapsed.has(n._id) ? 'Expand' : 'Collapse'} this branch</button>` : ''}</div>`;
+      return `<div class="mm-detail" style="border-left-color:${n._color}"><strong>${esc(n.label)}</strong>${n.detail ? `<p class="small">${esc(n.detail)}</p>` : ''}${(n.children || []).length ? `<button type="button" class="btn ghost small" data-mm-toggle="${n._id}">${collapsed.has(n._id) ? 'Expand' : 'Collapse'} this branch</button>` : ''}${opts.extra ? opts.extra(n, n._id) : ''}</div>`;
     };
     const render = () => {
       el.innerHTML = `<div class="mm-bar"><div class="seg-mini" role="tablist"><button type="button" data-mm-mode="map" aria-selected="${mode === 'map'}">Map</button><button type="button" data-mm-mode="outline" aria-selected="${mode === 'outline'}">Outline</button></div>
         <span class="muted small">Click a topic for details${mode === 'map' ? '; double-click to fold or unfold it' : ''}.</span>
         <span class="grow-s"></span>${mode === 'map' ? '<button type="button" class="linkish small" data-mm-all="open">Expand all</button> <button type="button" class="linkish small" data-mm-all="close">Collapse all</button>' : ''}</div>
         <div class="mm-wrap">${mode === 'map' ? svg(tree, collapsed) : outline(tree)}</div>
-        <div class="mm-detail-slot">${selected ? detail(selected) : '<p class="muted small">Select a topic to see what the documents say about it.</p>'}</div>`;
+        <div class="mm-detail-slot">${selected ? detail(selected) : `<p class="muted small">${esc(opts.emptyHint || 'Select a topic to see what the documents say about it.')}</p>`}</div>`;
       if (selected) el.querySelectorAll(`[data-mm="${selected}"]`).forEach(g => g.classList.add('sel'));
     };
     const toggle = id => { if (collapsed.has(id)) collapsed.delete(id); else collapsed.add(id); opts.onChange && opts.onChange([...collapsed]); render(); };
@@ -96,10 +97,12 @@
       const all = e.target.closest('[data-mm-all]');
       if (all) { collapsed.clear(); if (all.dataset.mmAll === 'close') Object.values(nodes).forEach(n => { if (n._depth === 1 && (n.children || []).length) collapsed.add(n._id); }); opts.onChange && opts.onChange([...collapsed]); render(); return; }
       const t = e.target.closest('[data-mm-toggle]'); if (t) { toggle(t.dataset.mmToggle); return; }
+      const act = e.target.closest('[data-mm-act]'); if (act) { opts.onAction && opts.onAction(act.dataset.mmAct, nodes[selected], selected); return; }
       const n = e.target.closest('[data-mm]'); if (n) { selected = n.dataset.mm; render(); }
     };
     el.ondblclick = e => { const n = e.target.closest('[data-mm]'); if (n && (nodes[n.dataset.mm].children || []).length) toggle(n.dataset.mm); };
     el.onkeydown = e => { const n = e.target.closest && e.target.closest('[data-mm]'); if (n && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); selected = n.dataset.mm; render(); const again = el.querySelector(`[data-mm="${selected}"]`); again && again.focus(); } };
+    if (opts.selected && nodes[opts.selected]) selected = opts.selected;
     render();
     return {
       svgText: () => {

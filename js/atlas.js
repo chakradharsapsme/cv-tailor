@@ -28,23 +28,24 @@
     return hit || t.split(/\s+/).slice(0, 6).join(' ').replace(/[,;:.]+$/, '');
   }
 
-  function render(host, a, save) {
+  function render(host, a, save, onPick) {
     const list = terms(a);
     let q = a.atlasQ || list[0] || a.role || '';
     let mode = a.atlasMode || 'sap';
     const draw = () => {
       host.innerHTML = String(html`
-        <div class="panel-head"><div><h2>🗺 Solution Atlas</h2><p class="hint" style="margin:2px 0 0">Mind maps from official sources for what this job asks for, with a glossary and source list. Pick a topic, or press 🗺 on any row of the Fit tab.</p></div>
-          <a class="btn ghost small" href="${link(q, mode, false)}" target="_blank" rel="noopener">Open in a new tab ↗</a></div>
+        <div class="panel-head"><div><h2>🗺 Solution Atlas</h2><p class="hint" style="margin:2px 0 0">Mind maps from official sources for what this job asks for, with a glossary and source list. Pick a topic, or press 🗺 on any row of the Fit tab. Build your own AI thinking maps below.</p></div>
+          <div class="row gap"><a class="btn ghost small" href="#tm-app" data-atl-jump>🧠 Thinking maps ↓</a><a class="btn ghost small" href="${link(q, mode, false)}" target="_blank" rel="noopener">Open in a new tab ↗</a></div></div>
         ${list.length ? html`<div class="atl-chips">${list.map(t => html`<button type="button" class="chip-btn${t.toLowerCase() === q.toLowerCase() ? ' on' : ''}" data-atl="${t}">${t}</button>`)}</div>` : html`<p class="muted small">Paste the advert and analyse the job to get its technologies here.</p>`}
         <div class="row gap wrap atl-bar"><label class="small">Source <select id="atl-mode" aria-label="Where to gather from"><option value="sap" ${mode === 'sap' ? raw('selected') : ''}>Knowledge repository (official SAP)</option><option value="general" ${mode === 'general' ? raw('selected') : ''}>General (Wikipedia)</option></select></label><span class="muted small">You can also type any other topic in the map's own search box below.</span></div>
         <p class="muted small">Runs on your free Solution Atlas server: if it has been idle, the first map can take up to a minute while it wakes up.</p>
         ${q ? html`<div class="atl-frame"><iframe title="Solution Atlas: ${q}" src="${link(q, mode, true)}" loading="lazy" referrerpolicy="no-referrer"></iframe></div>` : ''}`);
     };
     draw();
-    const set = async (nq, nm) => { q = nq; if (nm) mode = nm; a.atlasQ = q; a.atlasMode = mode; await save(); draw(); };
-    host.addEventListener('click', e => { const b = e.target.closest('[data-atl]'); if (b) set(b.dataset.atl); });
+    const set = async (nq, nm) => { q = nq; if (nm) mode = nm; a.atlasQ = q; a.atlasMode = mode; await save(); draw(); if (onPick) onPick(q); };
+    host.addEventListener('click', e => { const j = e.target.closest('[data-atl-jump]'); if (j) { e.preventDefault(); const t = document.getElementById('tm-app'); if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; } const b = e.target.closest('[data-atl]'); if (b) set(b.dataset.atl); });
     host.addEventListener('change', e => { if (e.target.id === 'atl-mode') set(q, e.target.value); });
+    return { show: nq => { q = nq; draw(); host.scrollIntoView({ behavior: 'smooth', block: 'start' }); } };
   }
 
   window.CVT = window.CVT || {};

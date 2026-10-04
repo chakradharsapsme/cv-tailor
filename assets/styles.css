@@ -1839,3 +1839,5 @@ a.tb-chip:hover { transform: translateY(-1px); border-color: var(--accent); }
 .tm-out { margin-top: 10px; }
 .tm-result { margin-top: 10px; border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; background: var(--surface-2); }
 .tm-pre { white-space: pre-wrap; font: .9rem/1.55 var(--sans, inherit); margin: 8px 0 0; max-height: 60vh; overflow: auto; }
+.atl-blocked { margin-top: 10px; border: 1px dashed var(--line); border-radius: 14px; padding: 16px 18px; background: var(--surface-2); }
+.atl-blocked p { margin: 6px 0 10px; }

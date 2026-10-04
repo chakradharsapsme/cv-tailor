@@ -1812,3 +1812,13 @@ a.tb-chip:hover { transform: translateY(-1px); border-color: var(--accent); }
 .fo-job a { font-weight: 600; text-decoration: none; }
 .fo-meta { display: grid; gap: 2px; flex: 2 1 240px; }
 .fo-row .fo-acts { display: flex; gap: 6px; flex: 0 0 auto; white-space: nowrap; }
+.atl-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+.atl-chips .chip-btn.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+.atl-form { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0 4px; }
+.atl-form input { flex: 1 1 260px; }
+.atl-frame { margin-top: 10px; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: #fff; }
+.atl-frame iframe { display: block; width: 100%; height: min(82vh, 900px); border: 0; }
+.jm-atl { border: 0; background: none; cursor: pointer; font-size: .9rem; padding: 0 2px; opacity: .65; }
+.jm-atl:hover { opacity: 1; }
+.atl-bar { align-items: center; margin: 2px 0 6px; }
+.atl-bar select { width: auto; display: inline-block; margin-left: 6px; }

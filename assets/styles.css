@@ -1822,3 +1822,20 @@ a.tb-chip:hover { transform: translateY(-1px); border-color: var(--accent); }
 .jm-atl:hover { opacity: 1; }
 .atl-bar { align-items: center; margin: 2px 0 6px; }
 .atl-bar select { width: auto; display: inline-block; margin-left: 6px; }
+
+/* 5.9.17 thinking maps (Solution Atlas tab) */
+.thinkmap { margin-top: 14px; }
+.tm-build { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; margin: 10px 0 8px; }
+.tm-build label { display: flex; flex-direction: column; gap: 3px; }
+.tm-build .tm-grow { flex: 1 1 240px; }
+.tm-build input, .tm-build select { min-height: 34px; }
+.thinkmap textarea { width: 100%; box-sizing: border-box; margin-bottom: 8px; }
+.tm-saved { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+.tm-chip { display: inline-flex; gap: 6px; align-items: center; border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; background: var(--surface); font-size: .84rem; }
+.tm-chip.on { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.tm-chip.on > .linkish:first-child { font-weight: 600; color: var(--accent); }
+.tm-acts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; align-items: center; }
+.tm-acts input { flex: 1 1 220px; min-height: 32px; }
+.tm-out { margin-top: 10px; }
+.tm-result { margin-top: 10px; border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; background: var(--surface-2); }
+.tm-pre { white-space: pre-wrap; font: .9rem/1.55 var(--sans, inherit); margin: 8px 0 0; max-height: 60vh; overflow: auto; }

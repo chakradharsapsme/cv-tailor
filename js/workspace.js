@@ -182,10 +182,8 @@
     const body = $('#ws-body', root);
     const ctx = { a, an, profile, masters, body, saveSoon, saveNow, go, root };
     await ({ job: tabJob, fit: tabFit, cv: tabCv, compare: tabCompare, letter: tabLetter, outreach: tabOutreach, interview: tabInterview, docs: c => window.CVT.docs.tab(c), apply: tabApply, atlas: c => {
-      c.body.innerHTML = '<section class="panel atlas" id="atl-app"></section><section class="panel thinkmap" id="tm-app"></section>';
-      let tm = null;
-      const at = window.CVT.atlas ? window.CVT.atlas.render(c.body.querySelector('#atl-app'), c.a, () => c.saveNow(), () => tm && tm.refresh(), q => tm && tm.buildTopic(q)) : null;
-      tm = window.CVT.thinkmap ? window.CVT.thinkmap.render(c.body.querySelector('#tm-app'), c.a, () => c.saveNow(), { onAtlas: q => at && at.show(q) }) : null;
+      c.body.innerHTML = '<section class="panel thinkmap" id="tm-app"></section>';
+      window.CVT.thinkmap && window.CVT.thinkmap.render(c.body.querySelector('#tm-app'), c.a, () => c.saveNow(), { onAtlas: q => window.open(window.CVT.atlas.link(q, c.a.atlasMode || 'sap', false), '_blank', 'noopener') });
       return null;
     }, community: c => { c.body.innerHTML = '<section class="panel community" id="cm-app"></section>'; return window.CVT.community ? window.CVT.community.render(c.body.querySelector('#cm-app'), { app: c.a }) : null; }, myqs: c => window.CVT.myqs.tab(c) })[tab](ctx);
   }
@@ -362,7 +360,7 @@
     const EV = { direct: ['ok', 'Shown'], adjacent: ['warn', 'Partly'], gap: ['bad', 'Not shown'] };
     const TL = { edit: ['ok', 'Added to a bullet'], new_bullet: ['accent', 'New bullet'] };
     const where = r => { const ex = (r.cv_ids || []).map(id => refs[id]).filter(Boolean); return ex.length ? html`<div class="jm-where">“${ex[0]}${ex[0].length >= 160 ? '…' : ''}”${ex.length > 1 ? html` <span class="muted">+${ex.length - 1} more</span>` : ''}</div>` : ''; };
-    const atl = t => window.CVT.atlas ? html` <button type="button" class="jm-atl" data-atlas="${window.CVT.atlas.termFor(typeof t === 'string' ? t : (t && t.text) || '', a)}" title="Open a mind map of this in Solution Atlas" aria-label="Mind map in Solution Atlas">🗺</button>` : '';
+    const atl = t => window.CVT.atlas ? html` <button type="button" class="jm-atl" data-atlas="${window.CVT.atlas.termFor(typeof t === 'string' ? t : (t && t.text) || '', a)}" title="Build a thinking map of this" aria-label="Thinking map of this">🗺</button>` : '';
     const row = (text, ev, r, tl) => { const e = EV[ev] || EV.gap, t = TL[tl]; return html`<tr><td>${text}${atl(r.req || r.text)}${r.note ? html`<div class="muted small">${r.note}</div>` : ''}</td>
       <td><span class="chip ${e[0]}">${e[1]}</span>${where(r)}</td>
       <td>${t ? html`<span class="chip ${t[0]}">${t[1]}</span>${r.where ? html`<div class="muted small">under ${r.where}</div>` : ''}` : ev === 'gap' ? html`<span class="muted small">Not added</span>` : html`<span class="muted small">As it is</span>`}</td></tr>`; };

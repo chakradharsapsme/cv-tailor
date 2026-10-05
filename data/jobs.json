@@ -1,18 +1,75 @@
 {
- "updated": "2026-10-04T11:05:33+00:00",
+ "updated": "2026-10-05T12:14:37+00:00",
  "sources": [
   "Jooble",
   "Google Jobs"
  ],
- "added": 9,
+ "added": 8,
  "errors": [],
  "usage": {
   "apify_month": "2026-10",
-  "apify_results": 76,
-  "apify_spent_usd": 0.8,
-  "jooble_requests": 5
+  "apify_results": 93,
+  "apify_spent_usd": 0.83,
+  "jooble_requests": 6
  },
  "jobs": [
+  {
+   "title": "SAP MM Consultant",
+   "company": "Stratesys UK",
+   "location": "Glasgow",
+   "pay": "£28,800-£48,000 per year",
+   "url": "https://talents.studysmarter.co.uk/companies/stratesys-uk/glasgow/sap-mm-consultant-31228244/?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "",
+   "source": "Google Jobs · Talents By StudySmarter",
+   "sourceId": "isSakade9UuW6MrMAAAAAA==",
+   "snippet": "After more than 25 years executing more than 1500 projects and developing business technology solutions, Stratesys has become a multinational leader in digital services and one of the largest specialists in SAP.\nKey Responsibilites:\n• Act as a SAP MM Consultant, leading materials management processes in implementation and rollout projects.\n• Perform functional analysis, solution design, and confi\nguration of the MM module, ensuring integration with FI, SD, and other relevant modules.\n• Support clients in defining requirements, preparing functional specifications, and executing tests.\n• Coordinate workshops with business areas and ensure alignment with tax rules and procurement processes.\n• Participate in cutover activities, post–go-live support, and continuous improvement initiatives.\n• Collaborate with international teams and report directly to project management.\nRequired Skills & Experience:\n• Minimum 4 or more years of solid experience in SAP MM, including procurement processes, inventory management, and integration with FI/SD.\n• Knowledge of tax rules and business processes applicable to the UK market.\n• Familiarity with agile methodologies and project management.\n• Availability for occasional travel as required by the project.\n• Proactive, autonomous profile with a results-oriented mindset.\nWhat can we offer?\n• Joining a worldwide leading company in SAP consulting solutions.\n• Free language platform.\n• Interesting professional opportunity to develop in a leading and nationally recognized company in innovative and quality projects.\n• Opportunity to participate in different large-scale projects both nationally and internationally.\n• Personalized career plan and training based on your experience and preferences.\n• Recognition of best practices and success stories.\n• Must live within the UK\n• Pension plan\n• 25 days holiday\n• Remote based role with availability for on-site working days with the UK team in London (averages once every week) and customer travel as required. To be successful, candidate must be comfortable travelling when needed to engage SAP executives, support joint activities and attend onsite customer presentations and meetings.\n• Before applying to this job, please take into account that you´ll need to have a RTW*",
+   "type": "",
+   "query": "SAP MM Consultant in the last week",
+   "key": "sapmmconsultant|stratesys",
+   "firstSeen": "2026-10-05T12:14:37+00:00",
+   "lastSeen": "2026-10-05T12:14:37+00:00",
+   "sources": [
+    "Google Jobs · Talents By StudySmarter"
+   ]
+  },
+  {
+   "title": "SAP Solution Architect - Inside IR35 - Nottingham - Hybrid",
+   "company": "Exalto Consulting ltd",
+   "location": "Derby",
+   "pay": "£36,000-£60,000 per year",
+   "url": "https://talents.studysmarter.co.uk/companies/exalto-consulting-ltd/derby/sap-solution-architect-inside-ir35-nottingham-hybrid-22650805/?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "",
+   "source": "Google Jobs · Talents By StudySmarter",
+   "sourceId": "_4wzg5F1zbwzT1hjAAAAAA==",
+   "snippet": "Job Description\nSAP Solution Architect\nContract | Inside IR35 | Hybrid (Nottingham)\nWe are seeking an experienced SAP Solution Architect to provide end-to-end architectural oversight across HR/Payroll, Procurement, Finance, and Reporting workstreams on a large SAP programme.\nThis role will act as the overall design authority, ensuring solutions are cohesive, secure, and aligned with programme ob\njectives, SAP best practices, and organisational standards. The successful candidate will balance business requirements with technical feasibility, integration patterns, and cloud constraints.\nKey Responsibilities Architecture & Design Authority\n• Own the end-to-end solution architecture across HR/Payroll, Procurement, Finance, and Reporting\n• Ensure cross-workstream designs are consistent, integrated, and aligned to the target architecture\n• Act as the architectural decision authority, reviewing and approving solution designs and deviations\n• Ensure adherence to SAP best practices and fit-to-standard approaches\nCross-Workstream Integration\n• Define and govern integration patterns across:\n• HR / Payroll systems\n• SAP S/4HANA Finance\n• Procurement solutions\n• Reporting and analytics platforms\n• Ensure master data, transactional flows, and reporting outputs are consistent and controlled\n• Work closely with Technical, Integration, Data, Security, and Infrastructure teams\nStakeholder & Programme Engagement\n• Engage with programme leadership and workstream leads to translate business needs into architectural solutions\n• Provide clear guidance on design options, impacts, risks, and trade-offs\n• Support design authorities, governance forums, and assurance reviews\n• Act as a trusted advisor to both technical and non-technical stakeholders\nReporting & Analytics Architecture\n• Define the reporting and analytics strategy across workstreams\n• Ensure alignment between operational, statutory, and management reporting\n• Oversee integration with SAP analytics tools (e.g. Embedded Analytics, SAC) and non-SAP platforms\nGovernance, Risk & Quality\n• Identify and manage architectural risks, dependencies, and technical debt\n• Ensure non-functional requirements are met, including security, performance, scalability, and auditability\n• Support audit and compliance requirements\n• Ensure solution documentation is complete, accurate, and maintained\nRequired Experience\n• Strong experience as an SAP Solution Architect on large, multi-workstream programmes\n• Proven experience across Finance, Procurement, HR/Payroll, and Reporting domains\n• Deep understanding of SAP S/4HANA architecture (Public Cloud and/or Hybrid)\n• Strong integration architecture experience (APIs, middleware, event-driven integration)\n• Experience working with SAP Activate and SAP Cloud ALM\n• Ability to operate at both strategic and detailed design levels\n• Excellent stakeholder management and communication skills\nDesirable Experience\n• Experience in UK public sector or regulated environments\n• Knowledge of payroll integrations and third-party HR/Payroll systems\n• Experience with SAP analytics solutions such as Embedded Analytics or SAP Analytics Cloud\n• Experience operating within strong governance and audit frameworks\nLogistics\n• Contract length: Initial 3 months, with likely extension\n• Location: Hybrid working, minimum 2 days per week onsite in Nottingham\n• Start: Subject to BPSS clearance\nJBRP1_UKTJ\nExperience: 5 years required",
+   "type": "",
+   "query": "Procurement Solution Architect in the last week",
+   "key": "sapsolutionarchitectinsideir35nottinghamhybrid|exaltoconsulting",
+   "firstSeen": "2026-10-05T12:14:37+00:00",
+   "lastSeen": "2026-10-05T12:14:37+00:00",
+   "sources": [
+    "Google Jobs · Talents By StudySmarter"
+   ]
+  },
+  {
+   "title": "SAP S/4 Hana Solution Architect",
+   "company": "Damia Group Ltd",
+   "location": "United Kingdom",
+   "pay": "£54,000-£84,000 per year",
+   "url": "https://talents.studysmarter.co.uk/companies/damia-group-ltd/sap-s-4-hana-solution-architect-26709475/?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "",
+   "source": "Google Jobs · Talents By StudySmarter",
+   "sourceId": "nxieTujGMtM8W-0fAAAAAA==",
+   "snippet": "SAP Solution Architect - Nottingham (2 days a week on-site) - Inside Ir35 - 3 months+\nMy client is a global leading IT consultancy. They are on the hunt for an SAP Solution Architect to provide end-to-end solution oversight across HR/Payroll, Procurement, Finance, and Reporting workstreams. The role will ensure that designs are cohesive, integrated, secure, and aligned to programme objectives, SA.\n..\n• Experience: 5 years required",
+   "type": "",
+   "query": "Procurement Solution Architect in the last week",
+   "key": "saps4hanasolutionarchitect|damia",
+   "firstSeen": "2026-10-05T12:14:37+00:00",
+   "lastSeen": "2026-10-05T12:14:37+00:00",
+   "sources": [
+    "Google Jobs · Talents By StudySmarter"
+   ]
+  },
   {
    "title": "Coupa P2P & SAP Finance Transformation Lead",
    "company": "MRP Group",
@@ -198,7 +255,7 @@
    "query": "SAP Ariba in the last week",
    "key": "saparibasolutionarchitect|nconsultingglobal",
    "firstSeen": "2026-10-03T10:23:37+00:00",
-   "lastSeen": "2026-10-03T10:23:37+00:00",
+   "lastSeen": "2026-10-05T12:14:37+00:00",
    "sources": [
     "Google Jobs · Talents By StudySmarter"
    ]
@@ -871,6 +928,25 @@
    ]
   },
   {
+   "title": "SAP MM Consultant: Third-Party Integrations; Hybrid",
+   "company": "DSR Global",
+   "location": "Wolverhampton",
+   "pay": "",
+   "url": "https://www.learn4good.com/jobs/wolverhampton/uk/info_technology/5497765056/e/?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "2026-09-28",
+   "source": "Google Jobs · Learn4Good",
+   "sourceId": "nvtOQV_JtpAXCOMXAAAAAA==",
+   "snippet": "Position: SAP MM Consultant: Third-Party Integrations (Hybrid)\nDSR Global seeks an SAP MM Consultant to join a project with a global client. The role is hybrid—remote with travel to France once per month. Immediate start; contract type:\nFreelance/Contract.\nYou will analyse SAP MM / Purchasing requirements, handle third-party integration, review existing purchasing integrations, and provide funct\nional input to design in coordination with the Solution Architect. Engagement is initially 3 to 6 months with possible extension. English-speaking environment.\nFor the SAP MM Consultant:\nThird-Party Integrations (Hybrid) position at DSR Global, we are reviewing applications now.\nAre you ready to take on the SAP MM Consultant:\nThird-Party Integrations (Hybrid) role at DSR Global?\nWe would love to welcome a new SAP MM Consultant:\nThird-Party Integrations (Hybrid) to our group in United Kingdom.\nStep into the SAP MM Consultant:\nThird-Party Integrations (Hybrid) role at DSR Global in United Kingdom and grow with us.",
+   "type": "",
+   "query": "SAP MM Consultant in the last week",
+   "key": "sapmmconsultantthirdpartyintegrationshybrid|dsrglobal",
+   "firstSeen": "2026-10-05T12:14:37+00:00",
+   "lastSeen": "2026-10-05T12:14:37+00:00",
+   "sources": [
+    "Google Jobs · Learn4Good"
+   ]
+  },
+  {
    "title": "Hybrid ERP Systems Analyst (SAP B1 | SQL Reports)",
    "company": "Centric Talent",
    "location": "Blackburn",
@@ -909,6 +985,25 @@
    ]
   },
   {
+   "title": "SAP Training Lead PP, MM,QM",
+   "company": "Akkodis",
+   "location": "Wales",
+   "pay": "£500-£550 per day",
+   "url": "https://uk.linkedin.com/jobs/view/sap-training-lead-pp-mm-qm-at-akkodis-4469765133?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "2026-09-24",
+   "source": "Google Jobs · LinkedIn",
+   "sourceId": "8N7NHONKiJVxBw57AAAAAA==",
+   "snippet": "Start: April 2027\nDuration: 12 Months + Extensions\nLocation: Broughton, North Wales (Onsite)\nRate: £500-550 per day Outside IR35\nTraining Lead / Senior Trainer\nSAP-certified Senior Trainer with primary SAP S/4HANA Manufacturing / Production Planning (PP) expertise and demonstrable cross-functional experience across Materials Management (MM) and/or Quality Management (QM). Strong experience in\nprofessional classroom training, Train-the-Trainer and trainer quality/readiness is required. Experience of complex manufacturing, Manufacturing Engineering, BOM/configuration/effectivity, MES/shop-floor integration and aerospace environments is highly desirable.\nImportant: Bid-Stage Opportunity\nThis role forms part of an active Akkodis consulting bid and is subject to the successful outcome of the bid process. We are currently identifying suitable contractors to form the proposed delivery team for an April 2027 start. If successful, you would be expected to take up the contract and work as part of the Akkodis delivery team supporting the client. Shortlisted candidates may also be asked to support a final client presentation or solution discussion as part of the bid. This would be discussed with you in advance and agreed before proceeding.\nBy applying, you confirm that you understand the role is subject to the bid outcome and are comfortable potentially supporting the final bid stage.\nModis International Ltd acts as an employment agency for permanent recruitment and an employment business for the supply of temporary workers in the UK. Modis Europe Ltd provide a variety of international solutions that connect clients to the best talent in the world. For all positions based in Switzerland, Modis Europe Ltd works with its licensed Swiss partner Accurity GmbH to ensure that candidate applications are handled in accordance with Swiss law.\nBoth Modis International Ltd and Modis Europe Ltd are Equal Opportunities Employers.\nBy applying for this role your details will be submitted to Modis International Ltd and/ or Modis Europe Ltd. Our Candidate Privacy Information Statement which explains how we will use your information is available on the Modis website.",
+   "type": "",
+   "query": "SAP MM Consultant in the last week",
+   "key": "saptrainingleadppmmqm|akkodis",
+   "firstSeen": "2026-10-05T12:14:37+00:00",
+   "lastSeen": "2026-10-05T12:14:37+00:00",
+   "sources": [
+    "Google Jobs · LinkedIn"
+   ]
+  },
+  {
    "title": "SAP Source-to-Pay Manager",
    "company": "PwC",
    "location": "England",
@@ -944,6 +1039,25 @@
    "lastSeen": "2026-10-04T11:05:33+00:00",
    "sources": [
     "Google Jobs · LinkedIn"
+   ]
+  },
+  {
+   "title": "Hybrid Solutions Architect – Source-to-Pay (Procurement)",
+   "company": "PRINCES",
+   "location": "Liverpool",
+   "pay": "",
+   "url": "https://bebee.com/gb/jobs/hybrid-solutions-architect-source-to-pay-procurement-princes-liverpool-england-united-kingdom--jobgoal-22539_7513f11f1c53bff211bfcf29ed5200d3?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "2026-09-19",
+   "source": "Google Jobs · BeBee",
+   "sourceId": "PhA9CFXIgyUnLEQVAAAAAA==",
+   "snippet": "Princes Liverpool is seeking a Source to Pay Solutions Architect to lead the design and delivery of Source-to-Pay systems aligned with Princes Strategy. You will work from the Royal Liver Building and collaborate with cross-functional teams.\nThe role focuses on delivering best-practice solutions, documenting requirements and ensuring integration with existing Enterprise and software environments.\nTravel may be required.",
+   "type": "",
+   "query": "Procurement Solution Architect in the last week",
+   "key": "hybridsolutionsarchitectsourcetopayprocurement|princes",
+   "firstSeen": "2026-10-05T12:14:37+00:00",
+   "lastSeen": "2026-10-05T12:14:37+00:00",
+   "sources": [
+    "Google Jobs · BeBee"
    ]
   },
   {
@@ -1020,6 +1134,44 @@
    "lastSeen": "2026-10-03T10:23:37+00:00",
    "sources": [
     "Google Jobs · BeBee"
+   ]
+  },
+  {
+   "title": "SAP MM Procurement Data Senior Consultant",
+   "company": "Computer Futures",
+   "location": "Anywhere",
+   "pay": "",
+   "url": "https://www.computerfutures.com/en-gb/job/sap-mm-procurement-data-senior-consultant/4070495/?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "2026-09-09",
+   "source": "Google Jobs · Computer Futures",
+   "sourceId": "JC0X4KI5wEjbuTq_AAAAAA==",
+   "snippet": "Job Title: SAP MM Procurement Data Senior Consultant​‌\nLocation: Europe-based candidates only\nWorking Arrangement: Remote\nTravel: Occasional international travel required (up to 10%)\nWe're supporting a large-scale global SAP S/4HANA transformation programme and are looking for an experienced SAP MM Procurement Data Senior Consultant to lead Procurement Master Data, Data Governance, Harmonisation\n, and Data Quality initiatives across a complex enterprise environment.\nThis role is ideally suited to a consultant with strong expertise in SAP MM, SAP S/4HANA Procurement, Procurement Master Data, and Data Governance, gained through major transformation programmes. You'll work closely with business and technology stakeholders to drive high-quality procurement data standards and support critical data design, migration, and governance activities.\nKey Responsibilities\n• Lead procurement master data activities across SAP S/4HANA programmes\n• Drive data governance, harmonisation, and data quality initiatives\n• Support vendor master and Business Partner data design\n• Manage procurement data objects including Purchasing Info Records, Source Lists, and Quota Arrangements\n• Facilitate workshops and engage with business and IT stakeholders\n• Support data migration, mapping, and future-state data model design\nRequired Skills & Experience\n• 9+ years' SAP MM consulting experience\n• Strong expertise in Procurement Master Data Management\n• SAP S/4HANA Procurement experience\n• Deep knowledge of Vendor Master, Business Partner, Purchasing Info Records, Source Lists, and Quota Arrangements\n• Data Governance, Data Quality, and Master Data Harmonisation experience\n• Previous experience with a Big 4 consultancy or leading global consultancy preferred\n• Strong communication, presentation, and stakeholder management skills\n• Experience working within global transformation programmes\nPlease click here to find out more about our Key Information Documents. Please note that the documents provided contain generic information. If we are successful in finding you an assignment, you will receive a Key Information Document which will be specific to the vendor set-up you have chosen and your placement.\nTo find out more about Computer Futures please visit www.computerfutures.com\nComputer Futures, a trading division of SThree Partnership LLP is acting as an Employment Business in relation to this vacancy | Registered office | 8 Bishopsgate, London, EC2N 4BQ, United Kingdom | Partnership Number | OC387148 England and Wales",
+   "type": "",
+   "query": "SAP MM Consultant in the last week",
+   "key": "sapmmprocurementdataseniorconsultant|computerfutures",
+   "firstSeen": "2026-10-05T12:14:37+00:00",
+   "lastSeen": "2026-10-05T12:14:37+00:00",
+   "sources": [
+    "Google Jobs · Computer Futures"
+   ]
+  },
+  {
+   "title": "SAP Material Management (MM) Consultant (all genders) (Any location in UK)",
+   "company": "Tenthpin",
+   "location": "United Kingdom",
+   "pay": "",
+   "url": "https://uk.linkedin.com/jobs/view/sap-material-management-mm-consultant-all-genders-any-location-in-uk-at-tenthpin-4463260091?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "2026-09-08",
+   "source": "Google Jobs · LinkedIn",
+   "sourceId": "jO8k8lMKpiCG80IFAAAAAA==",
+   "snippet": "Driven by our continued growth and a number of high-profile client wins, Tenthpin is looking for exceptional SAP Material Management (MM) Consultants across multiple levels to join our team.\nWe are looking for bright, ambitious and client-focused consultants who are passionate about designing innovative, market-leading SAP S/4HANA solutions and want to work alongside high-calibre SAP and Life Sci\nences experts, contributing to one of the true success stories of recent years within the Management Consulting industry.\nThe Opportunity\nAs an SAP MM Consultant, you will have the opportunity to design, build and implement SAP S/4HANA solutions for some of the world's leading Life Sciences organisations, working directly with clients as their trusted advisor.\nThe role will include, but is not limited to:\n• Designing, building, and implementing innovative SAP S/4HANA Material Management solutions, from process analysis and solution design through to deployment.\n• Understanding our clients' businesses and designing or redesigning Material Management processes that deliver real value.\n• Taking ownership and leading workstreams and project activities, working with clients and colleagues to deliver successful outcomes.\n• The opportunity to work with our R&D teams and leading Life Sciences organisations on co-innovation, contributing to the development of new, industry-leading solutions and capabilities.\n• Working within a truly global team of SAP and Life Sciences specialists, with strong knowledge transfer and an active role in our Source-to-Pay Community , alongside passionate, like-minded consultants.\n• Working in an entrepreneurial environment with less hierarchy, politics and traditional consulting red tape, giving you more time to focus on top-tier clients, creating great solutions and developing your career.\nYour Experience\nFirst and foremost, you are a genuine Management Consultant with strong communication skills, the ability to see the bigger picture and a collaborative, client-facing approach to delivering solutions.\nYou will also have:\n• At least 2 full lifecycles of SAP S/4HANA implementation experience as an SAP MM Consultant, with experience across S/4HANA Private Cloud.\n• Strong SAP MM functional configuration and solution design experience, including integration with other SAP modules such as FI, PP, SD and EWM.\n• A proven track record within a Big Four consultancy, major Systems Integrator (SI), or specialist SAP consultancy, and/or experience within Life Sciences or process manufacturing, would be advantageous.\n• Experience with AI for Business within Procurement would be advantageous but is not a necessity.\nWhy Tenthpin\nTenthpin is a Global Consulting and Technology Boutique for the Life Sciences industry. With around 400 consultants and constant growth, we operate in 8 countries: Switzerland, Germany, UK, Portugal, Poland, Japan, USA and India.\nMore than sixteen of the world's top 20 Life Sciences companies trust Tenthpin for independent and unbiased advice.\nWe offer a competitive salary and benefits package and a collaborative work environment that encourages professional growth and development.\nAre you passionate about delivering high-quality SAP solutions?\nDo you want to work in a dynamic, entrepreneurial consulting environment with global colleagues?\nTenthpin is an equal opportunities employer.\nWe look forward to hearing from you.\n• This role can be based in any location of the above-mentioned employment location. You must be an official resident in the employment country to be considered for this role.",
+   "type": "",
+   "query": "SAP MM Consultant in the last week",
+   "key": "sapmaterialmanagementmmconsultantallgendersanylocationin|tenthpin",
+   "firstSeen": "2026-10-05T12:14:37+00:00",
+   "lastSeen": "2026-10-05T12:14:37+00:00",
+   "sources": [
+    "Google Jobs · LinkedIn"
    ]
   },
   {

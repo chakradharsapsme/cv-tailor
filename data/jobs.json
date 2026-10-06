@@ -1,16 +1,16 @@
 {
- "updated": "2026-10-05T12:14:37+00:00",
+ "updated": "2026-10-06T12:00:21+00:00",
  "sources": [
   "Jooble",
   "Google Jobs"
  ],
- "added": 8,
+ "added": 0,
  "errors": [],
  "usage": {
   "apify_month": "2026-10",
   "apify_results": 93,
-  "apify_spent_usd": 0.83,
-  "jooble_requests": 6
+  "apify_spent_usd": 0.88,
+  "jooble_requests": 7
  },
  "jobs": [
   {

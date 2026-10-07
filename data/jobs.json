@@ -1,18 +1,37 @@
 {
- "updated": "2026-10-06T12:00:21+00:00",
+ "updated": "2026-10-07T11:45:47+00:00",
  "sources": [
   "Jooble",
   "Google Jobs"
  ],
- "added": 0,
+ "added": 2,
  "errors": [],
  "usage": {
   "apify_month": "2026-10",
   "apify_results": 93,
   "apify_spent_usd": 0.88,
-  "jooble_requests": 7
+  "jooble_requests": 8
  },
  "jobs": [
+  {
+   "title": "Financial Business Analyst (FAR)",
+   "company": "Gulfstream",
+   "location": "United Kingdom",
+   "pay": "",
+   "url": "https://jooble.org/desc/-2366400392495811549?ckey=SAP+Ariba&rgn=55127&pos=1&groupId=40910&elckey=-5291890476136845190&p=1&aq=-1619341976318295788&cid=20595&jobAge=29&brelb=100&bscr=47.57058&scr=47.57058",
+   "posted": "2026-10-06",
+   "source": "Jooble",
+   "sourceId": "-2366400392495811549",
+   "snippet": "...partnering environment would be beneficial. Proficiency in Microsoft Excel, Power Query, and experience with financial systems such as SAP and/or Sage would be advantageous. Experience using Power BI or other data visualisation and reporting tools would be desirable....",
+   "type": "Full-time",
+   "query": "SAP Ariba",
+   "key": "financialbusinessanalystfar|gulfstream",
+   "firstSeen": "2026-10-07T11:45:47+00:00",
+   "lastSeen": "2026-10-07T11:45:47+00:00",
+   "sources": [
+    "Jooble"
+   ]
+  },
   {
    "title": "SAP MM Consultant",
    "company": "Stratesys UK",
@@ -944,6 +963,25 @@
    "lastSeen": "2026-10-05T12:14:37+00:00",
    "sources": [
     "Google Jobs · Learn4Good"
+   ]
+  },
+  {
+   "title": "Enterprise Sales Engineer - UK / Europe",
+   "company": "Sardine",
+   "location": "United Kingdom",
+   "pay": "",
+   "url": "https://jooble.org/away/-3187739530731377449?p=1&pos=13&rgn=55127&cid=20595&ckey=SAP+Ariba&jobAge=221&brelb=15&scr=22.86127&bscr=22.86127&aq=-1619341976318295788&elckey=-5291890476136845190",
+   "posted": "2026-09-28",
+   "source": "Jooble",
+   "sourceId": "-3187739530731377449",
+   "snippet": "Who we are: Sardine is the leading agentic risk platform for fighting financial crime. Our integrated solution unifies data across risk teams to help organizations stop fraud in real time, prevent AI-driven attacks, and automate fraud and AML operations. Sardine’s platform...",
+   "type": "Full-time",
+   "query": "SAP Ariba",
+   "key": "enterprisesalesengineereurope|sardine",
+   "firstSeen": "2026-10-07T11:45:47+00:00",
+   "lastSeen": "2026-10-07T11:45:47+00:00",
+   "sources": [
+    "Jooble"
    ]
   },
   {

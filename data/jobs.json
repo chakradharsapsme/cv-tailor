@@ -1,16 +1,16 @@
 {
- "updated": "2026-10-07T11:45:47+00:00",
+ "updated": "2026-10-08T12:00:23+00:00",
  "sources": [
   "Jooble",
   "Google Jobs"
  ],
- "added": 2,
+ "added": 0,
  "errors": [],
  "usage": {
   "apify_month": "2026-10",
   "apify_results": 93,
   "apify_spent_usd": 0.88,
-  "jooble_requests": 8
+  "jooble_requests": 9
  },
  "jobs": [
   {
@@ -27,7 +27,7 @@
    "query": "SAP Ariba",
    "key": "financialbusinessanalystfar|gulfstream",
    "firstSeen": "2026-10-07T11:45:47+00:00",
-   "lastSeen": "2026-10-07T11:45:47+00:00",
+   "lastSeen": "2026-10-08T12:00:23+00:00",
    "sources": [
     "Jooble"
    ]
@@ -979,7 +979,7 @@
    "query": "SAP Ariba",
    "key": "enterprisesalesengineereurope|sardine",
    "firstSeen": "2026-10-07T11:45:47+00:00",
-   "lastSeen": "2026-10-07T11:45:47+00:00",
+   "lastSeen": "2026-10-08T12:00:23+00:00",
    "sources": [
     "Jooble"
    ]

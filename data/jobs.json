@@ -1,18 +1,56 @@
 {
- "updated": "2026-10-08T12:00:23+00:00",
+ "updated": "2026-10-09T11:52:35+00:00",
  "sources": [
   "Jooble",
   "Google Jobs"
  ],
- "added": 0,
+ "added": 4,
  "errors": [],
  "usage": {
   "apify_month": "2026-10",
   "apify_results": 93,
   "apify_spent_usd": 0.88,
-  "jooble_requests": 9
+  "jooble_requests": 10
  },
  "jobs": [
+  {
+   "title": "Finance Technical Business Analyst - 15522",
+   "company": "ComXPS",
+   "location": "United Kingdom",
+   "pay": "",
+   "url": "https://jooble.org/jdp/8652509194054874654?ckey=SAP+P2P&rgn=55127&pos=24&groupId=40910&elckey=7124028852303663416&p=1&aq=-2854064064266180323&cid=20595&jobAge=5&brelb=100&bscr=15.777465&scr=15.777465",
+   "posted": "2026-10-09",
+   "source": "Jooble",
+   "sourceId": "8652509194054874654",
+   "snippet": "Salary: £Please confirm competitive rate / contact us to discuss further Location: Hybrid / UK",
+   "type": "",
+   "query": "SAP P2P",
+   "key": "financetechnicalbusinessanalyst15522|comxps",
+   "firstSeen": "2026-10-09T11:52:35+00:00",
+   "lastSeen": "2026-10-09T11:52:35+00:00",
+   "sources": [
+    "Jooble"
+   ]
+  },
+  {
+   "title": "Director Enterprise Solutions, EMEA-LATAM",
+   "company": "NetApp",
+   "location": "United Kingdom",
+   "pay": "",
+   "url": "https://jooble.org/desc/-9065812916060351792?ckey=SAP+P2P&rgn=55127&pos=37&groupId=40910&elckey=7124028852303663416&p=1&aq=-2854064064266180323&cid=20595&jobAge=5&brelb=100&bscr=13.237951&scr=13.237951",
+   "posted": "2026-10-09",
+   "source": "Jooble",
+   "sourceId": "-9065812916060351792",
+   "snippet": "...alongside consolidation, data centre exits and workloads moving back from public cloud. And the applications that run the business, SAP and Oracle in particular, are being modernised and moved hybrid, which puts their data platform up for decision. We are building the...",
+   "type": "",
+   "query": "SAP P2P",
+   "key": "directorenterprisesolutionsemealatam|netapp",
+   "firstSeen": "2026-10-09T11:52:35+00:00",
+   "lastSeen": "2026-10-09T11:52:35+00:00",
+   "sources": [
+    "Jooble"
+   ]
+  },
   {
    "title": "Financial Business Analyst (FAR)",
    "company": "Gulfstream",
@@ -979,7 +1017,26 @@
    "query": "SAP Ariba",
    "key": "enterprisesalesengineereurope|sardine",
    "firstSeen": "2026-10-07T11:45:47+00:00",
-   "lastSeen": "2026-10-08T12:00:23+00:00",
+   "lastSeen": "2026-10-09T11:52:35+00:00",
+   "sources": [
+    "Jooble"
+   ]
+  },
+  {
+   "title": "Solana PERP DEX: Superis Labs - Software Engineer, Frontend",
+   "company": "Ergonia",
+   "location": "United Kingdom",
+   "pay": "",
+   "url": "https://jooble.org/away/-4363184127352706198?p=1&pos=40&rgn=55127&cid=20595&ckey=SAP+P2P&jobAge=269&brelb=15&scr=12.5104265&bscr=12.5104265&aq=-2854064064266180323&elckey=7124028852303663416",
+   "posted": "2026-09-28",
+   "source": "Jooble",
+   "sourceId": "-4363184127352706198",
+   "snippet": "Superis Labs is building a high-performance perpetual futures DEX on Solana. The first production MVP is underway, and early team members will define core architecture and protocol design. The company is fully backed by [Ergonia]( a crypto-native market-making firm with...",
+   "type": "Full-time",
+   "query": "SAP P2P",
+   "key": "solanaperpdexsuperislabssoftwareengineerfrontend|ergonia",
+   "firstSeen": "2026-10-09T11:52:35+00:00",
+   "lastSeen": "2026-10-09T11:52:35+00:00",
    "sources": [
     "Jooble"
    ]
@@ -1248,6 +1305,25 @@
    "lastSeen": "2026-10-03T10:23:37+00:00",
    "sources": [
     "Google Jobs · BeBee"
+   ]
+  },
+  {
+   "title": "Demo Engineering Business Analyst",
+   "company": "Ping Identity",
+   "location": "United Kingdom",
+   "pay": "",
+   "url": "https://jooble.org/desc/-8299816601764248209?ckey=SAP+P2P&rgn=55127&pos=45&groupId=40910&elckey=7124028852303663416&p=1&aq=-2854064064266180323&cid=20595&jobAge=1085&brelb=100&bscr=11.593572&scr=11.593572",
+   "posted": "2026-08-25",
+   "source": "Jooble",
+   "sourceId": "-8299816601764248209",
+   "snippet": "About Ping Identity: At Ping Identity, we believe in making digital experiences both secure and seamless for all users, without compromise. We call this digital freedom. And it's not just something we provide our customers. It's something that inspires our company. People...",
+   "type": "Full-time",
+   "query": "SAP P2P",
+   "key": "demoengineeringbusinessanalyst|pingidentity",
+   "firstSeen": "2026-10-09T11:52:35+00:00",
+   "lastSeen": "2026-10-09T11:52:35+00:00",
+   "sources": [
+    "Jooble"
    ]
   }
  ]

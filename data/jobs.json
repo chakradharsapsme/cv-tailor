@@ -1,16 +1,16 @@
 {
- "updated": "2026-10-09T11:52:35+00:00",
+ "updated": "2026-10-10T11:09:27+00:00",
  "sources": [
   "Jooble",
   "Google Jobs"
  ],
- "added": 4,
+ "added": 0,
  "errors": [],
  "usage": {
   "apify_month": "2026-10",
   "apify_results": 93,
   "apify_spent_usd": 0.88,
-  "jooble_requests": 10
+  "jooble_requests": 11
  },
  "jobs": [
   {
@@ -1321,7 +1321,7 @@
    "query": "SAP P2P",
    "key": "demoengineeringbusinessanalyst|pingidentity",
    "firstSeen": "2026-10-09T11:52:35+00:00",
-   "lastSeen": "2026-10-09T11:52:35+00:00",
+   "lastSeen": "2026-10-10T11:09:27+00:00",
    "sources": [
     "Jooble"
    ]

@@ -1,18 +1,75 @@
 {
- "updated": "2026-10-20T10:00:24+00:00",
+ "updated": "2026-10-21T10:05:43+00:00",
  "sources": [
   "Jooble",
   "Google Jobs"
  ],
- "added": 0,
+ "added": 4,
  "errors": [],
  "usage": {
   "apify_month": "2026-10",
-  "apify_results": 93,
+  "apify_results": 103,
   "apify_spent_usd": 0.0,
-  "jooble_requests": 21
+  "jooble_requests": 22
  },
  "jobs": [
+  {
+   "title": "SAP MM Consultant",
+   "company": "Next Ventures",
+   "location": "London",
+   "pay": "",
+   "url": "https://next-ventures.com/jobs/sap-mm-consultant-2/?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "",
+   "source": "Google Jobs · Next Ventures",
+   "sourceId": "1XrBmF1NxiNBaESxAAAAAA==",
+   "snippet": "We are seeking an experienced SAP MM Consultant to design, implement, and support SAP Materials Management solutions. The ideal candidate will have strong functional knowledge of procurement and inventory processes, and experience working across business and technical teams to deliver efficient SAP solutions.\nKey Responsibilities\n• Gather and analyze business requirements related to procurement,\ninventory management, and supply chain processes\n• Configure and customize SAP MM module to meet business needs\n• Support end-to-end SAP MM implementations, rollouts, and enhancements\n• Work on integration with other SAP modules such as SD, FI, and WM/EWM\n• Prepare functional specifications and coordinate with technical teams for developments\n• Conduct system testing, user acceptance testing (UAT), and ensure quality delivery\n• Provide end-user training and create documentation (process flows, manuals, etc.)\n• Troubleshoot and resolve SAP MM-related issues in production support environments\n• Ensure compliance with business processes and industry best practices\nRequired Skills & Qualifications\n• Bachelor’s degree in IT, Business, Supply Chain, or related field\n• Proven experience as an SAP MM Consultant (typically 3–10+ years depending on level)\n• Strong knowledge of:\n• Procurement processes (P2P cycle)\n• Inventory management\n• Vendor management\n• Pricing and valuation\n• Hands-on experience in SAP MM configuration\n• Understanding of integration with SAP modules (FI, SD, WM/EWM)\n• Strong analytical and problem-solving skills\n• Excellent communication and stakeholder management abilities\nPreferred Qualifications\n• SAP certification in Materials Management (MM)\n• Experience with S/4HANA\n• Knowledge of SAP Fiori apps\n• Exposure to global or multi-country implementations",
+   "type": "",
+   "query": "SAP MM Consultant in the last week",
+   "key": "sapmmconsultant|nextventures",
+   "firstSeen": "2026-10-21T10:05:43+00:00",
+   "lastSeen": "2026-10-21T10:05:43+00:00",
+   "sources": [
+    "Google Jobs · Next Ventures"
+   ]
+  },
+  {
+   "title": "Senior SAP MM & SCM Solution Lead — Hybrid",
+   "company": "Global Enterprise Partners",
+   "location": "Liverpool",
+   "pay": "£90,000-£130,000 per year",
+   "url": "https://www.learn4good.com/jobs/liverpool/uk/info_technology/5550186340/e/?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "2026-10-17",
+   "source": "Google Jobs · Learn4Good",
+   "sourceId": "iS-lCq5amxykDjqzAAAAAA==",
+   "snippet": "A leading consulting firm in the UK is seeking an experienced SAP Solution Lead for Procurement & Supply Chain. You will oversee the design, configuration, and support of key SAP modules while collaborating with stakeholders to optimize operations. This hybrid role requires extensive SAP experience and a deep understanding of procurement processes. Competitive salary offered along with excellent b\nenefits.\nThis role, Senior SAP MM & SCM Solution Lead — Hybrid UK at Global Enterprise Partners, could be your next move. This position is for the Senior SAP MM & SCM Solution Lead — Hybrid UK role at Global Enterprise Partners. We are seeking a motivated Senior SAP MM & SCM Solution Lead — Hybrid UK to join Global Enterprise Partners in England, United Kingdom.\nConsider building your career as a Senior SAP MM & SCM Solution Lead — Hybrid UK at Global Enterprise Partners.",
+   "type": "",
+   "query": "SAP MM Consultant in the last week",
+   "key": "seniorsapmmscmsolutionleadhybrid|globalenterprisepartners",
+   "firstSeen": "2026-10-21T10:05:43+00:00",
+   "lastSeen": "2026-10-21T10:05:43+00:00",
+   "sources": [
+    "Google Jobs · Learn4Good"
+   ]
+  },
+  {
+   "title": "Junior SAP ECC MM Consultant — Logistics & Procurement",
+   "company": "Market Cloud Ltd",
+   "location": "Manchester",
+   "pay": "£30,000-£42,000 per year",
+   "url": "https://www.learn4good.com/jobs/manchester/uk/info_technology/5547100031/e/?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "2026-10-15",
+   "source": "Google Jobs · Learn4Good",
+   "sourceId": "eBBy_fSgKit38fsmAAAAAA==",
+   "snippet": "Market Cloud Ltd in the United Kingdom is seeking a Junior SAP ECC Consultant to support maintenance, enhancements, incident resolution, user support, testing, and continuous improvement initiatives in SAP ECC.\nYou will work closely with business users, senior SAP consultants and development teams to analyze requirements, translate them into SAP solutions, participate in deployments, and contribu\nte to SAP projects and rollouts.\nConsider building your career as a Junior SAP ECC MM Consultant — Logistics & Procurement at Market Cloud Ltd.\nThis opportunity is part of our work in IT & Technology, Consulting.\nThe advertised compensation is 30.000 - 42.000.\nWe aim to respond to suitable candidates as soon as possible.\nFull responsibilities and requirements are described in the listing above.\nLearn more about the Junior SAP ECC MM Consultant — Logistics & Procurement role in the description above.",
+   "type": "",
+   "query": "SAP MM Consultant in the last week",
+   "key": "juniorsapeccmmconsultantlogisticsprocurement|marketcloud",
+   "firstSeen": "2026-10-21T10:05:43+00:00",
+   "lastSeen": "2026-10-21T10:05:43+00:00",
+   "sources": [
+    "Google Jobs · Learn4Good"
+   ]
+  },
   {
    "title": "Finance Technical Business Analyst - 15522",
    "company": "ComXPS",
@@ -52,6 +109,25 @@
    ]
   },
   {
+   "title": "Business Analyst Expert",
+   "company": "Ethos",
+   "location": "United Kingdom",
+   "pay": "$100 per hour",
+   "url": "https://jooble.org/desc/2281341898938628693?ckey=IT+Business+Analyst&rgn=55127&pos=21&groupId=1082&elckey=4668912181119366510&p=1&aq=-1727822311071104746&cid=20595&jobAge=316&brelb=100&bscr=14.2378025&scr=14.2378025",
+   "posted": "2026-10-08",
+   "source": "Jooble",
+   "sourceId": "2281341898938628693",
+   "snippet": "...more if desired) Location: Fully remote, work on your own schedule Start date: ASAP Qualifications 3+ years as a business analyst at a top strategy firm (e.g. McKinsey, BCG, or Bain) Deep expertise in structured communication, storylining, and slide...",
+   "type": "Temporary",
+   "query": "IT Business Analyst",
+   "key": "businessanalystexpert|ethos",
+   "firstSeen": "2026-10-21T10:05:43+00:00",
+   "lastSeen": "2026-10-21T10:05:43+00:00",
+   "sources": [
+    "Jooble"
+   ]
+  },
+  {
    "title": "Financial Business Analyst (FAR)",
    "company": "Gulfstream",
    "location": "United Kingdom",
@@ -65,7 +141,7 @@
    "query": "SAP Ariba",
    "key": "financialbusinessanalystfar|gulfstream",
    "firstSeen": "2026-10-07T11:45:47+00:00",
-   "lastSeen": "2026-10-18T09:33:32+00:00",
+   "lastSeen": "2026-10-21T10:05:43+00:00",
    "sources": [
     "Jooble"
    ]
@@ -988,7 +1064,7 @@
    "title": "SAP MM Consultant: Third-Party Integrations; Hybrid",
    "company": "DSR Global",
    "location": "Wolverhampton",
-   "pay": "",
+   "pay": "£92,250-£129,150 per year",
    "url": "https://www.learn4good.com/jobs/wolverhampton/uk/info_technology/5497765056/e/?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
    "posted": "2026-09-28",
    "source": "Google Jobs · Learn4Good",
@@ -998,7 +1074,7 @@
    "query": "SAP MM Consultant in the last week",
    "key": "sapmmconsultantthirdpartyintegrationshybrid|dsrglobal",
    "firstSeen": "2026-10-05T12:14:37+00:00",
-   "lastSeen": "2026-10-05T12:14:37+00:00",
+   "lastSeen": "2026-10-21T10:05:43+00:00",
    "sources": [
     "Google Jobs · Learn4Good"
    ]
@@ -1321,7 +1397,7 @@
    "query": "SAP P2P",
    "key": "demoengineeringbusinessanalyst|pingidentity",
    "firstSeen": "2026-10-09T11:52:35+00:00",
-   "lastSeen": "2026-10-18T09:33:32+00:00",
+   "lastSeen": "2026-10-21T10:05:43+00:00",
    "sources": [
     "Jooble"
    ]

@@ -1,16 +1,16 @@
 {
- "updated": "2026-10-21T10:05:43+00:00",
+ "updated": "2026-10-22T10:08:24+00:00",
  "sources": [
   "Jooble",
   "Google Jobs"
  ],
- "added": 4,
+ "added": 9,
  "errors": [],
  "usage": {
   "apify_month": "2026-10",
-  "apify_results": 103,
-  "apify_spent_usd": 0.0,
-  "jooble_requests": 22
+  "apify_results": 113,
+  "apify_spent_usd": 0.03,
+  "jooble_requests": 23
  },
  "jobs": [
   {
@@ -33,6 +33,101 @@
    ]
   },
   {
+   "title": "SAP Systems Analyst",
+   "company": "Hackajob Ltd",
+   "location": "Manchester",
+   "pay": "£50,000 per year",
+   "url": "https://www.totaljobs.com/job/sap-systems-analyst/hackajob-ltd-job108212750?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "2026-10-20",
+   "source": "Google Jobs · Totaljobs",
+   "sourceId": "Nbrjoy-pzjNM6w8qAAAAAA==",
+   "snippet": "Our client is a UK airports group.\nSAP Systems Analyst – S/4HANA Transformation\n2-Year Fixed Term Contract\nOne of its airports / Hybrid Working\nWhy our client?\nWe provide the airport facilities and travel services that people need to connect with the world. As the largest UK owned airport operator, we serve over 60 million passengers a year from Manchester, one of its airports, and one of its\nairports. With over 270 destinations across the globe, our businesses not only bring people together but also support the prosperity of the regions in which we operate.\nSustainability is one of our core values, and it shapes everything we do. We're committed to protecting the environment and supporting our local communities through decarbonisation, skills and employment programmes, and community engagement initiatives.\nWe recognise that creating a first-class journey for our customers starts by creating a first-class career journey for our colleagues. We are committed to building inclusive environments in which our people can thrive.\nYou'll also have access to some great benefits including:\n• Bonus scheme\n• 10% company contribution pension\n• 25 days holiday plus bank holidays\n• Free onsite parking\n• Subsidised public transport\n• Huge range of company discounts\n• 2 volunteering days per year\n• Free Virtual GP service, available 24 hours a day, 7 days a week\n• Care Concierge service\nThe Role\nAs a SAP Systems Analyst, you'll play a key role in our client's ambitious Finance Transformation Programme as we migrate from SAP ECC to S/4HANA Private Cloud.\nWorking within our Technology team, you'll help shape and deliver a modern SAP Finance and Procurement landscape, supporting core S/4HANA functionality alongside integrated solutions including Concur, Ariba and BlackLine. You'll work closely with Finance colleagues, Product teams, Solution Architects and implementation partners to ensure our future SAP ecosystem delivers the capabilities, controls and efficiencies required to support our client's long-term strategy.\nYou'll be involved throughout the full programme lifecycle, from fit-to-standard workshops and solution design through to testing, go-live and post-implementation stabilisation. This is a hands-on role for someone who enjoys solving business challenges through technology, challenging design assumptions and ensuring high-quality SAP solutions are delivered.\nAs the programme progresses, you'll become a trusted technology partner to Finance and Procurement stakeholders, helping to optimise processes, improve user experience and drive continuous improvement across the SAP landscape.\nYour Responsibilities Will Include:\n• Contributing to fit-to-standard workshops across Finance and Procurement processes.\n• Reviewing and constructively challenging configuration designs and functional specifications produced by implementation partners.\n• Taking ownership of defined areas of the SAP solution and ensuring design quality throughout delivery.\n• Supporting integration design across S/4HANA, Concur, Ariba and BlackLine.\n• Gathering, analysing and documenting business and technical requirements.\n• Participating in integration testing and User Acceptance Testing activities.\n• Creating realistic test scenarios that reflect end-to-end Finance and Procurement processes.\n• Supporting end-user training and business readiness activities.\n• Assisting with go-live, hypercare and stabilisation activities.\n• Identifying opportunities to improve processes and enhance the effectiveness of the SAP Finance landscape.\nWhat Will Make You Successful in the Role?\nYou'll bring functional SAP expertise together with strong analytical and stakeholder management skills. You'll be comfortable working in a transformation environment and able to bridge the gap between business requirements and technology solutions.\nWe're looking for someone with:\n• Hands-on SAP S/4HANA configuration experience across Finance and Procurement processes.\n• Strong understanding of the Universal Journal and the key differences between ECC and S/4HANA.\n• Experience of at least one full SAP implementation lifecycle from discovery through to go-live.\n• Experience supporting period-end and year-end close activities within a live SAP environment.\n• Experience reviewing and challenging solution designs and functional specifications.\n• Knowledge of at least two of the following solutions: Concur, Ariba or BlackLine.\n• Strong business analysis and systems analysis capability.\n• Excellent communication skills and the ability to work effectively with both technical and non-technical stakeholders.\n• Strong problem-solving, documentation and critical-thinking skills.\nIt Would Be Great (But Not Essential) If You Also Have:\n• Experience across Concur, Ariba and BlackLine.\n• Knowledge of SAP Group Reporting.\n• Experience working within a RISE with SAP or S/4HANA Private Cloud environment.\n• Understanding of Clean Core principles and SAP extensibility approaches.\n• Experience with parallel accounting and multi-ledger configurations.\n• Exposure to embedded analytics and Finance reporting within S/4HANA.\n• SAP S/4HANA certification in Finance, FICO or related modules.\nEqual Opportunities & Reasonable Adjustments\nWe’re building something brilliant at our client: a diverse team of Journey Makers who share our values and want to make a difference. We’re on a mission to be number one in our industry, and that takes talent in all its forms. With so many exciting roles across our airports and businesses, there’s space for your unique strengths to shine.\nWhether this is your first role or your next big step, we want to hear from you – even if you don’t think you tick every box. What matters most is what you bring.\nWe’re proud to be a Disability Confident employer. If you need any adjustments to support your application or interview, just let us know. We’re committed to helping you perform at your best.\nHere, every journey matters. Our Colleague Communities play a big part in that:",
+   "type": "",
+   "query": "SAP Business Analyst in the last week",
+   "key": "sapsystemsanalyst|hackajob",
+   "firstSeen": "2026-10-22T10:08:24+00:00",
+   "lastSeen": "2026-10-22T10:08:24+00:00",
+   "sources": [
+    "Google Jobs · Totaljobs"
+   ]
+  },
+  {
+   "title": "Finance Business Analyst - Inside IR35 Hybrid S/4HANA",
+   "company": "Adecco",
+   "location": "Slough",
+   "pay": "",
+   "url": "https://jobs.stevenagefc.com/jobs/finance-business-analyst-inside-ir35-hybrid-s-4hana-slough-berkshire/3029590848-2/?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "2026-10-20",
+   "source": "Google Jobs · Jobs For Stevenage Fans",
+   "sourceId": "uAw_yPkizX5FK5IGAAAAAA==",
+   "snippet": "Business Analyst Finance BA SAP S4 HANA Hybrid - 3 days per week in the office - 2 days working from home 6 Months Initial Contract BERKSHIRE £550/d Inside IR35 CIMA / ACCA\nWe are looking for a Business Analyst to join our clients Finance Transformation team where you will play a key role in strengthening Finance Data Governance as part of their SAP/S4HANA journey.\nYou will document policies, pr\nocesses and controls to ensure robust governance and regulatory compliance.\nThis is an excellent opportunity for someone with a strong finance background and experience of finance transformation, master data governance and SAP S/4HANA environments.\nYour Essential Skills and Experience:\n• Proven Business Analysis experience supporting Finance Transformation programmes.\n• Experience working with Finance Master Data and reporting processes.\n• Understanding of SAP S/4HANA data structures and architecture.\n• Strong business analysis, process mapping and documentation skills.\n• Ability to communicate complex concepts clearly to a wide range of stakeholders.\n• Full / Part qualified accountant (CIMA, ACCA or equivalent).\n• Excellent stakeholder engagement and influencing skills.\nLocation: Slough\nHybrid: 3 days in the office / 2 days working from home\nRate: £550/d Inside IR35 (via Umbrella)\nContract: 6 Months' Initial Contract\nIs this you? We'd love to hear from you!\nAdecco acts as an employment agency for permanent recruitment and an employment business for the supply of temporary workers. The Adecco Group UK & Ireland is an Equal Opportunities Employer.\nBy applying for this role your details will be submitted to Adecco. Our Candidate Privacy Information Statement explains how we will use your information - please copy and paste the following link in to your browser",
+   "type": "",
+   "query": "SAP Business Analyst in the last week",
+   "key": "financebusinessanalystinsideir35hybrids4hana|adecco",
+   "firstSeen": "2026-10-22T10:08:24+00:00",
+   "lastSeen": "2026-10-22T10:08:24+00:00",
+   "sources": [
+    "Google Jobs · Jobs For Stevenage Fans"
+   ]
+  },
+  {
+   "title": "Solar & BESS Service Technician (AP or SAP)",
+   "company": "Tesla",
+   "location": "United Kingdom",
+   "pay": "",
+   "url": "https://jooble.org/desc/-2103057152817348823?ckey=SAP+Business+Analyst&rgn=55127&pos=24&groupId=-924366910&elckey=-7425769815605729978&p=1&aq=5498908178302303641&cid=20595&jobAge=76&brelb=100&bscr=21.667948&scr=21.667948",
+   "posted": "2026-10-19",
+   "source": "Jooble",
+   "sourceId": "-2103057152817348823",
+   "snippet": "...Solar & BESS Service Technician (AP or SAP) Leap29 are looking for a skilled Service Technician Solar PV & BESS to oversee sites across Colchester, Chelmsford, Braintree or Ipswich on behalf of a reputable IPP company with assets across the UK. This is a fantastic...",
+   "type": "Full-time",
+   "query": "SAP Business Analyst",
+   "key": "solarbessservicetechnicianaporsap|tesla",
+   "firstSeen": "2026-10-22T10:08:24+00:00",
+   "lastSeen": "2026-10-22T10:08:24+00:00",
+   "sources": [
+    "Jooble"
+   ]
+  },
+  {
+   "title": "SAP IT Business Analyst. Job in Bradford The Sun Jobs",
+   "company": "Yorkshire Water",
+   "location": "Bradford",
+   "pay": "",
+   "url": "https://jobs.thesun.co.uk/jobs/sap-it-business-analyst-bradford-yorkshire/3028322459-2/?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "2026-10-19",
+   "source": "Google Jobs · The Sun Jobs",
+   "sourceId": "e-O2cSRVAgsXZI0VAAAAAA==",
+   "snippet": "Company description:\nWater Utility Company based in Yorkshire region of England.\nJob description:\nSAP Business Analyst\nHello! Thanks for stopping by. Let us tell you about all the great reasons to join us here at Yorkshire Water:\n• We offer a competitive salary, depending on experience (£48,000 - £60,000)\n• Annual incentive related bonus (£1000 maximum bonus opportunity for the performance yea\nr)\n• Attra click apply for full job details",
+   "type": "",
+   "query": "SAP Business Analyst in the last week",
+   "key": "sapitbusinessanalystjobinbradfordthesunjobs|yorkshirewater",
+   "firstSeen": "2026-10-22T10:08:24+00:00",
+   "lastSeen": "2026-10-22T10:08:24+00:00",
+   "sources": [
+    "Google Jobs · The Sun Jobs"
+   ]
+  },
+  {
+   "title": "SAP and Data Analyst Roles in Technology and Pharma",
+   "company": "Just Eat Takeaway.com",
+   "location": "London",
+   "pay": "",
+   "url": "https://uk.jooble.org/jdp/3577326640594530706?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "2026-10-19",
+   "source": "Google Jobs · Jooble",
+   "sourceId": "nF7xWMtvpSOEmV3_AAAAAA==",
+   "snippet": "Ready for a challenge? Then the employer might be the place for you.\nWe’re a leading global online delivery platform, empowering everyday convenience. Our technology connects millions of customers with hundreds of thousands of restaurant, grocery, and convenience partners worldwide.\nAbout this Role\nAs a Senior Data Analyst within our Global Finance Operations department, you’ll play a key role d\nriving data integrity, process efficiency, and strategic visibility across the Record to Report (R2R) team. You’ll embody our values – lead, deliver, and care – establishing critical data pipelines and governed datasets that enhance month-end performance and support AI automation.\nWorking closely with the Governance Lead and Continuous Improvement Managers, you’ll foster a data-literate culture across the team. Through seamless teamwork and customer focus, you’ll deliver clean, structured data and transform analytical insights into strategic value.\nResponsibilities\n• Lead analysis of financial data flows between primary ERP systems and upstream/downstream tools to reduce manual adjustments.\n• Drive optimization of month-end close (MEC) processes, leveraging our data ecosystem to enhance accuracy and real-time visibility.\n• Collaborate with the Governance Lead and Master Data Management team to establish rigorous data quality standards and transparent data dictionaries.\n• Acquire, manage, and maintain robust data pipelines from primary and secondary systems to support broader Global Finance Operations.\n• Build and maintain automated reporting frameworks for R2R KPIs and OKRs to enable tower-level performance and initiative tracking.\n• Identify process bottlenecks and improvement opportunities to leadership, using data-driven evidence to aim high and raise the bar.\n• Evaluate AI, automation, and process mining use cases alongside Technology and Data & Analytics teams to drive efficiency and innovation.\n• Act as mentor and subject matter expert, guiding colleagues with analytical tools, methods, and best practices.\n• Foster data literacy through engaging training and awareness sessions focused on analytics and AI readiness.\nRequirements\n• Proven expertise in data analysis, transformation, and insight generation within finance or e-commerce environments.\n• Strong understanding of end-to-end finance processes, accounting principles, and sensitive financial data governance.\n• High technical proficiency in Workday Finance (or similar ERPs) and financial reporting tools for complex data extraction and querying.\n• Experience working with consolidation platforms (e.g., OneStream) and cross-functional finance system touchpoints.\n• Strong SQL, BigQuery, and spreadsheet skills with a commitment to building transparent KPIs, automated dashboards, and data validation controls.\n• Exceptional analytical and problem-solving skills with an ability to translate complex finance needs into technical specifications.\n• Strong communication skills to build cross-functional relationships, develop understanding of internal and external partners, and influence stakeholders.\n• Proactive mindset comfortable navigating uncertainty to stay committed to achieving goals and driving excellence.\n• Passion for mentoring others, advocating for data literacy, and acting responsibly to make a lasting impact.\nWorking Conditions\nFun, fast-paced and supportive, the employer culture fosters movement, growth, helping one another succeed, and celebrating wins. By living our values and embracing our behaviours, we’re building a customer-first culture to stay ahead of the competition.\nOur teams forge connections internally and work with renowned brands worldwide, delivering significant impact in a dynamic environment.\nBenefits\nWe offer comprehensive benefits and opportunities for personal and professional development.\nOpportunities for Growth\nThis role offers significant opportunities to expand your data analysis skillset, lead initiatives in AI automation, and contribute to strategic decision making within our Global Finance Operations department.\nAre you ready to join the employer ?",
+   "type": "",
+   "query": "SAP Business Analyst in the last week",
+   "key": "sapanddataanalystrolesintechnologyandpharma|justeattakeawaycom",
+   "firstSeen": "2026-10-22T10:08:24+00:00",
+   "lastSeen": "2026-10-22T10:08:24+00:00",
+   "sources": [
+    "Google Jobs · Jooble"
+   ]
+  },
+  {
    "title": "Senior SAP MM & SCM Solution Lead — Hybrid",
    "company": "Global Enterprise Partners",
    "location": "Liverpool",
@@ -52,6 +147,63 @@
    ]
   },
   {
+   "title": "SAP Business Analyst: Hybrid IT & Change Leader",
+   "company": "Yorkshire Water",
+   "location": "Leeds",
+   "pay": "£48,000-£60,000 per year",
+   "url": "https://www.jobleads.com/gb/job/sap-business-analyst-hybrid-it-change-leader--leeds--e24370667e24459f0db163c0ee44d1f0a?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "2026-10-16",
+   "source": "Google Jobs · JobLeads",
+   "sourceId": "aC7lNWBPWNGrwcW3AAAAAA==",
+   "snippet": "Yorkshire Water is seeking an SAP Business Analyst to join the IT SAP team and drive business change across Finance, HR, Procurement and Capital Delivery. You will lead analysis activities, translate needs into requirements, and shape AS-IS and TO-BE models.\nBased in Bradford with a future Leeds base, this permanent role offers hybrid working, a competitive salary (£48,000-£60,000), a £1,000 annu\nal incentive, and a comprehensive benefits package including pension, health plans and savings",
+   "type": "",
+   "query": "SAP Business Analyst in the last week",
+   "key": "sapbusinessanalysthybriditchangeleader|yorkshirewater",
+   "firstSeen": "2026-10-22T10:08:24+00:00",
+   "lastSeen": "2026-10-22T10:08:24+00:00",
+   "sources": [
+    "Google Jobs · JobLeads"
+   ]
+  },
+  {
+   "title": "SAP Business Analyst",
+   "company": "VDS Consulting Group",
+   "location": "Northern Ireland",
+   "pay": "£87,000-£105,000 per year",
+   "url": "https://www.jobleads.com/gb/job/sap-business-analyst--long-island--e003f05bd3308078aa5d093b993db8826?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "2026-10-16",
+   "source": "Google Jobs · JobLeads",
+   "sourceId": "TpDY7BjNIjq-QnFzAAAAAA==",
+   "snippet": "SAP Business Analyst (Functional)\nAbout the Role\nOur client is hiring a permanent SAP Business Analyst to be the link between business teams and the SAP platform. You’ll own requirements, process design and configuration for your module area. You’ll also be the go-to expert as the company improves and expands its SAP environment.\nWhat You’ll Do\n• Gather and document business requirements from f\ninance, supply chain, operations and other stakeholders\n• Map current and future-state processes and translate them into SAP configuration\n• Configure and support assigned modules (e.g., FICO, MM, SD, PP)\n• Lead functional testing (unit, integration and UAT) and manage defect resolution\n• Write functional specifications for custom development, reports and interfaces\n• Support month-end close, production issues and day-to-day user questions\n• Train end users and super users, and maintain process documentation\n• Take part in upgrades, rollouts and S/4HANA migration work\nWhat You Bring\n• Bachelor’s degree in Business, Finance, Information Systems or a related field\n• 3–5+ years of hands‑on SAP functional experience in at least one core module\n• Full‑cycle implementation or major enhancement project experience\n• Strong grasp of the business processes behind your module (e.g., procure-to-pay, order-to-cash, record‑to‑report)\n• Excellent communication skills with both technical and non‑technical teams\nPreferred\n• S/4HANA experience\n• SAP certification in your module\n• Manufacturing or distribution industry background\n• Bilingual English/Spanish\nSalary- 115 , 500 – $140,000 basesalary Full Benefits",
+   "type": "",
+   "query": "SAP Business Analyst in the last week",
+   "key": "sapbusinessanalyst|vdsconsulting",
+   "firstSeen": "2026-10-22T10:08:24+00:00",
+   "lastSeen": "2026-10-22T10:08:24+00:00",
+   "sources": [
+    "Google Jobs · JobLeads"
+   ]
+  },
+  {
+   "title": "SAP IT Business Analyst",
+   "company": "Yorkshire Water",
+   "location": "Leeds",
+   "pay": "£48,000-£60,000 per year",
+   "url": "https://www.jobleads.com/gb/job/sap-it-business-analyst--leeds--ee400b523073deef3a3d188b779f87eca?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "2026-10-16",
+   "source": "Google Jobs · JobLeads",
+   "sourceId": "XR8V4YUS18K5DR9cAAAAAA==",
+   "snippet": "Select how often (in days) to receive an alert:\nHello! Thanks for stopping by. Let us tell you about all the great reasons to join us here at Yorkshire Water:\n• We offer a competitive salary, depending on experience (£48,000 - £60,000)\n• Annual incentive related bonus (£1000 maximum bonus opportunity for the performance year)\n• Attractive pension scheme (up to 12% company contribution)\n• Developm\nent opportunities in line with the SAP Business Analyst progression plan\n• 25 days annual leave plus bank holidays - plus 2 extra wellness days!\n• Life assurance cover of 4 times pensionable salary\n• A great benefits package - choose from health cash plan scheme, critical illness insurance, dental insurance, life assurance flex and partner cover.\n• Retail savings scheme\n• Online GP service, cycle to work scheme, gym membership discounts and many more!\nLocation: This role will initially be based in Bradford but we’re moving our office to Leeds Valley Park in summer 2026, so you’ll be based there in the future - Hybrid Working (1-2 days in the office a week - Bradford/Leeds)\nWork type: Permanent. 37 hours per week, Monday - Friday.\nWe have an exciting opportunity for an SAP Business Analyst to join the IT SAP team at Yorkshire Water and be a part of helping Yorkshire Water to provide the best service to our customers.\nCould this be you?\nWhat we do:\nEveryone has an idea of what a water company does. Here in Yorkshire, we make sure that over 5.4 million people living in the region and the millions of people who visit our region each year, can rely on our services, and have clean and safe drinking water on tap and that their wastewater is taken away. But for us, it’s so much more than this. We look after communities, protect the environment, and plan to look after Yorkshire’s water, today, tomorrow 24/7, 365 days a year. We provide essential water and wastewater services to every corner of the Yorkshire region, and play a key role in the region’s health, wellbeing, and prosperity. New environmental legislation, unprecedented levels of investment and changing expectations from customers means that this is an exciting time to discover opportunities within the water industry. The IT SAP team are a key part of how we plan to meet the changing expectations of customers and regulators.\nThe SAP team is part of the IT function and plays a key role in optimising and transforming our SAP applications and associated Enterprise Systems. We support business areas such as Finance, HR, Procurement, Capital Delivery and Asset Maintenance/Management. Our team consists of functional and technical consultants, along with support related roles in Project Management, Business Analysis and Service Management, the SAP Business Analyst will play a key role in the SAP Business Analysis team driving business change and being a subject matter expert for business processes within this space.\nWhere you fit in:\nAs our SAP Business Analyst, you will:\n• Lead Business Analysis activities across multiple change initiatives, delivering high-quality requirements specifications for our customers and within the SAP technology landscape.\n• Translating business needs into specific requirements including UI design; Data models; Business process changes and Interface designs.\n• Apply best practice Requirements Engineering techniques, ensuring effective elicitation, analysis, validation, documentation, and traceability of requirements throughout the project lifecycle.\n• Gather and define business requirements using a range of elicitation methods, including stakeholder interviews, workshops, surveys, and collaborative sessions.\n• Produce and maintain AS-IS and TO-BE business process models, conducting gap analysis to identify improvements and support transition planning.\n• Build and manage strong relationships with stakeholders at all levels, ensuring effective communication and engagement throughout project delivery.\n• Facilitate and support User Acceptance Testing (UAT), ensuring solutions are thoroughly tested and meet agreed business requirements.\n• Work closely with project teams to deliver effective, fit-for-purpose solutions that align with business objectives and drive positive change.\n• Support continuous improvement initiatives by identifying opportunities to enhance processes, systems, and ways of working.\n• Ensure delivered solutions provide measurable business value and meet both operational and strategic requirements.\nWhat skills & qualifications you will need:\n• A business process background in at least one of the following areas:\n• HR and Payroll\n• Finance, Procurement or Capital Delivery\n• Enterprise Asset Maintenance/Management\n• Someknowledge of SAP application technologies and how best to exploit their use for business benefit (e.g. S/4 Hana, SuccessFactors, Concur, Ariba, BTP mobile etc)\n• Highly motivated and self-reliant with a personal drive for continuous development and able to demonstrate a strong customer service ethos, as well as a source of knowledge for others.\n• Ability to collect, evaluate and interpret information from multiple sources to identify and differentiate real user needs.\n• The ability to develop and maintain effective internal/external relationships atdifferentlevels within the organisation.\n• Creativity and lateralthinkingDemonstrates strong organisational skills, creativity, and lateral thinking.\n• Possess a strong sense of purpose and proactively seek responsibility and ownership.\n• Experience using Microsoft Visio to bring processes and ideas to life through clear visual documentation.\n• Experience within the water, wastewater or wider utilities sector would be advantageous.\n• A recognised Business Analysis qualification (such as BCS Business Analysis or Lean Six Sigma) would be welcomed.\n• Experience using Atlassian Confluence would be an advantage\n• Strong analytical and reasoning abilities\n• Previous experience using Azure DevOps and/or JIRA\nAlthough we operate 24 hours a day, 365 days a year",
+   "type": "",
+   "query": "SAP Business Analyst in the last week",
+   "key": "sapitbusinessanalyst|yorkshirewater",
+   "firstSeen": "2026-10-22T10:08:24+00:00",
+   "lastSeen": "2026-10-22T10:08:24+00:00",
+   "sources": [
+    "Google Jobs · JobLeads"
+   ]
+  },
+  {
    "title": "Junior SAP ECC MM Consultant — Logistics & Procurement",
    "company": "Market Cloud Ltd",
    "location": "Manchester",
@@ -68,6 +220,25 @@
    "lastSeen": "2026-10-21T10:05:43+00:00",
    "sources": [
     "Google Jobs · Learn4Good"
+   ]
+  },
+  {
+   "title": "SAP Analyst",
+   "company": "Sellick Partnership",
+   "location": "Manchester",
+   "pay": "",
+   "url": "https://uk.linkedin.com/jobs/view/sap-analyst-at-sellick-partnership-4477094486?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "2026-10-15",
+   "source": "Google Jobs · LinkedIn",
+   "sourceId": "ryRflJFiiwUxL4muAAAAAA==",
+   "snippet": "🔐 SAP GRC & Security Analyst\nManchester\nHybrid working - 3 days per week\nUp to £45k\nA leading organisation is looking for an experienced SAP Analyst with either experience in GRC & Security or a willingness to develop in this space to strengthen its security, access management and risk controls.\nYou’ll play a key role in providing independent oversight, expert challenge and assurance across\nSAP security, user access and Segregation of Duties (SoD).\nWhat you’ll be doing:\n🔹 Manage and enhance SAP GRC policies, standards and governance frameworks\n🔹 Review SAP roles and access models to ensure appropriate levels of access\n🔹 Support control testing, assurance and risk reporting\n🔹 Use data and analytics to identify risks, trends and opportunities for improvement\n🔹 Partner with Finance, Technology, Audit and business stakeholders\n🔹 Provide specialist advice and constructive challenge to strengthen the control environment\nWhat we’re looking for:\nYou’ll have good SAP experience and willingness to develop in SAP GRC Access Control, particularly:\n• Access Risk Analysis (ARA)\n• Access Request Management (ARM)\n• Emergency Access Management (EAM)\n• SAP security and user access management\n• Segregation of Duties (SoD) controls\nYou’ll also bring strong analytical skills, advanced Excel capability and excellent stakeholder management skills, with the confidence to challenge, influence and drive positive change.\n💼 Excellent opportunity | Competitive package | Career development\nIf you’re an SAP GRC professional looking for your next challenge, get in touch to find out more.\nSellick Partnership is proud to be an inclusive and accessible recruitment business and we support applications from candidates of all backgrounds and circumstances. Please note, our advertisements use years' experience, hourly rates, and salary levels purely as a guide and we assess applications based on the experience and skills evidenced on the CV. For information on how your personal details may be used by Sellick Partnership, please review our data processing notice on our website.",
+   "type": "",
+   "query": "SAP Business Analyst in the last week",
+   "key": "sapanalyst|sellickpartnership",
+   "firstSeen": "2026-10-22T10:08:24+00:00",
+   "lastSeen": "2026-10-22T10:08:24+00:00",
+   "sources": [
+    "Google Jobs · LinkedIn"
    ]
   },
   {
@@ -122,7 +293,7 @@
    "query": "IT Business Analyst",
    "key": "businessanalystexpert|ethos",
    "firstSeen": "2026-10-21T10:05:43+00:00",
-   "lastSeen": "2026-10-21T10:05:43+00:00",
+   "lastSeen": "2026-10-22T10:08:24+00:00",
    "sources": [
     "Jooble"
    ]
@@ -141,7 +312,7 @@
    "query": "SAP Ariba",
    "key": "financialbusinessanalystfar|gulfstream",
    "firstSeen": "2026-10-07T11:45:47+00:00",
-   "lastSeen": "2026-10-21T10:05:43+00:00",
+   "lastSeen": "2026-10-22T10:08:24+00:00",
    "sources": [
     "Jooble"
    ]
@@ -808,9 +979,10 @@
    "query": "SAP Business Analyst in the last week",
    "key": "sapsystemsanalyst|siemenshealthineers",
    "firstSeen": "2026-10-02T11:13:26+00:00",
-   "lastSeen": "2026-10-02T11:13:26+00:00",
+   "lastSeen": "2026-10-22T10:08:24+00:00",
    "sources": [
-    "Google Jobs · LinkedIn"
+    "Google Jobs · LinkedIn",
+    "Google Jobs · Jobs | Siemens Healthineers"
    ]
   },
   {
@@ -1397,7 +1569,7 @@
    "query": "SAP P2P",
    "key": "demoengineeringbusinessanalyst|pingidentity",
    "firstSeen": "2026-10-09T11:52:35+00:00",
-   "lastSeen": "2026-10-21T10:05:43+00:00",
+   "lastSeen": "2026-10-22T10:08:24+00:00",
    "sources": [
     "Jooble"
    ]

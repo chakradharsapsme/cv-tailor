@@ -1,16 +1,16 @@
 {
- "updated": "2026-10-22T10:08:24+00:00",
+ "updated": "2026-10-23T10:00:55+00:00",
  "sources": [
   "Jooble",
   "Google Jobs"
  ],
- "added": 9,
+ "added": 0,
  "errors": [],
  "usage": {
   "apify_month": "2026-10",
   "apify_results": 113,
-  "apify_spent_usd": 0.03,
-  "jooble_requests": 23
+  "apify_spent_usd": 0.06,
+  "jooble_requests": 24
  },
  "jobs": [
   {
@@ -84,7 +84,7 @@
    "query": "SAP Business Analyst",
    "key": "solarbessservicetechnicianaporsap|tesla",
    "firstSeen": "2026-10-22T10:08:24+00:00",
-   "lastSeen": "2026-10-22T10:08:24+00:00",
+   "lastSeen": "2026-10-23T10:00:55+00:00",
    "sources": [
     "Jooble"
    ]
@@ -312,7 +312,7 @@
    "query": "SAP Ariba",
    "key": "financialbusinessanalystfar|gulfstream",
    "firstSeen": "2026-10-07T11:45:47+00:00",
-   "lastSeen": "2026-10-22T10:08:24+00:00",
+   "lastSeen": "2026-10-23T10:00:55+00:00",
    "sources": [
     "Jooble"
    ]
@@ -1569,7 +1569,7 @@
    "query": "SAP P2P",
    "key": "demoengineeringbusinessanalyst|pingidentity",
    "firstSeen": "2026-10-09T11:52:35+00:00",
-   "lastSeen": "2026-10-22T10:08:24+00:00",
+   "lastSeen": "2026-10-23T10:00:55+00:00",
    "sources": [
     "Jooble"
    ]

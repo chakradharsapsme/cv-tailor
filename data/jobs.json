@@ -1,16 +1,16 @@
 {
- "updated": "2026-10-24T09:30:24+00:00",
+ "updated": "2026-10-25T09:47:05+00:00",
  "sources": [
   "Jooble",
   "Google Jobs"
  ],
- "added": 1,
+ "added": 0,
  "errors": [],
  "usage": {
   "apify_month": "2026-10",
   "apify_results": 113,
   "apify_spent_usd": 0.06,
-  "jooble_requests": 25
+  "jooble_requests": 26
  },
  "jobs": [
   {
@@ -27,7 +27,7 @@
    "query": "SAP S2P",
    "key": "sapgebutransformationcelead|ernstyoung",
    "firstSeen": "2026-10-24T09:30:24+00:00",
-   "lastSeen": "2026-10-24T09:30:24+00:00",
+   "lastSeen": "2026-10-25T09:47:05+00:00",
    "sources": [
     "Jooble"
    ]
@@ -103,7 +103,7 @@
    "query": "SAP Business Analyst",
    "key": "solarbessservicetechnicianaporsap|tesla",
    "firstSeen": "2026-10-22T10:08:24+00:00",
-   "lastSeen": "2026-10-24T09:30:24+00:00",
+   "lastSeen": "2026-10-25T09:47:05+00:00",
    "sources": [
     "Jooble"
    ]
@@ -312,7 +312,7 @@
    "query": "IT Business Analyst",
    "key": "businessanalystexpert|ethos",
    "firstSeen": "2026-10-21T10:05:43+00:00",
-   "lastSeen": "2026-10-24T09:30:24+00:00",
+   "lastSeen": "2026-10-25T09:47:05+00:00",
    "sources": [
     "Jooble"
    ]

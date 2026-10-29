@@ -1,16 +1,16 @@
 {
- "updated": "2026-10-28T11:18:34+00:00",
+ "updated": "2026-10-29T11:29:40+00:00",
  "sources": [
   "Jooble",
   "Google Jobs"
  ],
- "added": 9,
+ "added": 0,
  "errors": [],
  "usage": {
   "apify_month": "2026-10",
   "apify_results": 124,
-  "apify_spent_usd": 0.06,
-  "jooble_requests": 29
+  "apify_spent_usd": 0.09,
+  "jooble_requests": 30
  },
  "jobs": [
   {
@@ -483,7 +483,7 @@
    "query": "IT Business Analyst",
    "key": "businessanalystexpert|ethos",
    "firstSeen": "2026-10-21T10:05:43+00:00",
-   "lastSeen": "2026-10-25T09:47:05+00:00",
+   "lastSeen": "2026-10-29T11:29:40+00:00",
    "sources": [
     "Jooble"
    ]

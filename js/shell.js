@@ -8,7 +8,7 @@
 
   // ---------------- top bar ----------------
   const PAGES = [
-    ['Dashboard', '#/dashboard'], ['Jobs', '#/jobs'], ['Pipeline', '#/pipeline'], ['Interview prep', '#/prep'], ['Drill cards', '#/prep/drills'],
+    ['Dashboard', '#/dashboard'], ['What Applywise does', '#/home'], ['CV scanner (ATS score)', '#/scan'], ['Apply queue', '#/autopilot'], ['Jobs', '#/jobs'], ['Pipeline', '#/pipeline'], ['Interview prep', '#/prep'], ['Drill cards', '#/prep/drills'],
     ['Story bank', '#/prep/stories'], ['Career profile', '#/profile'], ['Settings', '#/settings'], ['Help and privacy', '#/help'], ['Plans and pricing', '#/pricing'], ['New application', '#/new']
   ];
   let jobsCache = null, sel = -1, results = [];

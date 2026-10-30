@@ -63,6 +63,25 @@
       .filter(m => (m.supportedGenerationMethods || []).includes('generateContent') && /gemini/i.test(m.name) && !/embedding|vision|tts|image|audio|live/i.test(m.name))
       .map(m => ({ id: m.name.replace(/^models\//, ''), name: m.displayName || m.name }));
   }
+  /** Newest first: higher version number wins; plain Flash beats Lite/Preview/Experimental. */
+  function rankGemini(list) {
+    const ver = id => { const m = /gemini-(\d+(?:\.\d+)?)/i.exec(id); return m ? parseFloat(m[1]) : 0; };
+    const pen = id => (/lite/i.test(id) ? 2 : 0) + (/preview|exp|latest/i.test(id) ? 1 : 0) + (/-\d{3,}$|-\d{2}-\d{4}$/.test(id) ? 0.5 : 0);
+    return list.slice().sort((a, b) => (ver(b.id) - ver(a.id)) || (pen(a.id) - pen(b.id)) || a.id.localeCompare(b.id));
+  }
+  function bestFlash(list) {
+    const r = rankGemini(list);
+    return r.find(m => /flash/i.test(m.id) && !/lite|preview|exp|thinking/i.test(m.id)) || r.find(m => /flash/i.test(m.id)) || r[0] || null;
+  }
+  const retired = e => /no longer available|has been (deprecated|retired|shut ?down)|is not found for API version|not supported for generateContent|models\/[\w.-]+ is not found/i.test(String(e && e.message)) || (e && e.status === 404);
+  async function replacementModel(key, current, message) {
+    const said = (/(?:use|to)\s+(?:models\/)?(gemini-[\w.-]+?)(?=[\s,.;)]|$)/i.exec(String(message || '')) || [])[1];
+    let list = [];
+    try { list = await listGemini(key); } catch (_) {}
+    if (said && (!list.length || list.some(m => m.id === said))) return said;
+    const pick = bestFlash(list.filter(m => m.id !== current));
+    return pick ? pick.id : said || '';
+  }
   async function geminiError(res) {
     let msg = res.status + ' ' + res.statusText;
     try { const j = await res.json(); if (j.error && j.error.message) msg = j.error.message; } catch (_) {}
@@ -70,6 +89,7 @@
     if (res.status === 429) msg = 'Gemini free-tier limit reached. Wait a minute (or until tomorrow for the daily limit) and try again.';
     const e = new Error(msg); e.status = res.status; return e;
   }
+  const noThinkCfg = new Set();
   async function askGemini({ key, model, system, user, maxTokens, signal }) {
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
       method: 'POST', signal,
@@ -79,10 +99,15 @@
         contents: [{ role: 'user', parts: [{ text: user }] }],
         // Gemini 2.5 "thinks" before answering and that counts against the output limit: keep thinking small so long answers fit.
         generationConfig: Object.assign({ responseMimeType: 'application/json', maxOutputTokens: Math.max(maxTokens * 2, 16384), temperature: 0.4 },
-          /2\.5/.test(model) ? { thinkingConfig: { thinkingBudget: /pro/i.test(model) ? 1024 : 0 } } : {})
+          /2\.5/.test(model) ? { thinkingConfig: { thinkingBudget: /pro/i.test(model) ? 1024 : 0 } } : /gemini-[3-9]/.test(model) && !noThinkCfg.has(model) ? { thinkingConfig: { thinkingLevel: 'low' } } : {})
       })
     });
-    if (!res.ok) throw await geminiError(res);
+    if (!res.ok) {
+      const err = await geminiError(res);
+      // A newer model may not accept the thinking setting: remember that and ask again without it.
+      if (res.status === 400 && /thinking/i.test(err.message) && !noThinkCfg.has(model)) { noThinkCfg.add(model); return askGemini({ key, model, system, user, maxTokens, signal }); }
+      throw err;
+    }
     const data = await res.json();
     const cand = (data.candidates || [])[0] || {};
     const text = ((cand.content || {}).parts || []).filter(p => !p.thought).map(p => p.text || '').join('');
@@ -148,7 +173,19 @@
     if (s.provider === 'chrome-ai') return askChromeAI(opts);
     if (s.provider === 'claude-plan') return askClaudePlan(opts);
     if (!s.geminiKey || !s.geminiModel) throw new Error('Add your free Gemini key and pick a model in Settings first.');
-    return askGemini({ ...opts, key: s.geminiKey, model: s.geminiModel, maxTokens: opts.maxTokens || 8000 });
+    const go = model => askGemini({ ...opts, key: s.geminiKey, model, maxTokens: opts.maxTokens || 8000 });
+    try { return await go(s.geminiModel); }
+    catch (e) {
+      // Google retires models (e.g. "gemini-2.5-flash is no longer available… use gemini-3.8-flash"): switch to a current one and retry once.
+      if (!retired(e)) throw e;
+      const next = await replacementModel(s.geminiKey, s.geminiModel, e.message);
+      if (!next || next === s.geminiModel) throw new Error('Google has retired the Gemini model ' + s.geminiModel + '. Open Settings → AI engine and pick a newer Flash model.');
+      const old = s.geminiModel;
+      s.geminiModel = next;
+      try { window.CVT.store.local.set('cvt.geminiModel', next); const st = window.CVT.ui && window.CVT.ui.state; if (st) { st.geminiModel = next; st.model = next; } } catch (_) {}
+      try { window.CVT.ui.toast(`Google retired ${old}. Switched to ${next}.`, 'warn'); } catch (_) {}
+      return go(next);
+    }
   }
 
   function parseJSON(text) {
@@ -1174,5 +1211,5 @@ ${STUDIO[kind]}`
     return [r.summary ? 'SUMMARY: ' + r.summary : '', r.text || ''].filter(Boolean).join('\n\n');
   }
 
-  window.CVT.agent = { thinkMap, thinkExpand, thinkTalk, THINK_FRAMES: Object.keys(FRAMES), responsibilities, advertItems, aiTells, appChat, employersFromCv, cvHistory, similarEmployers, loadPuter, chromeAIStatus, docStudio, myAnswer, docQuestions, docDigest, docMindmap, docAsk, describeImages, mockQuestion, mockGrade, storyDrafts, counterOffer, moreCards, listGemini, claudeSample, analyse, coverLetter, outreach, interviewPrep, answers, linkedin, parseJSON, profileBlock };
+  window.CVT.agent = { rankGemini, bestFlash, thinkMap, thinkExpand, thinkTalk, THINK_FRAMES: Object.keys(FRAMES), responsibilities, advertItems, aiTells, appChat, employersFromCv, cvHistory, similarEmployers, loadPuter, chromeAIStatus, docStudio, myAnswer, docQuestions, docDigest, docMindmap, docAsk, describeImages, mockQuestion, mockGrade, storyDrafts, counterOffer, moreCards, listGemini, claudeSample, analyse, coverLetter, outreach, interviewPrep, answers, linkedin, parseJSON, profileBlock };
 })();

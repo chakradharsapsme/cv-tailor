@@ -217,6 +217,14 @@
         break;
       } catch (_) {}
     }
+    // 3. Your Gmail job alerts (your own free Apps Script; see the Jobs page panel)
+    const G = window.CVT.gmail;
+    if (G && G.configured() && !(window.claude && window.claude.use)) {
+      try {
+        const d = await G.pull({ full: force === 'full' });
+        if (d) { added += mergeCollected(feed, d); robots.push({ id: 'gmail', name: 'Gmail', updated: d.updated, sources: ['LinkedIn, Indeed, CWJobs alerts and recruiter emails'], errors: [], count: d.jobs.length }); }
+      } catch (e) { if (force) throw e; }
+    }
     feed.robots = robots;
     await saveFeed(feed);
     collectedInfo = { ok: robots.length > 0, added, robots };
@@ -593,6 +601,7 @@
       </div>
       <div class="job-actions">
         ${j.status === 'imported' && j.appId ? html`<a class="btn small ghost" href="#/app/${j.appId}/job">Open</a>` : html`<button class="btn small primary" data-j="import" type="button">Tailor</button>`}
+        ${compact || (j.status === 'imported' && j.appId) || !window.CVT.aitools ? '' : (q => html`<button class="btn small ghost q-btn" data-j="queue" type="button" aria-pressed="${q}" title="Add to your apply queue: Autopilot prepares a CV and cover-letter kit for you to review">${q ? '✓ Queued' : '+ Queue'}</button>`)(window.CVT.aitools.queue().includes(j.key))}
         ${compact ? '' : html`<button class="btn small ghost" data-j="details" type="button">${j.jd ? 'Details' : 'Check match'}</button>
         <button class="icon-btn" data-j="hide" type="button" title="Not interested" aria-label="Not interested">✕</button>`}
       </div>
@@ -603,7 +612,7 @@
     const col = await syncCollected();
     const [feed, apps, profile, avail, ev] = await Promise.all([loadFeed(), S.listApps(), S.getProfile(), available(), evidence()]);
     const cfg = await searchesOf(feed);
-    const ui = Object.assign({ min: 0, days: 30, type: '', q: '', sort: 'score', showHidden: false, allRoles: false, src: '', kind: '', mode: '' }, S.local.get('cvt.jobsUi', {}));
+    const ui = Object.assign({ min: 0, days: 60, type: '', q: '', sort: 'score', showHidden: false, allRoles: false, src: '', kind: '', mode: '' }, S.local.get('cvt.jobsUi', {}));
     if (window.CVT._jobQuery) { ui.q = window.CVT._jobQuery; window.CVT._jobQuery = null; }
 
     root.innerHTML = String(html`
@@ -630,9 +639,9 @@
         <section class="panel jobs-feed">
           <div class="filters">
             <input id="f-q" type="search" placeholder="Filter by title, company, skill" value="${ui.q}" aria-label="Filter jobs">
-            <button class="btn ghost small f-toggle" type="button" id="f-toggle" aria-expanded="false">Filters${Number(ui.min) || ui.days != 30 || ui.kind || ui.mode || ui.allRoles || ui.sort !== 'score' ? ' •' : ''}</button>
+            <button class="btn ghost small f-toggle" type="button" id="f-toggle" aria-expanded="false">Filters${Number(ui.min) || ui.days != 60 || ui.kind || ui.mode || ui.allRoles || ui.sort !== 'score' ? ' •' : ''}</button>
             <label class="inline-field">Min match <select id="f-min">${[0, 40, 50, 60, 70].map(n => html`<option value="${n}" ${ui.min == n ? raw('selected') : ''}>${n ? n + '+' : 'Any'}</option>`)}</select></label>
-            <label class="inline-field">Posted <select id="f-days">${[[3, '3 days'], [7, '7 days'], [14, '14 days'], [30, '30 days'], [9999, 'Any time']].map(([v, l]) => html`<option value="${v}" ${ui.days == v ? raw('selected') : ''}>${l}</option>`)}</select></label>
+            <label class="inline-field">Posted <select id="f-days">${[[3, '3 days'], [7, '7 days'], [14, '14 days'], [30, '30 days'], [60, '60 days'], [9999, 'Any time']].map(([v, l]) => html`<option value="${v}" ${ui.days == v ? raw('selected') : ''}>${l}</option>`)}</select></label>
             <label class="check-line"><input id="f-all" type="checkbox" ${ui.allRoles ? raw('checked') : ''}> Show roles outside my field</label>
             <label class="inline-field">Sort <select id="f-sort"><option value="score" ${ui.sort === 'score' ? raw('selected') : ''}>Best match</option><option value="date" ${ui.sort === 'date' ? raw('selected') : ''}>Newest</option><option value="pay" ${ui.sort === 'pay' ? raw('selected') : ''}>Highest pay</option><option value="near" ${ui.sort === 'near' ? raw('selected') : ''}>Near me first</option></select></label>
             <label class="inline-field">Type <select id="f-kind">${[['', 'Any'], ['contract', 'Contract'], ['perm', 'Permanent']].map(([v, l]) => html`<option value="${v}" ${ui.kind === v ? raw('selected') : ''}>${l}</option>`)}</select></label>
@@ -660,6 +669,8 @@
             <p class="muted small">Works with careers pages hosted on Greenhouse, Lever, Ashby, SmartRecruiters, Workable, Recruitee, Personio, Teamtailor, Breezy and Rippling.</p>
             <div class="row gap wrap mt"><button class="btn small" id="s-save" data-s-save type="button">Save searches</button><button class="btn small ghost" id="s-auto" type="button">Rebuild from my titles and CV</button></div>
           </section>
+
+          <section class="panel gm-panel" id="gm-panel" aria-live="polite"></section>
 
           <section class="panel emp-panel" id="emp-panel" aria-live="polite"></section>
 
@@ -752,12 +763,18 @@
       window.CVT.ui.download(new Blob(['\ufeff' + lines.join('\r\n')], { type: 'text/csv' }), `Job_shortlist_${new Date().toISOString().slice(0, 10)}.csv`);
     });
 
+    if (window.CVT.aitools) window.CVT.aitools.queueBar(root);
     // ---- actions on a job ----
     $('#jb-list', root).addEventListener('click', async e => {
       const b = e.target.closest('[data-j]'); if (!b) return;
       const card = b.closest('[data-key]'); const key = card.dataset.key;
       const act = b.dataset.j;
       if (act === 'hide') { await setStatus(key, 'hidden'); card.remove(); toast('Hidden. It won’t come back.'); return; }
+      if (act === 'queue') {
+        const A = window.CVT.aitools;
+        if (!A.queue().includes(key) && A.queue().length >= 10) { toast('The queue holds up to 10 jobs. Prepare these first.', 'warn'); return; }
+        const on = A.toggleQueue(key); b.setAttribute('aria-pressed', String(on)); b.textContent = on ? '✓ Queued' : '+ Queue'; A.queueBar(root); return;
+      }
       if (act === 'import') {
         b.disabled = true; b.textContent = 'Adding…';
         try { await details(key).catch(() => null); const id = await importJob(key); toast('Added to your pipeline'); window.CVT.app.go(`#/app/${id}/job`); }
@@ -881,6 +898,7 @@
     // ---- careers sites linked to your CV ----
     const E = window.CVT.employers;
     const KIND = { greenhouse: 'Greenhouse', lever: 'Lever', ashby: 'Ashby', smartrecruiters: 'SmartRecruiters', workable: 'Workable', recruitee: 'Recruitee', personio: 'Personio', teamtailor: 'Teamtailor', breezy: 'Breezy', rippling: 'Rippling' };
+    if (window.CVT.gmail) window.CVT.gmail.panel($('#gm-panel', root), { onSync: async full => { collectedAt = 0; const r = await syncCollected(full ? 'full' : true); if (r && r.added) setTimeout(() => view(root), 1200); return r; } });
     const empBox = $('#emp-panel', root);
     let empBusy = '';
     async function drawEmployers(note = '') {
@@ -995,5 +1013,12 @@
     return { feed, items: items.slice(0, n), newCount: items.filter(r => r.j.status === 'new' && r.sc.score >= 60).length, total: items.length };
   }
 
-  window.CVT.jobs = { bestCv, evidence, isItRole, syncCollected, view, refresh, top, jobCard, details, importJob, setStatus, available, duplicates, companyIntel, intelCard, boards, termsIn, parsePay, parseSearch, parseDetails, rateCalc, resetEvidence, relTime, checkTop, errText };
+  /** Scored rows for chosen jobs (the apply queue), whatever their age or status. */
+  async function rowsFor(keys) {
+    const [feed, ev, apps] = await Promise.all([loadFeed(), evidence(), S.listApps()]);
+    const cfg = await searchesOf(feed);
+    return keys.map(k => feed.items[k]).filter(Boolean).map(j => ({ j, sc: score(j, ev, cfg.queries), dups: duplicates(j, apps) }));
+  }
+
+  window.CVT.jobs = { rowsFor, bestCv, evidence, isItRole, syncCollected, view, refresh, top, jobCard, details, importJob, setStatus, available, duplicates, companyIntel, intelCard, boards, termsIn, parsePay, parseSearch, parseDetails, rateCalc, resetEvidence, relTime, checkTop, errText };
 })();

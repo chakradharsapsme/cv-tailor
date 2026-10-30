@@ -22,9 +22,9 @@
     const s = state;
     try {
       if (s.provider === 'gemini') {
-        s.models = await A.listGemini(s.geminiKey);
+        s.models = A.rankGemini(await A.listGemini(s.geminiKey));
         if (!s.geminiModel || !s.models.some(m => m.id === s.geminiModel)) {
-          const pick = s.models.find(m => /flash/i.test(m.id) && !/lite|preview|exp/i.test(m.id)) || s.models.find(m => /flash/i.test(m.id)) || s.models[0];
+          const pick = A.bestFlash(s.models);
           s.geminiModel = pick ? pick.id : '';
           S.local.set('cvt.geminiModel', s.geminiModel);
         }
@@ -82,7 +82,7 @@
     main.replaceChildren(root);
     // Wide screens: illustrated helper cards in the empty side space (CSS hides them on smaller screens).
     try { if (window.CVT.art && window.CVT.art.rails) main.append(...window.CVT.art.rails(view || 'dashboard')); } catch (_) {}
-    const navKey = view === 'app' ? 'pipeline' : view === 'autopilot' ? 'dashboard' : (view || 'dashboard');
+    const navKey = view === 'app' ? 'pipeline' : view === 'autopilot' ? 'jobs' : view === 'home' ? 'dashboard' : (view || 'dashboard');
     $$('.nav a').forEach(a => { if (a.dataset.nav === navKey) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
     try {
       if (view === 'new') {
@@ -100,6 +100,8 @@
       else if (view === 'prep') await window.CVT.prep.view(root, id, tab);
       else if (view === 'help') await V.help(root);
       else if (view === 'pricing') await window.CVT.shell.pricing(root);
+      else if (view === 'scan') await window.CVT.aitools.scanView(root);
+      else if (view === 'home') await window.CVT.aitools.homeView(root);
       else if (view === 'profile') await V.profile(root);
       else if (view === 'settings') await V.settings(root);
       else await V.dashboard(root);
@@ -108,7 +110,7 @@
         const ph = root.querySelector(':scope > .page-head'), art = window.CVT.art && window.CVT.art.headArt ? window.CVT.art.headArt(view || 'dashboard') : '';
         if (ph && art && !ph.querySelector('.ph-art')) { ph.classList.add('hero-head'); ph.insertAdjacentHTML('beforeend', `<div class="ph-art" aria-hidden="true">${art}</div>`); }
       } catch (_) {}
-      const T = ({ app: 'Application', pipeline: 'Pipeline', jobs: 'Jobs', prep: 'Interview prep', autopilot: 'Autopilot', help: 'Help and privacy', profile: 'Career profile', settings: 'Settings', pricing: 'Plans and pricing' }[view] || 'Dashboard');
+      const T = ({ app: 'Application', pipeline: 'Pipeline', jobs: 'Jobs', prep: 'Interview prep', autopilot: 'Autopilot', help: 'Help and privacy', profile: 'Career profile', settings: 'Settings', pricing: 'Plans and pricing', scan: 'CV scanner', home: 'Applywise' }[view] || 'Dashboard');
       document.title = T + ' · Applywise';
       if (window.CVT.shell) window.CVT.shell.refresh(T);
     } catch (e) {

@@ -811,7 +811,7 @@
     body.innerHTML = String(html`
       <div class="panel-head bare">
         <p class="hint">Built only from your real experience. Practise answers out loud; aim for two minutes each.</p>
-        <div class="row gap">${iv ? html`<button class="btn ghost" id="cp-all" type="button">Copy as notes</button>` : ''}<button class="btn ${iv ? 'ghost' : 'primary'}" id="gen" type="button">${iv ? 'Prepare again' : 'Prepare for interview'}</button></div>
+        <div class="row gap">${iv ? html`<button class="btn ghost" id="cue-open" type="button" title="One-screen revision sheet for the last 10 minutes before the interview">🗂 Cue cards</button><button class="btn ghost" id="cp-all" type="button">Copy as notes</button>` : ''}<button class="btn ${iv ? 'ghost' : 'primary'}" id="gen" type="button">${iv ? 'Prepare again' : 'Prepare for interview'}</button></div>
       </div>
       <ol class="progress" id="prog" hidden></ol>
       <p class="error" id="err" role="alert" hidden></p>
@@ -834,6 +834,7 @@
       ` : html`<div class="empty-state"><p class="hint">Get a tailored pitch, 10–14 likely questions with STAR outlines from your CV, SAP topics to revise, gap handling, questions to ask, and a 90-day plan.</p></div>`}`);
 
     await window.CVT.prep.interviewExtras(ctx);
+    { const cue = $('#cue-open', body); if (cue) cue.addEventListener('click', () => window.CVT.aitools.openCueCards(a)); }
     $('#gen', body).addEventListener('click', async e => {
       const btn = e.currentTarget, err = $('#err', body); err.hidden = true;
       const st = progress($('#prog', body), ['Preparing questions and answers (30–90 s)']);

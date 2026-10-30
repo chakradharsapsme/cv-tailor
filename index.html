@@ -18,12 +18,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500;600&display=swap">
-<link rel="stylesheet" href="assets/styles.css?v=5.9.19">
+<link rel="stylesheet" href="assets/styles.css?v=5.9.21">
 </head>
 <body>
 <div class="shell">
   <aside class="side">
-    <a class="brand" href="#/dashboard" aria-label="Applywise home">
+    <a class="brand" href="#/home" aria-label="Applywise home">
       <span class="brand-mark" aria-hidden="true">Aw</span>
       <span><span class="brand-name">Applywise</span><span class="brand-sub">Apply smarter</span></span>
     </a>
@@ -33,6 +33,7 @@
     <nav class="nav" aria-label="Main">
       <a href="#/dashboard" data-nav="dashboard"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="3" width="6" height="6" rx="1.5"/><rect x="11" y="3" width="6" height="6" rx="1.5"/><rect x="3" y="11" width="6" height="6" rx="1.5"/><rect x="11" y="11" width="6" height="6" rx="1.5"/></svg><span class="lbl">Dashboard</span><span class="lbl-s">Home</span></a>
       <a href="#/jobs" data-nav="jobs"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5"/><path d="M12.3 12.3 17 17"/></svg><span class="lbl">Jobs</span><span class="lbl-s">Jobs</span> <span class="badge new" id="jobs-badge" hidden title="New strong matches">0</span></a>
+      <a href="#/scan" data-nav="scan"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 3h7l3 3v11H5z"/><path d="M8 9h4M8 12h4"/><circle cx="14.5" cy="14.5" r="2.5"/></svg><span class="lbl">CV scanner</span><span class="lbl-s">Scan</span></a>
       <a href="#/pipeline" data-nav="pipeline"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="3" width="4" height="14" rx="1.2"/><rect x="8.5" y="3" width="4" height="10" rx="1.2"/><rect x="14" y="3" width="3" height="6" rx="1.2"/></svg><span class="lbl">Pipeline</span><span class="lbl-s">Pipeline</span> <span class="badge" id="due-badge" hidden title="Actions due">0</span></a>
       <a href="#/prep" data-nav="prep"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 4.5h12v8H9l-3.5 3v-3H4z"/><path d="M7 8h6M7 10.5h4"/></svg><span class="lbl">Prep</span><span class="lbl-s">Prep</span> <span class="badge new" id="prep-badge" hidden title="Drill cards due">0</span></a>
       <a href="#/profile" data-nav="profile"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="7" r="3.2"/><path d="M4 17c.8-3.2 3.2-5 6-5s5.2 1.8 6 5"/></svg><span class="lbl">Career profile</span><span class="lbl-s">Profile</span></a>
@@ -41,7 +42,7 @@
     <div class="side-foot">
       <span class="pill" id="key-pill" data-state="missing">No API key</span>
       <p id="data-note">Your data stays in this browser. Nothing is submitted without you.</p>
-      <p><a class="side-link" href="#/help">Help and privacy</a> · <a class="side-link" href="#/pricing">Pricing</a></p>
+      <p><a class="side-link" href="#/home">About Applywise</a> · <a class="side-link" href="#/help">Help and privacy</a> · <a class="side-link" href="#/pricing">Pricing</a></p>
     </div>
   </aside>
   <div class="work">
@@ -64,7 +65,7 @@
     <main id="main" class="main" tabindex="-1"></main>
     <footer class="site-foot">
       <div class="sf-brand"><span class="brand-mark sm" aria-hidden="true">Aw</span><span><strong>Applywise</strong><span class="muted"> · Apply smarter. Land the right role.</span></span></div>
-      <nav class="sf-links" aria-label="Footer"><a href="#/help">Help and privacy</a><a href="#/pricing">Pricing</a><a href="#/settings">Settings</a><a href="privacy.html">Privacy policy</a><a href="terms.html">Terms</a><button type="button" class="linkish" id="sf-install" hidden>Install app</button><button type="button" class="linkish" id="sf-theme">Light / dark</button></nav>
+      <nav class="sf-links" aria-label="Footer"><a href="#/home">About</a><a href="#/scan">CV scanner</a><a href="#/help">Help and privacy</a><a href="#/pricing">Pricing</a><a href="#/settings">Settings</a><a href="privacy.html">Privacy policy</a><a href="terms.html">Terms</a><button type="button" class="linkish" id="sf-install" hidden>Install app</button><button type="button" class="linkish" id="sf-theme">Light / dark</button></nav>
       <p class="sf-note">Your data stays private to you. Nothing is submitted without your click.</p>
     </footer>
   </div>
@@ -72,42 +73,44 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/docx-preview@0.3.5/dist/docx-preview.min.js"></script>
-<script src="js/docx-engine.js?v=5.9.19"></script>
-<script src="js/agent.js?v=5.9.19"></script>
-<script src="js/store.js?v=5.9.19"></script>
-<script src="js/countries.js?v=5.9.19"></script>
-<script src="js/fields.js?v=5.9.19"></script>
-<script src="js/ui.js?v=5.9.19"></script>
-<script src="js/tasks.js?v=5.9.19"></script>
-<script src="js/sync.js?v=5.9.19"></script>
-<script src="js/autofill.js?v=5.9.19"></script>
-<script src="js/demo.js?v=5.9.19"></script>
-<script src="js/websources.js?v=5.9.19"></script>
-<script src="js/employers.js?v=5.9.19"></script>
-<script src="js/jobs.js?v=5.9.19"></script>
-<script src="js/drills.js?v=5.9.19"></script>
-<script src="js/prep.js?v=5.9.19"></script>
-<script src="js/cvparse.js?v=5.9.19"></script>
-<script src="js/community.js?v=5.9.19"></script>
-<script src="js/followup.js?v=5.9.19"></script>
-<script src="js/atlas.js?v=5.9.19"></script>
-<script src="js/thinkmap.js?v=5.9.19"></script>
-<script src="js/views.js?v=5.9.19"></script>
-<script src="js/workspace.js?v=5.9.19"></script>
-<script src="js/mindmap.js?v=5.9.19"></script>
-<script src="js/docs.js?v=5.9.19"></script>
-<script src="js/studio.js?v=5.9.19"></script>
-<script src="js/myqs.js?v=5.9.19"></script>
-<script src="js/autopilot.js?v=5.9.19"></script>
-<script src="js/shell.js?v=5.9.19"></script>
-<script src="js/layout.js?v=5.9.19"></script>
-<script src="js/pwa.js?v=5.9.19"></script>
-<script src="js/engine.js?v=5.9.19"></script>
-<script src="js/art.js?v=5.9.19"></script>
-<script src="js/quotes.js?v=5.9.19"></script>
-<script src="js/assistant.js?v=5.9.19"></script>
-<script src="js/welcome.js?v=5.9.19"></script>
-<script src="js/selftest.js?v=5.9.19"></script>
-<script src="js/app.js?v=5.9.19"></script>
+<script src="js/docx-engine.js?v=5.9.21"></script>
+<script src="js/agent.js?v=5.9.21"></script>
+<script src="js/store.js?v=5.9.21"></script>
+<script src="js/countries.js?v=5.9.21"></script>
+<script src="js/fields.js?v=5.9.21"></script>
+<script src="js/ui.js?v=5.9.21"></script>
+<script src="js/tasks.js?v=5.9.21"></script>
+<script src="js/sync.js?v=5.9.21"></script>
+<script src="js/autofill.js?v=5.9.21"></script>
+<script src="js/demo.js?v=5.9.21"></script>
+<script src="js/websources.js?v=5.9.21"></script>
+<script src="js/employers.js?v=5.9.21"></script>
+<script src="js/jobs.js?v=5.9.21"></script>
+<script src="js/gmailsync.js?v=5.9.21"></script>
+<script src="js/aitools.js?v=5.9.21"></script>
+<script src="js/drills.js?v=5.9.21"></script>
+<script src="js/prep.js?v=5.9.21"></script>
+<script src="js/cvparse.js?v=5.9.21"></script>
+<script src="js/community.js?v=5.9.21"></script>
+<script src="js/followup.js?v=5.9.21"></script>
+<script src="js/atlas.js?v=5.9.21"></script>
+<script src="js/thinkmap.js?v=5.9.21"></script>
+<script src="js/views.js?v=5.9.21"></script>
+<script src="js/workspace.js?v=5.9.21"></script>
+<script src="js/mindmap.js?v=5.9.21"></script>
+<script src="js/docs.js?v=5.9.21"></script>
+<script src="js/studio.js?v=5.9.21"></script>
+<script src="js/myqs.js?v=5.9.21"></script>
+<script src="js/autopilot.js?v=5.9.21"></script>
+<script src="js/shell.js?v=5.9.21"></script>
+<script src="js/layout.js?v=5.9.21"></script>
+<script src="js/pwa.js?v=5.9.21"></script>
+<script src="js/engine.js?v=5.9.21"></script>
+<script src="js/art.js?v=5.9.21"></script>
+<script src="js/quotes.js?v=5.9.21"></script>
+<script src="js/assistant.js?v=5.9.21"></script>
+<script src="js/welcome.js?v=5.9.21"></script>
+<script src="js/selftest.js?v=5.9.21"></script>
+<script src="js/app.js?v=5.9.21"></script>
 </body>
 </html>

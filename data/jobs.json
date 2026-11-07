@@ -1,18 +1,398 @@
 {
- "updated": "2026-11-06T12:54:44+00:00",
+ "updated": "2026-11-07T11:41:33+00:00",
  "sources": [
   "Jooble",
   "Google Jobs"
  ],
- "added": 0,
+ "added": 20,
  "errors": [],
  "usage": {
   "apify_month": "2026-10",
-  "apify_results": 124,
+  "apify_results": 144,
   "apify_spent_usd": 0.09,
-  "jooble_requests": 38
+  "jooble_requests": 39
  },
  "jobs": [
+  {
+   "title": "Senior Technical Business Analyst - Equities / Trade Processing",
+   "company": "Pontoon",
+   "location": "Bromley",
+   "pay": "",
+   "url": "https://www.reed.co.uk/jobs/senior-technical-business-analyst-equities-trade-processing/57540628?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "2026-11-07",
+   "source": "Google Jobs · reed.co.uk",
+   "sourceId": "XkkDQ_KmaoiGoNsCAAAAAA==",
+   "snippet": "Job Tittle: Senior Technical Business Analyst - Equities / Trade Processing\nLocation: Bromley\nContract: 12 months\nDay Rate: Circa £750/Day\nWorking Arrangement: 4 days per week in the office for the first 6 months, moving to 3 days per week thereafter, subject to review.\nJob Type: Full-time\nThe Opportunity\nWe are seeking an experienced Senior Technical Business Analyst to join a leading investmen\nt banking environment, supporting a range of strategic technology initiatives within the Prime Finance and Equities business.\nThis is an exciting opportunity to work on large-scale capital markets projects, including settlement programmes, alongside ongoing enhancements to the bank's existing trade processing platforms.\nThe successful candidate will play a key role in bridging the gap between business stakeholders and technical delivery teams, taking ownership of requirements and driving projects through the full delivery lifecycle.\nEssential Skills and Experience\n• 10+ years' experience as a Business Analyst or Technical Business Analyst within investment banking or capital markets.\n• Strong hands-on experience in equities trading or securities trade processing.\n• Excellent understanding of the end-to-end securities trade lifecycle.\n• Experience delivering complex technology projects within financial services.\n• Strong SQL skills, including writing complex queries and working with multiple database joins.\n• Proven ability to translate business requirements into detailed technical specifications.\n• Experience working closely with developers, business stakeholders and QA teams - involve in testing (Selenium)\n• Strong communication, analytical and stakeholder management skills.\n• A proactive, self-motivated approach with the ability to work independently at a senior or lead level.\n• Hands-on experience using Jira for backlog management, user stories, defect tracking and management reporting.\n• Ability to work independently, manage competing priorities and deliver against a large project backlog.\nDesirable Experience\n• Exposure to settlement programmes.\n• Knowledge of post-trade processing, settlements, reconciliation and confirmation.\n• Experience with automated testing tools, particularly Plenum.\n• Familiarity with the bank's internal trade processing systems (Gloss).\n• Understanding of GL postings, accounting entries and position management.\n• Exposure to MQ and SFTP technologies.\n• Experience working in Agile delivery environments.\n• Key Responsibilities\n• Lead business analysis activities across complex capital markets and trade processing projects.\n• Gather, analyse and document business and technical requirements.\n• Develop detailed functional and technical specifications for development teams.\n• Demonstrate strong understanding of the end-to-end securities trade lifecycle, particularly equities.\n• Work closely with developers to translate business requirements into technical solutions.\n• Collaborate with QA teams throughout testing, implementation and deployment.\n• Support enhancements to trade processing platforms and straight-through processing (STP).\n• Engage with global business stakeholders and technology teams.\n• Independently lead workstreams and drive delivery without requiring close supervision.\nWhy Join?\nYou will have the opportunity to contribute to major capital markets transformation initiatives, working with global business and technology teams while influencing improvements to critical equity trade processing platforms.\nPontoon is an employment consultancy. We put expertise, energy, and enthusiasm into improving everyone's chance of being part of the workplace. We respect and appreciate people of all ethnicities, generations, religious beliefs, sexual orientations, gender identities, and more. We do this by showcasing their talents, skills, and unique experience in an inclusive environment that helps them thrive. If you require reasonable adjustments at any stage, please let us know and we will be happy to support you\nWe use generative AI tools to support our candidate screening process. This helps us ensure fair, consistent, and efficient experience for all applicants. Rest assured, all final decisions are made by our hiring team, and your application will be reviewed with care and attention.",
+   "type": "",
+   "query": "IT Business Analyst in the last week",
+   "key": "seniortechnicalbusinessanalystequitiestradeprocessing|pontoon",
+   "firstSeen": "2026-11-07T11:41:33+00:00",
+   "lastSeen": "2026-11-07T11:41:33+00:00",
+   "sources": [
+    "Google Jobs · reed.co.uk"
+   ]
+  },
+  {
+   "title": "IT Business Analyst Project Coordinator",
+   "company": "Ariat Europe Limited",
+   "location": "Croydon (+9 others)",
+   "pay": "",
+   "url": "https://www.totaljobs.com/job/it-business-analyst-project-coordinator/ariat-europe-limited-job108295751?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "2026-11-06",
+   "source": "Google Jobs · Totaljobs",
+   "sourceId": "8LYJCjKCnOk4jASCAAAAAA==",
+   "snippet": "Job title: IT Business Analyst & Project Coordinator\nDepartment: IT\nLocation: Princes Manor Barn, Harwell, Oxfordshire – office based 3 days\nReports to: Senior IT Manager, Infrastructure & Applications, Ariat Europe\nJob Details:\nAriat Europe is looking for a proactive, organised and collaborative IT Business Analyst & Project Coordinator to help connect our European business teams with our gl\nobal IT organisation. This is a varied, hands-on role combining business analysis, project coordination, system improvements and day-to-day collaboration with stakeholders across the business.\nYou will work with colleagues to understand business needs, document requirements, coordinate projects and system changes, support testing and help ensure that solutions are delivered effectively. The role offers the opportunity to build experience across business processes, applications and technology, working closely with global IT teams and business stakeholders.\nWe are looking for someone who is comfortable switching between tasks, takes ownership, asks thoughtful questions and enjoys helping people solve problems. You do not need to be a deep technical specialist or an experienced project manager, but you should have a genuine interest in how systems and technology support business operations.\nDay to Day Responsibilities:\nBusiness analysis and requirements\n• Work with teams across Customer Service, Sales, Finance, Operations and other functions to understand business needs and identify opportunities for improvement.\n• Gather, analyse and document requirements, user stories, process flows and acceptance criteria in a clear and practical way.\n• Help map current processes, identify pain points and support the definition of improved ways of working.\n• Act as a link between business users and technical teams, ensuring that requirements and expectations are understood.\nProject and change coordination\n• Coordinate IT projects and smaller initiatives from discovery through delivery, tracking actions, milestones, dependencies, risks and decisions.\n• Maintain project plans, status updates, meeting notes and action logs, keeping stakeholders informed of progress and potential issues.\n• Work with global IT teams and business stakeholders to support delivery against agreed priorities and timelines.\n• Help assess and document change requests, supporting prioritisation based on business value, urgency, effort and impact.\n• Take ownership of assigned tasks and follow up proactively to keep work moving.\nSystems, testing and continuous improvement\n• Support user acceptance testing (UAT), including preparing test scenarios, coordinating business participation, recording defects and tracking outcomes.\n• Help investigate application or process issues by gathering examples, documenting symptoms and coordinating with the appropriate technical teams.\n• Work with colleagues to validate fixes and changes before release and support post-implementation checks.\n• Identify opportunities to improve processes, reduce manual work and make better use of existing systems and technology.\n• Maintain clear documentation so that requirements, decisions and solutions can be understood and reused.\nGlobal IT and stakeholder collaboration\n• Build positive working relationships with European business teams and colleagues across the global IT organisation.\n• Represent European business needs while supporting global standards, shared solutions and consistent ways of working.\n• Communicate clearly with both technical and non-technical audiences, adapting the level of detail to the audience.\n• Support training, communications and change adoption where required.\nRequired experience:\n• Typically +3 years’ experience in business analysis, IT project coordination, business systems, application support or a similar role.\n• Strong organisation and coordination skills, with the ability to manage multiple tasks and maintain a clear sense of priority.\n• Excellent problem-solving skills and the confidence to investigate issues, ask questions and seek solutions under pressure.\n• Clear written and verbal communication skills, with the ability to work effectively with people across different teams and levels.\n• A proactive, helpful and friendly approach, with strong interpersonal skills and a willingness to collaborate.\n• Good attention to detail and the ability to turn discussions and information into clear requirements, actions and documentation.\n• An interest in business applications, integrations and how technology supports end-to-end business processes.\n• Ability to take ownership of tasks, follow through on commitments and raise risks or blockers early.\nDesirable experience:\n• Exposure to SAP or another ERP/business application.\n• Experience using Jira, Smartsheet or similar tools for task, project or change tracking.\n• Involvement in user acceptance testing, requirements gathering, process mapping or system enhancements.\n• Experience working with distributed teams or within a global organisation.\n• Familiarity with project management or business analysis methods; formal qualifications are welcome but not essential\n• Strong communication\n• Confident using data to evaluate activity and inform decisions.\n• The ability to travel without restrictions to mainland Europe and the US\n• Ability to drive in the UK\n• Confident working independently and taking ownership of projects.\n• Collaborative and comfortable working across multiple functions.\n• Adaptable and comfortable managing competing priorities.\n• Results-oriented, with a focus on delivering measurable impact.\nValues:\nOur values are ingrained in everything we do at Ariat and we believe this is what drives our success as individuals, as teams and, overall, as a Company.\nInnovation - Be bold and adventurous and try new things. Constantly challenge how you can create change for the better. Learn from the past and don’t let it limit you.\nIntegrity - Do the right thing because it’s the right thing to do. Say what y",
+   "type": "",
+   "query": "IT Business Analyst in the last week",
+   "key": "itbusinessanalystprojectcoordinator|ariateurope",
+   "firstSeen": "2026-11-07T11:41:33+00:00",
+   "lastSeen": "2026-11-07T11:41:33+00:00",
+   "sources": [
+    "Google Jobs · Totaljobs"
+   ]
+  },
+  {
+   "title": "ServiceNow Business Analyst - SC Cleared",
+   "company": "Hays",
+   "location": "London",
+   "pay": "£670 per day",
+   "url": "https://www.hays.co.uk/job-detail/servicenow-business-analyst---sc-cleared-london_4843341?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "2026-11-06",
+   "source": "Google Jobs · Hays",
+   "sourceId": "-w6xExOer-AGlRXyAAAAAA==",
+   "snippet": "Your new company\nI'm looking for an experienced ServiceNow Business Analyst to join a well-known organisation on a contract basis. The role requires active SC Cleared candidates and anyone without one will unfortunately not be considered. The rate is £670 per day inside IR35. A large part of the role is remote working with the occasional travel into the London office.\nYour new role\nI'm looking fo\nr a technically focused ServiceNow Business Analyst who holds an active SC Clearance.\n• Strong ServiceNow BA experience\n• CSDM experience is essential\n• Good technical understanding of CMDB, service modelling and ServiceNow architecture/data structures\n• Able to translate technical/business requirements into user stories and acceptance criteria\n• Comfortable working closely with ServiceNow developers, architects and technical teams\n• Government experience and security clearance advantageous\nWhat you'll get in return\nFlexible working options available.\nWhat you need to do now\nIf you're interested in this role, click 'apply now' to forward an up-to-date copy of your CV, or call us now.\nIf this job isn't quite right for you, but you are looking for a new position, please contact us for a confidential discussion on your career. #4843341 - Nisha Pandoria",
+   "type": "",
+   "query": "IT Business Analyst in the last week",
+   "key": "servicenowbusinessanalystsccleared|hays",
+   "firstSeen": "2026-11-07T11:41:33+00:00",
+   "lastSeen": "2026-11-07T11:41:33+00:00",
+   "sources": [
+    "Google Jobs · Hays"
+   ]
+  },
+  {
+   "title": "Business Analyst – MIFID",
+   "company": "Hays",
+   "location": "London",
+   "pay": "£500-£700 per day",
+   "url": "https://www.hays.co.uk/job-detail/business-analyst-%E2%80%93-mifid--london_4843514?jobSource=HaysGCJ&utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "2026-11-06",
+   "source": "Google Jobs · Hays",
+   "sourceId": "cTRQtvoRT3hvbOs3AAAAAA==",
+   "snippet": "I am currently recruiting for a leading Financial Services organisation who require an experienced Business Analyst to support a major regulatory and technology change programme within financial markets. The role requires someone highly organised and methodical, with strong regulatory BA experience, excellent documentation skills and the ability to work effectively across senior business and techn\nology stakeholders.\nKey Details\n• Day rate: Up to £700pd inside IR35\n• Duration: Initial 12 months\n• Location: Central London, 3 days in office/ hybrid working\nKey Responsibilities & Requirements\n• Strong Business Analysis experience within financial services / financial markets\n• Proven regulatory change experience, ideally MiFID II / MiFID or FCA-led programmes\n• Ability to translate complex regulation into clear business and technology requirements\n• Excellent documentation, requirements gathering and analytical skills\n• Strong stakeholder management and communication across Business, Technology, Legal and Compliance\n• Highly methodical, organised and self-sufficient, with the ability to deliver at pace\n• Market data, equities or market infrastructure experience desirable\nIf you're interested in this role, click 'apply now' to forward an up-to-date copy of your CV, or call us now.\nIf this job isn't quite right for you, but you are looking for a new position, please contact us for a confidential discussion about your career.\n#LI-DNI\n#4843514 - Liam Cornelius-Rumsey",
+   "type": "",
+   "query": "IT Business Analyst in the last week",
+   "key": "businessanalystmifid|hays",
+   "firstSeen": "2026-11-07T11:41:33+00:00",
+   "lastSeen": "2026-11-07T11:41:33+00:00",
+   "sources": [
+    "Google Jobs · Hays"
+   ]
+  },
+  {
+   "title": "Business Analyst - DV Cleared",
+   "company": "LA International",
+   "location": "Basingstoke",
+   "pay": "",
+   "url": "https://www.lainternational.com/careers/business-analyst-dv-cleared-united-kingdom-la000151632_1793981434-29179?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "2026-11-06",
+   "source": "Google Jobs · LA International",
+   "sourceId": "2o4Exstv8GoxmrjTAAAAAA==",
+   "snippet": "Business Analyst\nMust have an Active DV Clearance\nBusiness Analyst Responsibilities\n- Engage with MOD stakeholders, end-users and Product Owners to gather functional and non-functional requirements.\n- Translate complex operational requirements into user stories, acceptance criteria and prioritised backlog items.\n- Manage and refine product backlogs to support Agile Scrum and SAFe delivery.\n- Fa\ncilitate requirements workshops, stakeholder discussions and alignment sessions.\n- Support SAFe PI Planning, identifying feature dependencies, enabler stories and business value.\n- Develop process maps, data models and requirements traceability documentation.\n- Analyse existing legacy processes and design improved future-state workflows.\n- Collaborate with multidisciplinary delivery teams to ensure requirements are understood and implemented.\n- Identify gaps, dependencies and risks affecting business requirements and delivery.\n- Maintain accurate documentation using Jira, Confluence or Azure DevOps.\nBusiness Analyst Skills and Experience\n- Extensive of Business Analyst or Business SME experience.\n- Proven requirements elicitation, analysis and documentation experience.\n- Strong experience writing user stories, acceptance criteria and managing Agile backlogs.\n- Experience working within Agile Scrum and SAFe delivery environments.\n- Proficiency with Jira, Confluence or Azure DevOps.\n- Strong process mapping, data modelling and requirements traceability skills.\n- Understanding of software development lifecycles and digital transformation.\n- Experience supporting PI Planning, backlog refinement and Agile delivery ceremonies.\n- Excellent stakeholder engagement, workshop facilitation and communication skills.\n- Ability to translate complex operational requirements into structured specifications.\n- Experience working within MOD, Defence or secure Government environments would be advantageous.\n- NVQ Level 3 or equivalent qualification.\n- BCS Business Analysis or IIBA certification.\n- SAFe Product Owner/Product Manager (POPM) or equivalent Agile certification would be advantageous.\n- Must meet applicable UK Government security, nationality and residency requirements and have the right to work in the UK.\nTo apply, please send your CV by pressing the apply button.\nDue to high volume of applications, only shortlisted CVs will be contacted.\nDue to the nature and urgency of this post, candidates holding or who have held high level security clearance in the past are most welcome to apply. Please note successful applicants will be required to be security cleared prior to appointment which can take a minimum 18 weeks. LA International is an award-winning partner of choice for many of the world's most influential companies and government organisations. Holding Enhanced Government Security Accreditation, we are recognised as the European market leader in the delivery of Security Cleared talent to organisations that demand the very highest levels of security, compliance and assurance.\nAn award-winning organisation, having secured the prestigious Queens Award for Enterprise: International Trade over multiple years. We are committed to fostering an inclusive, equitable and accessible workplace where everyone feels valued and supported. We welcome applications from all individuals, regardless of background or identity, and we encourage candidates who may not meet every listed requirement to still apply. If you require any adjustments or support during the recruitment process, please let us know and we will work with you to ensure a fair and accessible experience.\nPlease Note: If a high volume of applications is received, only candidates shortlisted will be contacted.",
+   "type": "",
+   "query": "IT Business Analyst in the last week",
+   "key": "businessanalystdvcleared|lainternational",
+   "firstSeen": "2026-11-07T11:41:33+00:00",
+   "lastSeen": "2026-11-07T11:41:33+00:00",
+   "sources": [
+    "Google Jobs · LA International"
+   ]
+  },
+  {
+   "title": "SAP (SAC) Business Analyst",
+   "company": "The British Standards Institution (BSI)",
+   "location": "Greater London",
+   "pay": "",
+   "url": "https://jobs.accaglobal.com/job/14256877/sap-sac-business-analyst/?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "2026-11-06",
+   "source": "Google Jobs · ACCA Careers - ACCA Global",
+   "sourceId": "Uh4loI23qoiJfhIVAAAAAA==",
+   "snippet": "We exist to create positive change for people and the planet. Join us and make a difference too!\nJob Title: SAP Analytics Cloud (SAC) Business Analyst\nLocation: Covent Garden - Hybrid\nContract: 12-month Fixed Term Contract\nAbout the role:\nBSI is embarking on a major global Finance Transformation, including the implementation of SAP Analytics Cloud (SAC) Planning as part of our wider SAP S/4HA\nNA programme.\nWe are looking for a SAP Analytics Cloud (SAC) Business Analyst to help bridge the gap between our Finance teams and the technology and implementation teams delivering the programme.\nSAC will become a key platform for BSI's FP&A and Commercial Finance teams, supporting budgeting, forecasting and long-range planning. This role will help ensure the solution not only works technically, but is ready for Finance teams to use successfully as it is deployed across BSI.\nYou will work closely with FP&A, Commercial Finance, regional Finance teams, Deloitte and the wider transformation programme to understand business requirements, support solution design, coordinate testing and data validation, prepare users for deployment and support adoption following go-live.\nThis is very much a Finance Transformation role rather than a BAU Finance position. You will have the opportunity to gain hands-on experience of a major global SAC implementation, working across multiple deployment waves and supporting Finance teams through significant process and system change.\nResponsibilities:\n• Develop a strong understanding of BSI's new SAP Analytics Cloud Planning solution and how it will support FP&A and Commercial Finance.\n• Work with Finance stakeholders to gather, challenge, document and validate business and functional requirements.\n• Help translate Finance requirements into clear functional specifications for Deloitte and technology delivery teams.\n• Support the design of future-state SAC processes covering budgeting, forecasting, rolling forecasts and long-range planning.\n• Support the design and validation of SAC planning models, dimensions, hierarchies, workflows, approval structures, planning calendars and security requirements.\n• Help define the readiness and success criteria that must be achieved before SAC is deployed into each country or region.\n• Support deployment activities across multiple global rollout waves, ensuring Finance teams, processes, data and systems are ready for go-live.\n• Plan and coordinate User Acceptance Testing (UAT), including developing test scenarios, scripts and acceptance criteria.\n• Work directly with Finance users to ensure the system has been thoroughly tested ahead of deployment. System readiness, user testing and training for each deployment were identified as core priorities for the role during the briefing.\n• Support data mapping, migration, validation and reconciliation between existing and future Finance systems.\n• Log, track and support the resolution of defects alongside Deloitte and wider programme teams.\n• Develop training materials, user documentation and work instructions and support end-user training and onboarding.\n• Support change management and business readiness activities, building relationships with Finance super-users and champions across BSI.\n• Provide post-go-live hyper-care and help ensure new SAC processes become successfully embedded within the Finance community.\n• Support the ongoing administration and continuous improvement of SAC following implementation.\nTo Be Successful in the Role, You Will Have:\n• At least 5 years' experience within FP&A, Commercial Finance, Finance Transformation, Finance Systems or Business Analysis.\n• Previous experience working directly with FP&A or Finance Business Partnering teams, with a strong understanding of their processes and requirements. This was identified as particularly important during the hiring-manager briefing.\n• Good knowledge of budgeting, forecasting, planning and management reporting processes.\n• Experience documenting business processes and translating Finance requirements into functional requirements or specifications.\n• Experience supporting a Finance system implementation, transformation or migration programme.\n• Hands-on SAP Analytics Cloud experience would be highly advantageous; experience with SAP S/4HANA, SAC or a comparable enterprise planning platform will also be considered.\n• Experience moving from one budgeting or planning system to another would be particularly valuable, as it provides first-hand understanding of the user and change journey involved.\n• Experience planning and executing UAT, including developing testing scenarios and working with end users.\n• Strong stakeholder management and facilitation skills with the ability to work across Finance, Technology and implementation teams.\n• Strong analytical and problem-solving capabilities and the ability to manage multiple workstreams within a complex transformation programme.\n• Experience with Oracle HFM would be beneficial.\n• An accountancy qualification such as CIMA, ACA or ACCA, or equivalent, would be advantageous.\nBSI offers a competitive total reward package, an independent and varied job in an international environment, flexible working hours, ongoing training and development with the inclusion of 27-days annual leave, paid sick leave, bank holidays, health insurance, life insurance, pension plan with company contribution, car allowance (dependent on role), income protection, paid maternity leave, paid paternity leave, paid parental leave, adoption leave, compassionate leave, paid bereavement leave, learning and development opportunities, and a wide range of flexible benefits that you can tailor to suit your lifestyle.\nDo you believe the world deserves excellence?\nWe are proud to be the business improvement company for other organisations to become more sustainable and resilient and finally to inspire trust in their products, systems, services, and the world we live in.\nHeadquartered in London, BSI is the world's first nation",
+   "type": "",
+   "query": "SAP Business Analyst in the last week",
+   "key": "sapsacbusinessanalyst|thebritishstandardsinstitutionbsi",
+   "firstSeen": "2026-11-07T11:41:33+00:00",
+   "lastSeen": "2026-11-07T11:41:33+00:00",
+   "sources": [
+    "Google Jobs · ACCA Careers - ACCA Global"
+   ]
+  },
+  {
+   "title": "SAP Sales & Distribution Functional Analyst",
+   "company": "0201 CSC Computer Sciences Ltd",
+   "location": "Milton Keynes",
+   "pay": "",
+   "url": "https://uk.jobrapido.com/jobpreview/7383241403591032832?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "2026-11-06",
+   "source": "Google Jobs · Jobrapido",
+   "sourceId": "RBse4HO8lwtZse6uAAAAAA==",
+   "snippet": "Job Description:\nSAP Sales & Distribution Functional Analyst\nAbout the role\nWe’re looking for an SAP Sales & Distribution (SD) Functional Analyst to join our team and play an important role in supporting and improving SAP solutions for our client.\nThis is a great opportunity for someone with hands-on experience in SAP SD who enjoys understanding how a business works, talking to users, solving\nproblems and finding practical ways to make processes better.\nYou’ll work closely with both business users and technical teams, helping to understand what people need from SAP and turning those needs into effective solutions. You’ll be involved in everything from day-to-day support and troubleshooting through to configuration, testing, process improvements, and new developments.\nYou don’t need to know everything from day one. We’re particularly interested in someone who is curious, willing to learn and keen to broaden their SAP knowledge into other Logistics areas over time.\nDue to the nature of the client environment, eligibility for security clearance is required for this role. To meet the current security requirements, candidates must be sole UK nationals and have lived and worked continuously in the UK for the past five years. Unfortunately, we are unable to consider dual nationals for this position.\nWhat you'll be doing\n• Working with business users to understand their requirements, challenges and day-to-day processes.\n• Using your SAP SD knowledge to identify practical solutions that meet business needs.\n• Helping to map current processes and design improved AS-IS and TO-BE processes.\n• Configuring SAP and translating business requirements into clear functional specifications.\n• Supporting the resolution of SAP SD issues, working closely with both users and technical colleagues.\n• Helping to identify opportunities to improve existing processes and make better use of SAP.\n• Creating and carrying out test scenarios to make sure changes work as expected.\n• Supporting users through changes, including providing training and guidance where needed.\n• Working with colleagues and sharing your knowledge to help others develop their SAP skills.\n• Contributing to projects, enhancements and other SAP-related initiatives.\n• Being open to learning and supporting other areas of SAP and Logistics functionality as your experience develops.\nWhat we're looking for\nWe’re looking for someone who has:\n• Relevant hands-on experience working with SAP Sales & Distribution (SD).\n• Experience in business analysis, business solutions or a similar role.\n• A good understanding of business processes and how SAP can support and improve them.\n• Experience supporting users through business process changes or improvements.\n• Experience working with both business and technical teams to resolve issues.\n• Good analytical and problem-solving skills.\n• The ability to listen, ask the right questions and turn business requirements into practical solutions.\n• Experience creating and executing test scenarios.\n• Strong written and verbal communication skills.\n• The confidence to explain technical concepts in a way that makes sense to non-technical audiences.\n• A willingness to learn, develop and broaden your SAP knowledge.\nAn SAP certification would be great, but it isn't essential. We're also happy to support someone who is keen to work towards certification.\nA degree or equivalent experience is preferred.\nThe kind of person who will enjoy this role\nYou’ll enjoy this role if you like getting to the bottom of a problem rather than simply fixing the symptom.\nYou’ll be comfortable speaking with different people across a business, from end users to technical specialists, and enjoy understanding what they need and finding a way to make things work.\nWe’re looking for someone who is approachable, curious and solutions-focused, with the confidence to take ownership while knowing when to ask for help.\nThings don't always go to plan in SAP, so being able to manage changing priorities, stay calm when there are competing demands and work through problems logically is important.\nMost importantly, we're looking for someone who wants to develop their skills and grow with the role, rather than someone who already knows everything.\nWhere you'll work\nThis is primarily a work-from-home role, giving you the flexibility to work remotely while remaining closely connected with the wider team and client.\nThere may be occasional travel to client sites for meetings, workshops or other business requirements.\nFrom time to time, there may also be a requirement to work outside standard hours, including occasional weekends, depending on client and project requirements.\nWhy join us?\nThis is more than a role focused purely on keeping SAP running. You'll have the opportunity to work directly with users, understand real business challenges and see the impact of the solutions you help deliver.\nIn addition, DXC offers a competitive salary and a flexible benefits package designed to support you both professionally and personally — including pension, private medical cover, and wellbeing programmes.\nYou'll also have the opportunity to develop your SAP skills, gain exposure to wider Logistics functionality, and build your experience across both functional and business-facing areas.\nAt DXC Technology, we believe strong connections and community are key to our success. Our work model prioritizes in-person collaboration while offering flexibility to support wellbeing, productivity, individual work styles, and life circumstances. We’re committed to fostering an inclusive environment where everyone can thrive.",
+   "type": "",
+   "query": "SAP Business Analyst in the last week",
+   "key": "sapsalesdistributionfunctionalanalyst|0201csccomputersciences",
+   "firstSeen": "2026-11-07T11:41:33+00:00",
+   "lastSeen": "2026-11-07T11:41:33+00:00",
+   "sources": [
+    "Google Jobs · Jobrapido"
+   ]
+  },
+  {
+   "title": "Business Analyst (Agile Product Team), Defence & Security",
+   "company": "Undisclosed Company",
+   "location": "Greater London",
+   "pay": "",
+   "url": "https://jobs.accaglobal.com/job/14253372/business-analyst-agile-product-team-defence-and-security/?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "2026-11-05",
+   "source": "Google Jobs · ACCA Careers - ACCA Global",
+   "sourceId": "TLjuYXTyRp8nOKJwAAAAAA==",
+   "snippet": "DV Cleared Business Analyst / Product Analyst\nLocations: Bristol, London or Manchester\nSecurity Clearance: DV Cleared is essential\nThe Opportunity\nAre you an experienced Business Analyst or Product Analyst looking to work on complex, high-impact programmes within the Defence and National Security sector?\nWe're seeking talented analysts to join multidisciplinary teams delivering innovative digi\ntal products and...\nDV Cleared Business Analyst / Product Analyst\nLocations: Bristol, London or Manchester\nSecurity Clearance: DV Cleared is essential\nThe Opportunity\nAre you an experienced Business Analyst or Product Analyst looking to work on complex, high-impact programmes within the Defence and National Security sector?\nWe're seeking talented analysts to join multidisciplinary teams delivering innovative digital products and services that support critical government and security operations. This is an opportunity to work alongside Product Owners, User Researchers, Designers, Architects and Engineers to solve challenging problems and deliver meaningful outcomes for end users.\nWhat You'll Be Doing\nAs part of an agile product team, you'll play a key role in shaping, defining and delivering user-centred digital solutions.\nKey responsibilities include:\n• Working closely with Product Owners, users and stakeholders to define product vision, requirements and measurable outcomes.\n• Analysing current user journeys, business processes and system capabilities to identify opportunities for improvement.\n• Mapping end-to-end user flows, business processes and system interactions.\n• Translating user needs and business requirements into well-defined user stories and acceptance criteria.\n• Supporting backlog management and prioritisation to maximise value delivery.\n• Collaborating with design and engineering teams to ensure a shared understanding of requirements.\n• Supporting testing and quality assurance activities to ensure solutions meet user needs and business objectives.\n• Using data and insights to inform product decisions, prioritisation and continuous improvement.\nWhat We're Looking For\nWe're looking for individuals who are naturally curious, collaborative and comfortable working in complex environments.\nEssential Experience\n• Experience working as a Business Analyst or Product Analyst within agile delivery teams.\n• Strong requirements gathering, analysis and documentation skills.\n• Proven ability to translate user needs into user stories, acceptance criteria and actionable product requirements.\n• Experience facilitating workshops and engaging with a range of stakeholders.\n• Strong analytical and problem-solving capabilities.\n• Knowledge of agile methodologies such as Scrum, Kanban or SAFe.\n• Experience using tools such as Jira, Confluence or GitLab.\n• Ability to manage priorities and work effectively in fast-paced delivery environments.\n• Excellent communication and stakeholder management skills.\nDesirable Experience\n• Defence, National Security or Central Government project experience.\n• Process modelling experience (BPMN or similar).\n• Experience working within multidisciplinary digital product teams.\n• Knowledge of user-centred design principles and digital service delivery.\nIf you receive suspicious outreach claiming to be from us, please contact us via the ManpowerGroup website.",
+   "type": "",
+   "query": "IT Business Analyst in the last week",
+   "key": "businessanalystagileproductteamdefencesecurity|undisclosedcompany",
+   "firstSeen": "2026-11-07T11:41:33+00:00",
+   "lastSeen": "2026-11-07T11:41:33+00:00",
+   "sources": [
+    "Google Jobs · ACCA Careers - ACCA Global"
+   ]
+  },
+  {
+   "title": "Senior Business Analyst",
+   "company": "Leo Technology Limited",
+   "location": "Surrey",
+   "pay": "",
+   "url": "https://www.itjobswatch.co.uk/jv/Leo-Technology-Limited/Senior-Business-Analyst-Job-London-South-East-England-UK-55pa3q?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "2026-11-05",
+   "source": "Google Jobs · IT Jobs Watch",
+   "sourceId": "tAdI-_MgwqVxoRgBAAAAAA==",
+   "snippet": "Role Overview:\nRole: Senior Business Analyst\nSalary: £60,000-£70,000 p/a\nLocation: Fully remote (Note - candidates must be UK based)\nThe Opportunity:\nOur client is a multi-award winning Fintech SaaS business who help SME businesses take control of their finances through simple, effective accounting software, supported by real accountants.\nThey're now looking for an experienced Senior Busines\ns Analyst to join their Transformation & Product team, playing a key role in delivering technical and business transformation across the organisation.\nThis is a particularly technical Business Analyst role, sitting at the intersection of business and software engineering. You'll be responsible for identifying and translating complex business and technical requirements, mapping system integrations and data flows, and driving improvements across business processes and platforms.\nYou'll work across multiple software projects and technical initiatives, supporting everything from regulatory change and system improvements through to new platform capabilities. There's also a real opportunity to explore how AI, machine learning and automation can be used to improve the customer experience and streamline internal operations.\nAlongside your own project delivery, you'll help drive the wider Business Analysis function, providing guidance and mentorship to less experienced BAs.\nKey Responsibilities:\n• Business Analysis & Technical Delivery\n• AI, Automation & Transformation\n• Stakeholder & Supplier Management\n• Team Development\nWhat We're Looking For:\nEssential Experience\n• Proven experience in a Business Analyst role within a SaaS or software development environment\n• Strong technical understanding, particularly around API integrations\n• Demonstrable experience in business process analysis, technical system mapping and business process modelling\n• Experience analysing complex systems, data integrations, workflows and technical requirements\n• Experience working in fast-paced, Agile environments\n• Good understanding of Agile methodologies and the software development lifecycle\n• Experience working closely with software engineering teams and translating business requirements into technical specifications\n• A relevant Business Analysis qualification, such as BCS Business Analysis certification (desirable)\nImportant Notice:\nWe are expecting a high volume of applications for this role and while we do our best to respond to as many applicants as we can, it isn't always possible to get back to everyone. With this in mind, if you've not heard from a member of our team within 2 weeks of submitting your CV, please assume that your application has not been successful on this occasion.\nBoth Leo Technology and the companies we partner with are incredibly passionate about building environments where people from all backgrounds and walks of life are embraced. Our mission is to welcome everyone and create inclusive teams. We celebrate difference and encourage people from all backgrounds to apply.\nLeo Technology Limited is acting as an Employment Agency in relation to this vacancy. To understand more about what we do with your data please review our privacy policy in the privacy section of the Leo Technology website.",
+   "type": "",
+   "query": "IT Business Analyst in the last week",
+   "key": "seniorbusinessanalyst|leotechnology",
+   "firstSeen": "2026-11-07T11:41:33+00:00",
+   "lastSeen": "2026-11-07T11:41:33+00:00",
+   "sources": [
+    "Google Jobs · IT Jobs Watch"
+   ]
+  },
+  {
+   "title": "Business Analyst SAP S​/HANA and Rights & Royalties",
+   "company": "Confidential",
+   "location": "London",
+   "pay": "£55,000-£90,000 per year",
+   "url": "https://www.learn4good.com/jobs/london/uk/info_technology/5587119746/e/?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "2026-11-05",
+   "source": "Google Jobs · Learn4Good",
+   "sourceId": "8sMHhd-w81VFd_eBAAAAAA==",
+   "snippet": "Position: Business Change Analyst – (SAP S/4HANA and Rights & Royalties)\nLocation: Greater London\nBusiness Change Analyst - (SAP S/4\nHANA and Rights & Royalties)\nSAP - Rights & Royalties Integration\nWhitehall Resources is looking for an experienced SAP Consultant to support business processes and integration between SAP and a separate rights and royalties management platform.\nKey responsibilit\nies\n• Gather requirements across licensing, royalty and financial processes\n• Define data flows and integration requirements between SAP and the external platform.\n• Support data mapping, reconciliation, testing and issue resolution.\n• Work closely with business stakeholders, technical teams and software providers.\nRequired experience\n• Strong SAP functional or integration background.\n• Knowledge of Rightsline or a comparable standalone platform, such as FADEL.\n• Understanding of licensing agreements, royalty calculations and financial settlement.\n• Experience connecting SAP with third-party business applications.\n• Media, publishing or entertainment experience would be advantageous.\nAll of our opportunities require that applicants are eligible to work in the specified country/location, unless otherwise stated in the job description.\nWhitehall Resources are an equal opportunities employer who value a diverse and inclusive working environment. All qualified applicants will receive consideration for employment without regard to race, religion, gender identity or expression, sexual orientation, national origin, pregnancy, disability, age, veteran status, or other characteristics.",
+   "type": "",
+   "query": "SAP Business Analyst in the last week",
+   "key": "businessanalystsapshanaandrightsroyalties|confidential",
+   "firstSeen": "2026-11-07T11:41:33+00:00",
+   "lastSeen": "2026-11-07T11:41:33+00:00",
+   "sources": [
+    "Google Jobs · Learn4Good"
+   ]
+  },
+  {
+   "title": "SAP PP/MM Business Analyst - Manufacturing & Supply Chain. Job in North West London Gecko Jobs",
+   "company": "Asset Resourcing",
+   "location": "London",
+   "pay": "",
+   "url": "https://geckojobs.co.uk/jobs/sap-pp-mm-business-analyst-manufacturing-supply-chain-north-west-london-london/3055340759-2/?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "2026-11-05",
+   "source": "Google Jobs · Gecko Jobs",
+   "sourceId": "nAvlzRT5skOBzE6OAAAAAA==",
+   "snippet": "SAP PP/MM Business Analyst: Manufacturing & Supply Chain\nLondon (4 days per week in the office) | Permanent | £70,000 to £90,000 + bonus\nThe opportunity:\nOur client is a global process manufacturer with plants worldwide. They run SAP ECC today and are converting to S/4HANA (brownfield). Discovery completes at the end of 2026, with go-live planned for late 2027.\nYou will be the main IT partner\nto plant...\nHTLZ1_UKTJ",
+   "type": "",
+   "query": "SAP Business Analyst in the last week",
+   "key": "sapppmmbusinessanalystmanufacturingsupplychainjobinnorthwestlondongeckojobs|assetresourcing",
+   "firstSeen": "2026-11-07T11:41:33+00:00",
+   "lastSeen": "2026-11-07T11:41:33+00:00",
+   "sources": [
+    "Google Jobs · Gecko Jobs"
+   ]
+  },
+  {
+   "title": "Business Analyst: Azure Cloud Transformation- London",
+   "company": "FDM Group",
+   "location": "London",
+   "pay": "",
+   "url": "https://careers.fdmgroup.com/vacancies/3288/business-analyst-azure-cloud-transformation-london.html?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "2026-11-04",
+   "source": "Google Jobs · FDM Group",
+   "sourceId": "yDPdB8d4_1tTwP4kAAAAAA==",
+   "snippet": "About The Role\nFDM is a global business and technology consultancy seeking a Business Analyst with active SC to work for our client within the public sector. This is initially a 6 month contract with the potential to extend and will be a hybrid role that will be based in London.\nWe are looking for an experienced Business Analyst to support a major Azure cloud transformation programme. The organis\nation is moving away from multiple existing platforms towards a more consolidated Azure-based environment.\nThe Business Analyst will work across infrastructure, architecture and business teams to understand the existing landscape, gather requirements and support the transition to the new operating model. The role will have a strong focus on discovery, platform migration, cloud adoption and the business change required to embed new ways of working.\nThe successful candidate will need to be comfortable moving between business and technical conversations and will play an important role in ensuring the migration delivers practical business outcomes.\nResponsibilities\n• Lead discovery activity across the current infrastructure and platform estate.\n• Work with infrastructure teams to understand existing platforms, services, processes and dependencies.\n• Gather and document business, technical and operational requirements for the Azure environment.\n• Support the consolidation and migration of existing platforms into a more unified cloud environment.\n• Map current-state processes, systems, integrations and user journeys.\n• Define future-state processes and support the development of the new cloud operating model.\n• Work with cloud architects and technical teams to translate business requirements into solution requirements.\n• Identify migration risks, dependencies, data considerations and operational impacts.\n• Support the creation and rollout of the cloud adoption strategy.\n• Help teams transition from existing processes and platforms into the new Azure environment.\n• Engage senior stakeholders and subject-matter experts across technology and the wider business.\n• Facilitate workshops covering requirements, migration planning, adoption and operating model changes.\n• Develop options, recommendations and high-level summaries for senior stakeholders.\n• Support prioritisation, roadmap development and delivery planning.\n• Ensure that requirements remain clear, traceable and aligned with the programme’s intended outcomes.\nAbout You\n• Active SC\n• Strong experience working as a Business Analyst on cloud, infrastructure or platform transformation programmes.\n• Practical experience supporting Microsoft Azure projects.\n• Previous involvement in cloud migration, platform consolidation or infrastructure modernisation.\n• Experience working with cloud, infrastructure and enterprise architecture teams.\n• Strong discovery, requirements-gathering and process-mapping skills.\n• Ability to understand technical architecture and translate it into clear business language.\n• Experience documenting current-state and future-state operating models.\n• Strong stakeholder-management and workshop-facilitation skills.\n• Experience supporting organisational change and the adoption of new technology.\n• Ability to manage multiple requirements, dependencies and stakeholder groups within a complex programme.\nAbout Us\nFDM is an award-winning global leader in tech and business talent solutions, backed by more than 35 years of industry experience. We have centres across Europe, North America, and Asia-Pacific, and a global workforce of over 2500 employees. FDM has shown exponential growth throughout the years, firmly establishing itself as an award-winning employer, currently listed on the FTSE4Good Index and as a 2026 Financial Times UK ‘Best Employer’.\nDiversity and Inclusion\nFDM Group is an equal opportunity employer, and all qualified applicants will receive consideration for employment without regard to race, colour, religion, sex, sexual orientation, national origin, age, disability, veteran status or any other status protected by federal, provincial or local laws.\nWhy join us\n• Career coaching, mentoring and access to upskilling throughout your entire FDM career\n• Assignments with global companies and opportunities to work abroad\n• Opportunity to re-skill and up-skill into new areas, develop non-linear career paths and build a skillset within your field\n• Annual leave and work-place pension",
+   "type": "",
+   "query": "IT Business Analyst in the last week",
+   "key": "businessanalystazurecloudtransformationlondon|fdm",
+   "firstSeen": "2026-11-07T11:41:33+00:00",
+   "lastSeen": "2026-11-07T11:41:33+00:00",
+   "sources": [
+    "Google Jobs · FDM Group"
+   ]
+  },
+  {
+   "title": "Business Analyst",
+   "company": "ERGO | Munich Re | MEAG",
+   "location": "London",
+   "pay": "",
+   "url": "https://careers.munichre.com/en/job/london/business-analyst/3342/46618707008?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "2026-11-04",
+   "source": "Google Jobs · Munich Re",
+   "sourceId": "m_Amslqgewu4qxKbAAAAAA==",
+   "snippet": "Responsibilities:\n• Elicit, analyse, validate, document, manage and explain business requirements based on project objectives.\n• Provide Business Analysis expertise in insurance domain.\n• Communicate regularly with stakeholders and manage stakeholder needs.\n• Overcome project impediments and report regularly on progress.\n• Contribute to project, programme and product backlogs, roadmaps and priorit\nisation activities where appropriate.\n• Perform analysis using appropriate tools and techniques.\n• Provide timely updates on opportunities, risks, issues and progress.\n• Produce and manage business requirements, user stories and acceptance criteria from undefined and unstructured information on strategic projects and programmes.\n• Any additional duties and responsibilities\nKnowledge and Skills\n• Exposure to related growth initiatives, global change and technology.\n• Experience working across multiple business functions, products or lines of business.\n• Experience of complex eco-systems / system integrations.\n• Knowledge of insurance policy administration, policy lifecycles and workflows.\n• Skilled at meeting facilitation and presentation.\n• Strong time management skills.\n• Understanding of the requirements lifecycle.\n• Must thrive in a fast-paced, time-compressed and dynamic environment.\n• Excellent communication and stakeholder management skills.\n• Ability to work independently and take responsibility for delivery of requirements.\n• Business Situation Analysis\n• Plans, manages and investigates business situation analysis where there is significant ambiguity and complexity.\n• Understanding of Business problems and investigating root causes.\n• Advises on the approach and techniques to be used for business situation analysis. Ensures holistic view adopted to identify and analyse wide-ranging problems and opportunities.\n• Engages and collaborates with a wide range of stakeholders, including those at the management level. Gains agreement from stakeholders to conclusions and recommendations.\n• Requirements Definition and Management\n• Plans and drives scoping, requirements definition and prioritisation activities for large, complex initiatives.\n• Selects, adopts and adapts appropriate requirements definition and management methods, tools and techniques.\n• Obtains input from, and agreement to requirements from a diverse range of stakeholders. Negotiates with stakeholders to manage competing priorities and conflicts.\n• Establishes requirements baselines. Ensures changes to requirements are investigated and managed.\nIf you are excited about this role but your experience does not align perfectly with everything outlined, or you don’t meet every requirement, we encourage you to apply anyway. You might just be the candidate we are looking for!",
+   "type": "",
+   "query": "IT Business Analyst in the last week",
+   "key": "businessanalyst|ergomunichremeag",
+   "firstSeen": "2026-11-07T11:41:33+00:00",
+   "lastSeen": "2026-11-07T11:41:33+00:00",
+   "sources": [
+    "Google Jobs · Munich Re"
+   ]
+  },
+  {
+   "title": "SAP S/4HANA Supply Chain Business Analyst - Hybrid",
+   "company": "People First",
+   "location": "London",
+   "pay": "£44,000-£63,000 per year",
+   "url": "https://www.jobleads.com/gb/job/sap-s-4hana-supply-chain-business-analyst-hybrid--greater-london--e8d4d290a7afba96ac4f5cdebdc76d3f7?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "2026-11-04",
+   "source": "Google Jobs · JobLeads",
+   "sourceId": "-Zd_qC9rZouEDDSSAAAAAA==",
+   "snippet": "People First in London is seeking a SAP S/4HANA Business Analyst in Supply Chain for a 6-month PAYE contract, with hybrid working in London. The role offers an hourly rate of up to GBP39 and a 37.5-hour week.\nYou will run discovery workshops, capture requirements, model processes and ensure SAP data and file flows are well-integrated across systems, collaborating with Product Owners and Solution\nArchitects to confirm scope before build.",
+   "type": "",
+   "query": "SAP Business Analyst in the last week",
+   "key": "saps4hanasupplychainbusinessanalysthybrid|peoplefirst",
+   "firstSeen": "2026-11-07T11:41:33+00:00",
+   "lastSeen": "2026-11-07T11:41:33+00:00",
+   "sources": [
+    "Google Jobs · JobLeads"
+   ]
+  },
+  {
+   "title": "SAP B1 ERP Specialist: End-to-End Process & Control",
+   "company": "Orphalan SA",
+   "location": "Leatherhead",
+   "pay": "£65,000-£90,000 per year",
+   "url": "https://www.jobleads.com/gb/job/sap-b1-erp-specialist-end-to-end-process-control--greater-london--edee8095929c7a15c58c5fc9e4aa44d10?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "2026-11-04",
+   "source": "Google Jobs · JobLeads",
+   "sourceId": "1uKcSwDNOxjDujppAAAAAA==",
+   "snippet": "Orphalan SA is seeking a hands-on SAP B1 System Specialist to transform SAP B1 into an integrated ERP and operational control system across Finance, Supply Chain, Commercial, Legal, Quality and Technology.\nYou will design, configure, and embed end-to-end business processes in SAP B1, ensuring it becomes the reliable system of record for purchasing, inventory, order-to-cash, payments, close and ma\nnagement reporting.",
+   "type": "",
+   "query": "SAP Business Analyst in the last week",
+   "key": "sapb1erpspecialistendtoendprocesscontrol|orphalansa",
+   "firstSeen": "2026-11-07T11:41:33+00:00",
+   "lastSeen": "2026-11-07T11:41:33+00:00",
+   "sources": [
+    "Google Jobs · JobLeads"
+   ]
+  },
+  {
+   "title": "Senior SAP Business Analyst - Workstream Manager",
+   "company": "Experis UK",
+   "location": "London",
+   "pay": "",
+   "url": "https://topdorsetcareers.co.uk/jobs/senior-sap-business-analyst-workstream-manager-city-of-london-london/3049951751-2/?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "2026-11-02",
+   "source": "Google Jobs · Top Dorset Careers",
+   "sourceId": "nmJKyOHhictUfcVWAAAAAA==",
+   "snippet": "Senior Business Analyst (SAP) - Workstream Lead\nLondon canary wharf 2-3 days per week\n12 months\n£700 per day inside IR35 - Umbrella only\nRole overview:\nOur Client is hiring a Senior SAP Business Analyst / Workstream Lead for a major European transformation programme, supporting complex change across cross-domain areas. This is a client-facing, delivery-focused role where you'll lead design ac\ntivities, translate business needs into clear technology outcomes, and guide a team of business analysts from insight through to delivery.\nWhat you'll be doing:\n• Lead design activities and contribute expertise to complex, cross-domain topics\n• Drive and coordinate business analysis across the delivery lifecycle\n• Act as the primary bridge between business stakeholders and technology teams\n• Lead a team of business analysts and ensure quality of outputs\n• Support transformation work involving SAP as the primary technology platform, with connected custom-built applications for trading and shipping\nWhat you'll bring:\n• Proven experience as a Business Analyst / Industry Consultant, with deep oil industry knowledge, particularly midstream\n• Strong ability to apply your expertise to complex change-bringing clarity and structure to ambiguity\n• Experience working effectively with both business stakeholders and technology teams\n• Hands-on experience in SAP ECC (with no expectation for you to configure or build)\n• Leadership capability to guide other business analysts and keep workstreams moving\nIf you're ready to take ownership of a critical workstream in a high-impact transformation, we'd love to hear from you. Apply now to be considered.\nIf you receive suspicious outreach claiming to be from us, please contact us via the ManpowerGroup website.",
+   "type": "",
+   "query": "SAP Business Analyst in the last week",
+   "key": "seniorsapbusinessanalystworkstreammanager|experis",
+   "firstSeen": "2026-11-07T11:41:33+00:00",
+   "lastSeen": "2026-11-07T11:41:33+00:00",
+   "sources": [
+    "Google Jobs · Top Dorset Careers"
+   ]
+  },
+  {
+   "title": "Salesforce Technical Business Analyst - Financial Services",
+   "company": "Sterlings",
+   "location": "London",
+   "pay": "£60,000-£65,000 per year",
+   "url": "https://uk.linkedin.com/jobs/view/salesforce-technical-business-analyst-financial-services-at-sterlings-4483988493?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "2026-11-01",
+   "source": "Google Jobs · LinkedIn",
+   "sourceId": "2OXWDeOBcUleKAC4AAAAAA==",
+   "snippet": "Sterlings are currently looking to speak with experienced Technology Saleforce Business Analysts for an opportunity within a collaborative, customer-focused technology environment.\nThis is an excellent opportunity for a Business Analyst who enjoys working at the heart of an Agile delivery team, bridging the gap between business stakeholders and technology to ensure products and solutions deliver\nmeaningful business value.\nThe Role\nYou'll play a key role within a cross-functional delivery squad, working closely with the Product Owner, Software Engineers, QA Engineers, UX Designers and business stakeholders.\nActing as a critical link between business and technology, you'll help shape business problems, define priorities and translate product objectives into clear, actionable requirements that are ready for development.\nKey Responsibilities\n• Partner closely with the Product Owner to shape product vision, challenge assumptions and translate business needs into delivery-ready work.\n• Investigate complex business problems, understand customer journeys and identify opportunities for improvement.\n• Create and manage Epics, User Stories and clear, testable Acceptance Criteria.\n• Lead backlog refinement and Three Amigos sessions across Product, Engineering and Quality.\n• Ensure requirements are well-defined, prioritised and aligned with sprint goals.\n• Work closely with stakeholders to support decision-making and maintain delivery momentum.\n• Use delivery metrics and business insight to support prioritisation, sequencing and continuous improvement.\n• Ensure regulatory, governance and compliance requirements are understood and reflected in delivery.\n• Support Agile ceremonies and deputise for the Product Owner when required.\nWhat We're Looking For\n• Strong experience as a Business Analyst, within an Agile delivery environment.\n• Strong Salesforce experience. Salesforce cloud/service cloud, highly beneficial.\n• Excellent stakeholder management, communication and influencing skills.\n• Proven ability to analyse complex business problems, identify root causes and develop practical solutions.\n• Experience creating Epics, User Stories and Acceptance Criteria.\n• Technical understanding, including the ability to interpret interface definitions and use basic SQL or data analysis tools.\n• Good understanding of systems architecture principles.",
+   "type": "",
+   "query": "IT Business Analyst in the last week",
+   "key": "salesforcetechnicalbusinessanalystfinancialservices|sterlings",
+   "firstSeen": "2026-11-07T11:41:33+00:00",
+   "lastSeen": "2026-11-07T11:41:33+00:00",
+   "sources": [
+    "Google Jobs · LinkedIn"
+   ]
+  },
+  {
+   "title": "SAP S/4HANA Business Analyst Supply Chain. Job in London The Sun Jobs",
+   "company": "People First (Recruitment) Ltd",
+   "location": "London",
+   "pay": "£39 per hour",
+   "url": "https://jobs.thesun.co.uk/jobs/sap-s-4hana-business-analyst-supply-chain-london/3043613761-2/?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "2026-11-01",
+   "source": "Google Jobs · The Sun Jobs",
+   "sourceId": "2jjxOK6CbJBJdc6VAAAAAA==",
+   "snippet": "Ref: 23587\nJob Title: SAP S/4HANA Business Analyst Supply Chain\nThe Skills You'll Need: SAP S/4HANA, SAP IBP, BA\nYour New Salary: UP TO 39 per hour\nLocation: London\n6 months Temporary agency worker (PAYE) with possibility of extension\nHybrid\nWorking hours: 37.5 hours\nWhat You'll be Doing:\n• Lead discovery workshops, stakeholder interviews and requirements-gathering sessions; document decisions,\nassumptions and outcomes.\n• Elicit, analyse and validate business and functional requirements; translate them into clear user stories and testable acceptance criteria.\n• Model current-state and future-state business processes using workflows, BPMN, SIPOC and user journeys; coordinate stakeholder review and sign-off.\n• Analyse and document SAP data and file flows, integration touchpoints, dependencies and impacts across systems.\n• Capture existing and future Master Data requirements across a range products and materials.\n• Work with Product Owners and Solution Architects to clarify scope, assess options, challenge assumptions and confirm requirements before build.\nThe Skills You'll Need to Succeed:\n• Hands-on business analysis experience, including independently gathering and documenting requirements.\n• Experience with SAP systems particularly S4-Hana, IBP and MDG.\n• Experience with modelling tools such as Signavio, Visio, Lucidchart or any other BPMN tool.\n• Experience in Supply Chain, Operations and Logistics.\n• Experience creating process models, workflows, user stories, acceptance criteria and business requirements documentation.\n• Familiarity with project delivery, user acceptance testing, data mapping and file-based integrations.\nIf your application is successful, you will be contacted within 7 days. We regret that due to the high volume of applications we receive we cannot provide feedback on individual CVs. Please note that we can only consider candidates who are eligible to work in the UK and are able to provide relevant supporting documentation.\nPeople First (Recruitment) Limited acts as an employment agency for permanent and fixed term contract recruitment and as an employment business for the supply of temporary workers. By applying for this job you accept our Terms and Privacy Policy which can be found on our website.",
+   "type": "",
+   "query": "SAP Business Analyst in the last week",
+   "key": "saps4hanabusinessanalystsupplychainjobinlondonthesunjobs|peoplefirstrecruitment",
+   "firstSeen": "2026-11-07T11:41:33+00:00",
+   "lastSeen": "2026-11-07T11:41:33+00:00",
+   "sources": [
+    "Google Jobs · The Sun Jobs"
+   ]
+  },
+  {
+   "title": "SAP Systems Analyst - S/4HANA Transformation",
+   "company": "The Manchester Airports Group",
+   "location": "London",
+   "pay": "",
+   "url": "https://www.jobijoba.co.uk/detail/92/f15c336fa0ceae953b4b699607cfe7a2?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "2026-11-01",
+   "source": "Google Jobs · Jobijoba UK",
+   "sourceId": "mu6C-VQXTEwdg_qEAAAAAA==",
+   "snippet": "SAP Systems Analyst – S/4HANA Transformation2-Year Fixed Term ContractManchester Airport / Hybrid WorkingWhy MAG?At MAG we provide the airport facilities and travel services that people need to connect with the world. As the largest UK owned airport operator, we serve over 60 million passengers a year from Manchester, London Stansted, and East Midlands Airports. With over 270 destinations across t\nhe globe, our businesses not only bring people together but also support the prosperity of the regions in which we operate.Sustainability is one of our core values, and it shapes everything we do. We're committed to protecting the environment and supporting our local communities through decarbonisation, skills and employment programmes, and community engagement initiatives.At MAG, we recognise that creating a first-class journey for our customers starts by creating a first-class career journey for our colleagues. We are committed to building inclusive environments in which our people can thrive.You'll also have access to some great benefits including:Bonus scheme10% company contribution pension25 days holiday plus bank holidaysFree onsite parkingSubsidised public transportHuge range of company discounts2 volunteering days per yearFree Virtual GP service, available 24 hours a day, 7 days a weekCare Concierge serviceThe RoleAs a SAP Systems Analyst, you'll play a key role in MAG's ambitious Finance Transformation Programme as we migrate from SAP ECC to S/4HANA Private Cloud.Working within our Technology team, you'll help shape and deliver a modern SAP Finance and Procurement landscape, supporting core S/4HANA functionality alongside integrated solutions including Concur, Ariba and BlackLine. You'll work closely with Finance colleagues, Product teams, Solution Architects and implementation partners to ensure our future SAP ecosystem delivers the capabilities, controls and efficiencies required to support MAG's long-term strategy.You'll be involved throughout the full programme lifecycle, from fit-to-standard workshops and solution design through to testing, go-live and post-implementation stabilisation. This is a hands-on role for someone who enjoys solving business challenges through technology, challenging design assumptions and ensuring high-quality SAP solutions are delivered.As the programme progresses, you'll become a trusted technology partner to Finance and Procurement stakeholders, helping to optimise processes, improve user experience and drive continuous improvement across the SAP landscape.Your Responsibilities Will Include:Contributing to fit-to-standard workshops across Finance and Procurement processes.Reviewing and constructively challenging configuration designs and functional specifications produced by implementation partners.Taking ownership of defined areas of the SAP solution and ensuring design quality throughout delivery.Supporting integration design across S/4HANA, Concur, Ariba and BlackLine.Gathering, analysing and documenting business and technical requirements.Participating in integration testing and User Acceptance Testing activities.Creating realistic test scenarios that reflect end-to-end Finance and Procurement processes.Supporting end-user training and business readiness activities.Assisting with go-live, hypercare and stabilisation activities.Identifying opportunities to improve processes and enhance the effectiveness of the SAP Finance landscape.What Will Make You Successful in the Role?You'll bring functional SAP expertise together with strong analytical and stakeholder management skills. You'll be comfortable working in a transformation environment and able to bridge the gap between business requirements and technology solutions.We're looking for someone with:Hands-on SAP S/4HANA configuration experience across Finance and Procurement processes.Strong understanding of the Universal Journal and the key differences between ECC and S/4HANA.Experience of at least one full SAP implementation lifecycle from discovery through to go-live.Experience supporting period-end and year-end close activities within a live SAP environment.Experience reviewing and challenging solution designs and functional specifications.Knowledge of at least two of the following solutions: Concur, Ariba or BlackLine.Strong business analysis and systems analysis capability.Excellent communication skills and the ability to work effectively with both technical and non-technical stakeholders.Strong problem-solving, documentation and critical-thinking skills.It Would Be Great (But Not Essential) If You Also Have:Experience across Concur, Ariba and BlackLine.Knowledge of SAP Group Reporting.Experience working within a RISE with SAP or S/4HANA Private Cloud environment.Understanding of Clean Core principles and SAP extensibility approaches.Experience with parallel accounting and multi-ledger configurations.Exposure to embedded analytics and Finance reporting within S/4HANA.SAP S/4HANA certification in Finance, FICO or related modules.Equal Opportunities & Reasonable AdjustmentsWe’re building something brilliant at MAG: a diverse team of Journey Makers who share our values and want to make a difference. We’re on a mission to be number one in our industry, and that takes talent in all its forms. With so many exciting roles across our airports and businesses, there’s space for your unique strengths to shine.Whether this is your first role or your next big step, we want to hear from you – even if you don’t think you tick every box. What matters most is what you bring.We’re proud to be a Disability Confident employer. If you need any adjustments to support your application or interview, just let us know. We’re committed to helping you perform at your best.At MAG, every journey matters. Our Colleague Communities play a big part in that: Women’s Network, Embrace (Race & Ethnicity), Fly with Pride (LGBTQIA+), Mind Matters (Mental Health), PACT (Parents & Carers), RespectABILITY (Disability & Neurodiversity), ",
+   "type": "",
+   "query": "SAP Business Analyst in the last week",
+   "key": "sapsystemsanalysts4hanatransformation|themanchesterairports",
+   "firstSeen": "2026-11-07T11:41:33+00:00",
+   "lastSeen": "2026-11-07T11:41:33+00:00",
+   "sources": [
+    "Google Jobs · Jobijoba UK"
+   ]
+  },
+  {
+   "title": "Business Change Analyst – (SAP S/4HANA and Rights & Royalties)",
+   "company": "Whitehall Resources Ltd",
+   "location": "Leatherhead",
+   "pay": "£55,000-£90,000 per year",
+   "url": "https://www.jobleads.com/gb/job/business-change-analyst-sap-s-4hana-and-rights-royalties--greater-london--e07185eb53e3c2580c2926a8f9c6567b7?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
+   "posted": "2026-11-01",
+   "source": "Google Jobs · JobLeads",
+   "sourceId": "0Cl0ARBDvrHev7sYAAAAAA==",
+   "snippet": "Business Change Analyst - (SAP S/4HANA and Rights & Royalties)\nSAP - Rights & Royalties Integration\nWhitehall Resources is looking for an experienced SAP Consultant to support business processes and integration between SAP and a separate rights and royalties management platform.\nKey responsibilities\n• Gather requirements across licensing, royalty and financial processes\n• Define data flows and\nintegration requirements between SAP and the external platform.\n• Support data mapping, reconciliation, testing and issue resolution.\n• Work closely with business stakeholders, technical teams and software providers.\nRequired experience\n• Strong SAP functional or integration background.\n• Knowledge of Rightsline or a comparable standalone platform, such as FADEL.\n• Understanding of licensing agreements, royalty calculations and financial settlement.\n• Experience connecting SAP with third-party business applications.\n• Media, publishing or entertainment experience would be advantageous.\nAll of our opportunities require that applicants are eligible to work in the specified country/location, unless otherwise stated in the job description.\nWhitehall Resources are an equal opportunities employer who value a diverse and inclusive working environment. All qualified applicants will receive consideration for employment without regard to race, religion, gender identity or expression, sexual orientation, national origin, pregnancy, disability, age, veteran status, or other characteristics.",
+   "type": "",
+   "query": "SAP Business Analyst in the last week",
+   "key": "businesschangeanalystsaps4hanaandrightsroyalties|whitehallresources",
+   "firstSeen": "2026-11-07T11:41:33+00:00",
+   "lastSeen": "2026-11-07T11:41:33+00:00",
+   "sources": [
+    "Google Jobs · JobLeads"
+   ]
+  },
   {
    "title": "SAP Procurement Analyst",
    "company": "Whitehall Resources Ltd",
@@ -198,7 +578,7 @@
    "query": "SAP Business Analyst",
    "key": "sapgebutransformationcelead24monthsftc|ernstyoung",
    "firstSeen": "2026-10-30T11:22:37+00:00",
-   "lastSeen": "2026-11-04T12:57:37+00:00",
+   "lastSeen": "2026-11-07T11:41:33+00:00",
    "sources": [
     "Jooble"
    ]
@@ -274,7 +654,7 @@
    "query": "SAP Business Analyst",
    "key": "solarbessservicetechnicianaporsap|tesla",
    "firstSeen": "2026-10-22T10:08:24+00:00",
-   "lastSeen": "2026-11-02T13:27:11+00:00",
+   "lastSeen": "2026-11-07T11:41:33+00:00",
    "sources": [
     "Jooble"
    ]
@@ -502,7 +882,7 @@
    "query": "IT Business Analyst",
    "key": "businessanalystexpert|ethos",
    "firstSeen": "2026-10-21T10:05:43+00:00",
-   "lastSeen": "2026-11-06T12:54:44+00:00",
+   "lastSeen": "2026-11-07T11:41:33+00:00",
    "sources": [
     "Jooble"
    ]

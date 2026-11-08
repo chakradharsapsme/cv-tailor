@@ -1,16 +1,16 @@
 {
- "updated": "2026-11-07T11:41:33+00:00",
+ "updated": "2026-11-08T11:54:21+00:00",
  "sources": [
   "Jooble",
   "Google Jobs"
  ],
- "added": 20,
+ "added": 2,
  "errors": [],
  "usage": {
   "apify_month": "2026-10",
   "apify_results": 144,
-  "apify_spent_usd": 0.09,
-  "jooble_requests": 39
+  "apify_spent_usd": 0.15,
+  "jooble_requests": 40
  },
  "jobs": [
   {
@@ -147,6 +147,25 @@
    ]
   },
   {
+   "title": "Snr Director - Enterprise Sales",
+   "company": "NetApp",
+   "location": "United Kingdom",
+   "pay": "",
+   "url": "https://jooble.org/away/4184245058350119547?p=1&pos=19&rgn=55127&cid=20595&ckey=SAP+Ariba&jobAge=36&brelb=10&scr=14.32162&bscr=14.32162&aq=7475647424292556666&elckey=-1846418923366260007",
+   "posted": "2026-11-06",
+   "source": "Jooble",
+   "sourceId": "4184245058350119547",
+   "snippet": "Own Every Moment at NetApp At NetApp, your ideas power innovation. We lead in intelligent data infrastructure—delivering unified storage, integrated data services, and solutions that help organizations unlock the full potential of their data, from AI to multicloud. ...",
+   "type": "",
+   "query": "SAP Ariba",
+   "key": "snrdirectorenterprisesales|netapp",
+   "firstSeen": "2026-11-08T11:54:21+00:00",
+   "lastSeen": "2026-11-08T11:54:21+00:00",
+   "sources": [
+    "Jooble"
+   ]
+  },
+  {
    "title": "Business Analyst (Agile Product Team), Defence & Security",
    "company": "Undisclosed Company",
    "location": "Greater London",
@@ -220,6 +239,25 @@
    "lastSeen": "2026-11-07T11:41:33+00:00",
    "sources": [
     "Google Jobs · Gecko Jobs"
+   ]
+  },
+  {
+   "title": "Sales Director - Enterprise",
+   "company": "NetApp",
+   "location": "United Kingdom",
+   "pay": "",
+   "url": "https://jooble.org/away/-1252045531417385853?p=1&pos=18&rgn=55127&cid=20595&ckey=SAP+Ariba&jobAge=56&brelb=10&scr=14.32162&bscr=14.32162&aq=7475647424292556666&elckey=-1846418923366260007",
+   "posted": "2026-11-05",
+   "source": "Jooble",
+   "sourceId": "-1252045531417385853",
+   "snippet": "Own Every Moment at NetApp At NetApp, your ideas power innovation. We lead in intelligent data infrastructure—delivering unified storage, integrated data services, and solutions that help organizations unlock the full potential of their data, from AI to multicloud. ...",
+   "type": "",
+   "query": "SAP Ariba",
+   "key": "salesdirectorenterprise|netapp",
+   "firstSeen": "2026-11-08T11:54:21+00:00",
+   "lastSeen": "2026-11-08T11:54:21+00:00",
+   "sources": [
+    "Jooble"
    ]
   },
   {
@@ -578,7 +616,7 @@
    "query": "SAP Business Analyst",
    "key": "sapgebutransformationcelead24monthsftc|ernstyoung",
    "firstSeen": "2026-10-30T11:22:37+00:00",
-   "lastSeen": "2026-11-07T11:41:33+00:00",
+   "lastSeen": "2026-11-08T11:54:21+00:00",
    "sources": [
     "Jooble"
    ]
@@ -654,7 +692,7 @@
    "query": "SAP Business Analyst",
    "key": "solarbessservicetechnicianaporsap|tesla",
    "firstSeen": "2026-10-22T10:08:24+00:00",
-   "lastSeen": "2026-11-07T11:41:33+00:00",
+   "lastSeen": "2026-11-08T11:54:21+00:00",
    "sources": [
     "Jooble"
    ]
@@ -882,7 +920,7 @@
    "query": "IT Business Analyst",
    "key": "businessanalystexpert|ethos",
    "firstSeen": "2026-10-21T10:05:43+00:00",
-   "lastSeen": "2026-11-07T11:41:33+00:00",
+   "lastSeen": "2026-11-08T11:54:21+00:00",
    "sources": [
     "Jooble"
    ]

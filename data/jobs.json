@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-09T13:51:12+00:00",
+ "updated": "2026-11-10T13:26:14+00:00",
  "sources": [
   "Jooble",
   "Google Jobs"
@@ -10,7 +10,7 @@
   "apify_month": "2026-10",
   "apify_results": 144,
   "apify_spent_usd": 0.16,
-  "jooble_requests": 41
+  "jooble_requests": 42
  },
  "jobs": [
   {
@@ -160,7 +160,7 @@
    "query": "SAP Ariba",
    "key": "snrdirectorenterprisesales|netapp",
    "firstSeen": "2026-11-08T11:54:21+00:00",
-   "lastSeen": "2026-11-09T13:51:12+00:00",
+   "lastSeen": "2026-11-10T13:26:14+00:00",
    "sources": [
     "Jooble"
    ]
@@ -255,7 +255,7 @@
    "query": "SAP Ariba",
    "key": "salesdirectorenterprise|netapp",
    "firstSeen": "2026-11-08T11:54:21+00:00",
-   "lastSeen": "2026-11-09T13:51:12+00:00",
+   "lastSeen": "2026-11-10T13:26:14+00:00",
    "sources": [
     "Jooble"
    ]
@@ -692,7 +692,7 @@
    "query": "SAP Business Analyst",
    "key": "solarbessservicetechnicianaporsap|tesla",
    "firstSeen": "2026-10-22T10:08:24+00:00",
-   "lastSeen": "2026-11-09T13:51:12+00:00",
+   "lastSeen": "2026-11-10T13:26:14+00:00",
    "sources": [
     "Jooble"
    ]
@@ -920,7 +920,7 @@
    "query": "IT Business Analyst",
    "key": "businessanalystexpert|ethos",
    "firstSeen": "2026-10-21T10:05:43+00:00",
-   "lastSeen": "2026-11-09T13:51:12+00:00",
+   "lastSeen": "2026-11-10T13:26:14+00:00",
    "sources": [
     "Jooble"
    ]

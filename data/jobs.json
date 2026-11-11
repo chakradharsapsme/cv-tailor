@@ -1,16 +1,16 @@
 {
- "updated": "2026-11-10T13:26:14+00:00",
+ "updated": "2026-11-11T12:41:45+00:00",
  "sources": [
   "Jooble",
   "Google Jobs"
  ],
- "added": 0,
+ "added": 1,
  "errors": [],
  "usage": {
   "apify_month": "2026-10",
   "apify_results": 144,
   "apify_spent_usd": 0.16,
-  "jooble_requests": 42
+  "jooble_requests": 43
  },
  "jobs": [
   {
@@ -160,7 +160,7 @@
    "query": "SAP Ariba",
    "key": "snrdirectorenterprisesales|netapp",
    "firstSeen": "2026-11-08T11:54:21+00:00",
-   "lastSeen": "2026-11-10T13:26:14+00:00",
+   "lastSeen": "2026-11-11T12:41:45+00:00",
    "sources": [
     "Jooble"
    ]
@@ -255,7 +255,7 @@
    "query": "SAP Ariba",
    "key": "salesdirectorenterprise|netapp",
    "firstSeen": "2026-11-08T11:54:21+00:00",
-   "lastSeen": "2026-11-10T13:26:14+00:00",
+   "lastSeen": "2026-11-11T12:41:45+00:00",
    "sources": [
     "Jooble"
    ]
@@ -866,6 +866,25 @@
    "lastSeen": "2026-10-22T10:08:24+00:00",
    "sources": [
     "Google Jobs · LinkedIn"
+   ]
+  },
+  {
+   "title": "PowerPoint Specialist Expert",
+   "company": "Ethos",
+   "location": "United Kingdom",
+   "pay": "$70 per hour",
+   "url": "https://jooble.org/desc/-2593124600452241651?ckey=S%2f4HANA+Procurement&rgn=55127&pos=48&groupId=37029&elckey=-4300251144625915063&p=1&aq=-8910711824805567924&cid=20595&jobAge=774&brelb=100&bscr=6.058077&scr=6.058077",
+   "posted": "2026-10-10",
+   "source": "Jooble",
+   "sourceId": "-2593124600452241651",
+   "snippet": "Business PowerPoint Specialist Expert Ethos â¢ Remote Education Not stated Type Hourly Pay Rate $70/hr Listed 38d ago â How Ethos hiring works Your application is a 10-minute call. Ethos's AI interviewer asks about your career...",
+   "type": "Temporary",
+   "query": "S/4HANA Procurement",
+   "key": "powerpointspecialistexpert|ethos",
+   "firstSeen": "2026-11-11T12:41:45+00:00",
+   "lastSeen": "2026-11-11T12:41:45+00:00",
+   "sources": [
+    "Jooble"
    ]
   },
   {

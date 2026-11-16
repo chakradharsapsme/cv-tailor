@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-15T12:41:56+00:00",
+ "updated": "2026-11-16T13:36:22+00:00",
  "sources": [
   "Jooble",
   "Google Jobs"
@@ -10,7 +10,7 @@
   "apify_month": "2026-10",
   "apify_results": 144,
   "apify_spent_usd": 0.16,
-  "jooble_requests": 47
+  "jooble_requests": 48
  },
  "jobs": [
   {
@@ -616,7 +616,7 @@
    "query": "SAP Business Analyst",
    "key": "sapgebutransformationcelead24monthsftc|ernstyoung",
    "firstSeen": "2026-10-30T11:22:37+00:00",
-   "lastSeen": "2026-11-15T12:41:56+00:00",
+   "lastSeen": "2026-11-16T13:36:22+00:00",
    "sources": [
     "Jooble"
    ]
@@ -692,7 +692,7 @@
    "query": "SAP Business Analyst",
    "key": "solarbessservicetechnicianaporsap|tesla",
    "firstSeen": "2026-10-22T10:08:24+00:00",
-   "lastSeen": "2026-11-15T12:41:56+00:00",
+   "lastSeen": "2026-11-16T13:36:22+00:00",
    "sources": [
     "Jooble"
    ]
@@ -939,7 +939,7 @@
    "query": "IT Business Analyst",
    "key": "businessanalystexpert|ethos",
    "firstSeen": "2026-10-21T10:05:43+00:00",
-   "lastSeen": "2026-11-15T12:41:56+00:00",
+   "lastSeen": "2026-11-16T13:36:22+00:00",
    "sources": [
     "Jooble"
    ]
@@ -1249,178 +1249,6 @@
    ]
   },
   {
-   "title": "SAP MM & Procurement Consultant for S/4HANA (6m)",
-   "company": "Whitehall Resources Ltd",
-   "location": "United Kingdom",
-   "pay": "",
-   "url": "https://www.jobleads.com/gb/job/sap-mm-procurement-consultant-for-s-4hana-6m--united-kingdom--ea6875c1f49e14341fde044477506423f?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
-   "posted": "",
-   "source": "Google Jobs · JobLeads",
-   "sourceId": "eyJqb2JfdGl0bGUiOiJTQVAgTU0gXHUwMDI2IFByb2N1cmVtZW50IENvbnN1bHRhbnQgZm9yIFMvNEhBTkEgKDZtKSIsImNvbXBhbnlfbmFtZSI6IldoaXRl",
-   "snippet": "Whitehall Resources Ltd is seeking a highly specialised SAP MM/Procurement Functional Consultant for a UK-based contract role, initially 6 months. You will advise, configure, and maintain our procurement and materials management fabric, and work hands-on to support the ECC to S/4HANA transformation across manufacturing, maintenance and design operations. The role requires delivering fit-to-standard workshops, driving a robust inventory architecture, and deploying standard procurement solutions",
-   "type": "",
-   "query": "S/4HANA Procurement",
-   "key": "sapmmprocurementconsultantfors4hana6m|whitehallresources",
-   "firstSeen": "2026-10-02T07:28:14+00:00",
-   "lastSeen": "2026-10-02T07:28:14+00:00",
-   "sources": [
-    "Google Jobs · JobLeads"
-   ]
-  },
-  {
-   "title": "SAP S/4HANA Transformation Analyst – Finance & Procurement",
-   "company": "MAG (Airports Group)",
-   "location": "",
-   "pay": "",
-   "url": "https://www.jobleads.com/gb/job/sap-s-4hana-transformation-analyst-finance-procurement--manchester--greater-london--east-midlands--e80ca16c8e1aca4ad37c1a6dcabe9030f?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
-   "posted": "",
-   "source": "Google Jobs · JobLeads",
-   "sourceId": "eyJqb2JfdGl0bGUiOiJTQVAgUy80SEFOQSBUcmFuc2Zvcm1hdGlvbiBBbmFseXN0IOKAkyBGaW5hbmNlIFx1MDAyNiBQcm9jdXJlbWVudCIsImNvbXBhbnlf",
-   "snippet": "MAG (Airports Group) is seeking a SAP Systems Analyst to drive the S/4HANA transformation as part of the Finance Programme. The role focuses on configuring S/4HANA across Finance and Procurement, partnering with Finance, Product, Solution Architects and partners to deliver a modern SAP landscape. You’ll contribute through fit-to-standard workshops, design reviews, testing, training and go-live support. This hands-on position requires strong analytical skills and a collaborative mindset within",
-   "type": "",
-   "query": "S/4HANA Procurement",
-   "key": "saps4hanatransformationanalystfinanceprocurement|magairports",
-   "firstSeen": "2026-10-02T07:28:14+00:00",
-   "lastSeen": "2026-10-02T07:28:14+00:00",
-   "sources": [
-    "Google Jobs · JobLeads",
-    "Google Jobs · Jobijoba UK"
-   ]
-  },
-  {
-   "title": "SAP S/4HANA MM / Procurement Consultant",
-   "company": "Maslow - SAP & ERP Talent",
-   "location": "Stockport",
-   "pay": "",
-   "url": "https://talents.studysmarter.co.uk/companies/maslow-sap-erp-talent-2/stockport/sap-s-4hana-mm-procurement-consultant-35334322/?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
-   "posted": "",
-   "source": "Google Jobs · Talents By StudySmarter",
-   "sourceId": "eyJqb2JfdGl0bGUiOiJTQVAgUy80SEFOQSBNTSAvIFByb2N1cmVtZW50IENvbnN1bHRhbnQiLCJjb21wYW55X25hbWUiOiJNYXNsb3cgLSBTQVAgXHUwMDI2",
-   "snippet": "SAP S/4HANA MM / Procurement Consultant EU or UK Remote | Travel for key project phases Permanent Employment €80,000 or GBP equivalent. Maslow are working exclusively with a global start-up, backed by a multi-billion manufacturing group, rolling out S/4HANA across multiple international sites. They’re looking for an experienced MM / Procurement consultant to take a hands-on role in shaping and delivering the Sourcing and Procurement solution. This is a delivery-focused role, not support. You’ll be involved from early design through to go-live, working closely with the business and other SAP workstreams. The role Deliver the MM implementations across a global S/4HANA implementationWork with stakeholders to design end-to-end procurement processes (direct and indirect)Configure core MM functionality within S/4HANASupport workshops, blueprinting, testing and deployment phasesHelp standardise processes across multiple sitesWhat we’re looking for Strong end-to-end S/4HANA Procurement / MM implementation experienceHands-on across core MM areasKey areas of experience: Material Master and data lifecycle managementPurchasing, subcontracting and inventory managementInvoice verificationSourcing and Procurement processes (direct and indirect)Supplier lifecycle and performance managementIntegration with 3rd party procurement tools or 3PL providersEmbedded analytics within S/4Integration knowledge: FI (invoice and financial postings)EWM (warehouse processes)SD (order and supply alignment)TM",
-   "type": "",
-   "query": "S/4HANA Procurement",
-   "key": "saps4hanammprocurementconsultant|maslowsaperptalent",
-   "firstSeen": "2026-10-02T07:28:14+00:00",
-   "lastSeen": "2026-10-02T07:28:14+00:00",
-   "sources": [
-    "Google Jobs · Talents By StudySmarter"
-   ]
-  },
-  {
-   "title": "SAP S/4HANA Finance & Sales/Procurement Advisor - UK Travel",
-   "company": "KES EU",
-   "location": "United Kingdom",
-   "pay": "",
-   "url": "https://talents.studysmarter.co.uk/companies/kes-eu/sap-s-4hana-finance-sales-procurement-advisor-uk-travel-54385107/?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
-   "posted": "",
-   "source": "Google Jobs · Talents By StudySmarter",
-   "sourceId": "eyJqb2JfdGl0bGUiOiJTQVAgUy80SEFOQSBGaW5hbmNlIFx1MDAyNiBTYWxlcy9Qcm9jdXJlbWVudCBBZHZpc29yIC0gVUsgVHJhdmVsIiwiY29tcGFueV9u",
-   "snippet": "KES EU invites applications for SAP S/4HANA Finance Advisor and Sales/Procurement Advisor positions in England. The roles involve working closely with the client’s SAP Functional Team to ensure successful adoption and implementation of the S/4HANA solution, including data preparation and end-user education. Travel to client sites in Wiltshire and the northern Home Counties is required. Applicants should have experience in SAP S/4HANA and a proven ability to collaborate with stakeholders to drive #J-18808-Ljbffr",
-   "type": "",
-   "query": "S/4HANA Procurement",
-   "key": "saps4hanafinancesalesprocurementadvisortravel|keseu",
-   "firstSeen": "2026-10-02T07:28:14+00:00",
-   "lastSeen": "2026-10-02T07:28:14+00:00",
-   "sources": [
-    "Google Jobs · Talents By StudySmarter"
-   ]
-  },
-  {
-   "title": "SAP S/4HANA Public Cloud Procurement Specialist",
-   "company": "CBSbutler Holdings Limited trading as CBSbutler",
-   "location": "Nottingham",
-   "pay": "",
-   "url": "https://talents.studysmarter.co.uk/companies/cbsbutler-holdings-limited-trading-as-cbsbutler/nottingham/sap-s-4hana-public-cloud-procurement-specialist-32494214/?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
-   "posted": "",
-   "source": "Google Jobs · Talents By StudySmarter",
-   "sourceId": "eyJqb2JfdGl0bGUiOiJTQVAgUy80SEFOQSBQdWJsaWMgQ2xvdWQgUHJvY3VyZW1lbnQgU3BlY2lhbGlzdCIsImNvbXBhbnlfbmFtZSI6IkNCU2J1dGxlciBI",
-   "snippet": "A global IT Consultancy is seeking an experienced SAP S/4HANA Public Cloud Procurement Consultant to focus on configuring procurement processes. You will support system integration testing and ensure that procurement functionality aligns with the approved solution design. The role involves collaborating with stakeholders and maintaining documentation. This position offers a daily rate of 675, and a hybrid working pattern with at least 2 days on-site in Nottingham. #J-18808-Ljbffr",
-   "type": "",
-   "query": "S/4HANA Procurement",
-   "key": "saps4hanapubliccloudprocurementspecialist|cbsbutlerholdingstradingascbsbutler",
-   "firstSeen": "2026-10-02T07:28:14+00:00",
-   "lastSeen": "2026-10-02T07:28:14+00:00",
-   "sources": [
-    "Google Jobs · Talents By StudySmarter"
-   ]
-  },
-  {
-   "title": "SAP S/4HANA Procure to Pay Consultant",
-   "company": "Manchester Digital",
-   "location": "United Kingdom",
-   "pay": "",
-   "url": "https://talents.studysmarter.co.uk/companies/manchester-digital/sap-s-4hana-procure-to-pay-consultant-3612979/?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
-   "posted": "",
-   "source": "Google Jobs · Talents By StudySmarter",
-   "sourceId": "eyJqb2JfdGl0bGUiOiJTQVAgUy80SEFOQSBQcm9jdXJlIHRvIFBheSBDb25zdWx0YW50IiwiY29tcGFueV9uYW1lIjoiTWFuY2hlc3RlciBEaWdpdGFsIiwi",
-   "snippet": "Job Title: SAP S/4HANA Procure to Pay ConsultantAbout the job you’re consideringThe SAP S/4HANA Procurement & Supply Chain Consultant will be responsible for helping drive growth, shaping, delivering and development of our SAP S4/HANA Procurement & Supply Chain opportunities and projects in the UK. Working alongside Capgemini’s team of specialists in SAP S/4HANA Procurement & Supply Chain, you will help to both develop our opportunity pipeline, bringing your deep expertise, knowledge, and experience, as well as delivering innovative projects to our existing and new clients. You will have broad capabilities in designing and delivering complex SAP S/4HANA Procurement & Supply Chain solutions, in several different industry sectors with diverse challenges and requirements. You should be able to demonstrate how you have steered clients in quickly understanding and then shaping their business needs into SAP solutions that drive positive outcomes. You will have delivery experience of working in large, complex, multi-stream projects and have broad awareness across a range of supply chain process areas. Your roleUsing your experience to provide Functional Consulting within SAP S/4HANA MM projectsBe part of and be able to lead a team that solves problems and provides solutions for large, corporate clients in multiple sectors, working in cross-discipline, agile and distributed teams, across multiple areas of Supply Chain Management, depending on project scope and at various stages of th",
-   "type": "",
-   "query": "S/4HANA Procurement",
-   "key": "saps4hanaprocuretopayconsultant|manchesterdigital",
-   "firstSeen": "2026-10-02T07:28:14+00:00",
-   "lastSeen": "2026-10-02T07:28:14+00:00",
-   "sources": [
-    "Google Jobs · Talents By StudySmarter"
-   ]
-  },
-  {
-   "title": "SAP Ariba S/4HANA Product Sourcing Consultant",
-   "company": "Masentó Group",
-   "location": "Manchester",
-   "pay": "",
-   "url": "https://talents.studysmarter.co.uk/companies/masento-group/manchester/sap-ariba-s-4hana-product-sourcing-consultant-29203793/?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
-   "posted": "",
-   "source": "Google Jobs · Talents By StudySmarter",
-   "sourceId": "eyJqb2JfdGl0bGUiOiJTQVAgQXJpYmEgUy80SEFOQSBQcm9kdWN0IFNvdXJjaW5nIENvbnN1bHRhbnQiLCJjb21wYW55X25hbWUiOiJNYXNlbnTDsyBHcm91",
-   "snippet": "Masentó are working with a consultancy that requires a SAP Ariba S/4HANA with specific Product Sourcing experience to join their team. This will be an initial 3-month contract, with the opportunity to extend. You will bridge strategic sourcing and direct procurement, utilising Ariba’s upstream capabilities to manage direct material sourcing, Bill of Materials (BOM) data, and supplier collaboration. There will be a hybrid working model, with some workshops with the customer based in Manchester and London. Key Responsibilities & Capabilities Hands on knowledge of Integrating BOMs from PLM/S/4HANA into Ariba, managing hierarchical structures, parts, and plants. Execute sourcing events for direct materials, including complex cost breakdown templates (CBD) to analyze supplier cost drivers. Drive early supplier involvement in New Product Development (NPD), negotiate, and use scenario-based awarding to finalize contracts. Ensure seamless data flow (via CIG) between Ariba and S/4HANA MM for purchasing, contract management, and, to some extent, manufacturing execution. Required Skills & Experience 8+ years in SAP Ariba and S/4HANA Direct Procurement (MM), specifically with manufacturing (OEM/Tier-1/Tier-2). Deep understanding of S/4HANA Strategic Sourcing, Ariba Upstream, and integration technologies. Expert in RFP/RFQ, BOM management, and Cost Breakdown Templates. Strong project management, negotiation, and stakeholder communication. #J-18808-Ljbffr Experience: 5 years required",
-   "type": "",
-   "query": "S/4HANA Procurement",
-   "key": "saparibas4hanaproductsourcingconsultant|masent",
-   "firstSeen": "2026-10-02T07:28:14+00:00",
-   "lastSeen": "2026-10-02T07:28:14+00:00",
-   "sources": [
-    "Google Jobs · Talents By StudySmarter"
-   ]
-  },
-  {
-   "title": "Direct Procurement SAP Deployment",
-   "company": "ECS Resource Group",
-   "location": "Manchester",
-   "pay": "",
-   "url": "https://talents.studysmarter.co.uk/companies/ecs-resource-group/direct-procurement-sap-deployment-6694455/?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
-   "posted": "",
-   "source": "Google Jobs · Talents By StudySmarter",
-   "sourceId": "eyJqb2JfdGl0bGUiOiJEaXJlY3QgUHJvY3VyZW1lbnQgU0FQIERlcGxveW1lbnQiLCJjb21wYW55X25hbWUiOiJFQ1MgUmVzb3VyY2UgR3JvdXAiLCJodGlk",
-   "snippet": "SAP S/4HANA Deployment Analyst (Direct Procurement) Location: United Kingdom Rate: £33–34.00 per hour (PAYE) Contract: 12 Months I am looking for an experienced SAP S/4 Hana Deployment Analyst with experience in Direct Procurement, to join my client, a global Medical Device organisation. With a strong technical background in SAP procurement modules and the E2E procurement process (direct & indirect) The Source-to-Pay (S2P) SAP S/4HANA Deployment Analyst will support the end-to-end implementation of the SAP S/4HANA procurement system. The role will ensure smooth deployment across planning, configuration, testing, and go-live phases. This position works closely with the Global S2P Deployment Lead and cross-functional teams to drive successful outcomes. Key Responsibilities: Collaborate with the Global S2P Deployment Lead to support full-cycle deployment of the SAP S/4HANA procurement solution.Contribute to project planning, system configuration, integration testing, training, and go-live support.Manage timelines, resources, and deliverables to ensure project success within scope and budget.Work cross-functionally with IT, Finance, and Procurement teams to align processes and system functionality.Design and deliver training for end-users and provide post-implementation support and troubleshooting.Assist in data migration activities, ensuring data integrity and accuracy throughout the transition.Identify and recommend opportunities for process optimisation and system enhancements",
-   "type": "",
-   "query": "S/4HANA Procurement",
-   "key": "directprocurementsapdeployment|ecsresource",
-   "firstSeen": "2026-10-02T07:28:14+00:00",
-   "lastSeen": "2026-10-02T07:28:14+00:00",
-   "sources": [
-    "Google Jobs · Talents By StudySmarter"
-   ]
-  },
-  {
-   "title": "Senior Digital Business Analyst",
-   "company": "Capgemini",
-   "location": "Glasgow",
-   "pay": "",
-   "url": "https://uk.linkedin.com/jobs/view/senior-digital-business-analyst-at-capgemini-4474591628?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
-   "posted": "2026-10-02",
-   "source": "Google Jobs · LinkedIn",
-   "sourceId": "SbISXjfVzn_u_RkqAAAAAA==",
-   "snippet": "About The Job You're Considering As part of Capgemini’s Cloud & Custom Applications business area, you’ll join a high‑performing Business Analysis community that plays a central role in shaping digital services for some of the UK’s largest private and public sector organisations. Our teams work at the heart of transformation programmes — helping clients modernise their technology, redesign user e xperiences, and build solutions that make a real difference. In this role, you’ll be part of multidisciplinary delivery teams where Business Analysts are trusted partners from day one. You’ll work closely with designers, engineers, product leads, and stakeholders to uncover needs, define outcomes, and guide the creation of user‑centred digital products and services. No two projects are the same, and your work will span discovery through to delivery, with opportunities to contribute your insight, creativity, and problem‑solving skills at every stage. We’re looking for people who are curious, collaborative, and motivated by helping clients achieve meaningful change. You’ll thrive here if you enjoy working in fast‑moving environments, asking the right questions, shaping clarity from complexity, and building strong relationships. Whether you’re early in your career or highly experienced, you’ll join a supportive community that invests in your growth and values the impact you make. Hybrid working: The places that you work from day to day will vary according to your role, your needs, and t",
-   "type": "",
-   "query": "IT Business Analyst in the last week",
-   "key": "seniordigitalbusinessanalyst|capgemini",
-   "firstSeen": "2026-10-02T07:56:57+00:00",
-   "lastSeen": "2026-10-02T07:56:57+00:00",
-   "sources": [
-    "Google Jobs · LinkedIn"
-   ]
-  },
-  {
    "title": "SAP Ariba Solution Architect - S/4HANA / BTP in SL4",
    "company": "Energy Jobline ZR",
    "location": "Windsor",
@@ -1437,178 +1265,6 @@
    "lastSeen": "2026-10-03T10:23:37+00:00",
    "sources": [
     "Google Jobs · Energy Jobline"
-   ]
-  },
-  {
-   "title": "Business Analyst (IT) / Contractor",
-   "company": "Free-Work UK",
-   "location": "Milton Keynes",
-   "pay": "£400-£500 per day",
-   "url": "https://uk.linkedin.com/jobs/view/business-analyst-it-contractor-at-free-work-uk-4474399910?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
-   "posted": "2026-10-01",
-   "source": "Google Jobs · LinkedIn",
-   "sourceId": "BeGS66yY9K8ASEiAAAAAAA==",
-   "snippet": "Business Analyst – Milton Keynes Our Client is keen to recruit a seasoned Business Analyst with 5 to 8 years proven track record of working on projects with an understanding of the full project life-cycle. Must be able to demonstrate excellent business analysis skills coupled with excellent techniques and ideally with some methodology. Should be confident with the ability to work well the stake holders and to guide and lead them to successful end results. The following are some of the key points about this role: Must be able to analyse the structure of the business (integration between Marketing, Finance & Education) Identify how the business use technology and what their goals are in line with identified requirements. As-Is/To-Be process mapping Identify problems within the business relating, through data modelling techniques and process flows. Have the ability to streamline processes. You Will Have Strong Documentation Management Experience And Skills. Communicate with senior people within the organisation. Align internal and external stakeholders of the benefits of new technology or strategies/requirements/processes. Part of this assignment will be to run workshops and training sessions in order to ensure that everyone is on board and understands the processes involved. You will have knowledge of some if not all of the following: • Finance systems and integration – tailored around the education sector • Marketing & admissions background • YoY management of enrolled childre",
-   "type": "",
-   "query": "IT Business Analyst in the last week",
-   "key": "businessanalystitcontractor|freework",
-   "firstSeen": "2026-10-02T07:37:19+00:00",
-   "lastSeen": "2026-10-02T07:56:57+00:00",
-   "sources": [
-    "Google Jobs · LinkedIn"
-   ]
-  },
-  {
-   "title": "Business Analyst (must be Security Cleared) - Bristol - £550 outside IR35",
-   "company": "Exalto Consulting",
-   "location": "Bristol",
-   "pay": "£60-£65 per hour",
-   "url": "https://uk.linkedin.com/jobs/view/business-analyst-must-be-security-cleared-bristol-%C2%A3550-outside-ir35-at-exalto-consulting-4474160892?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
-   "posted": "2026-10-01",
-   "source": "Google Jobs · LinkedIn",
-   "sourceId": "qJdJVN6b6VfK4RhhAAAAAA==",
-   "snippet": "Contract Business Analyst - Must be Security Cleared - Hybrid Bristol - £550 outside IR35 - 3 months initially Exalto consulting are currently recruiting for a contract business analyst, this is to start immediately on a project, outside IR35, hybrid working in Bristol, initial 3 month contract, you must hold current valid and transferrable Security Clearance Typical Technical experience • Model ling & Design: BPMN 2.0, UML, service blueprinting, capability modelling. • Automation & AI Tools including Low-code/no-code, tools for BA tasks, and platform-embedded AI. • Analytics & Documentation Tools: Miro, Figma, Visio, Lucidchart, Power BI, Excel. • Delivery & Collaboration: Jira, Azure DevOps, Confluence, MS Teams, SharePoint, PowerPoint. • Platforms: ServiceNow, Halo, and other modern ESM platforms. Experience Profile • Demonstrable experience in operating model definition and implementation. • Consulting or change‑heavy environment experience. • Contribution to strategic deliverables (strategies, business cases, operating models). If you have the above experience and are looking for a new contract role, please send your CV for immediate consideration as our client are looking to hire ASAP Contract Business Analyst - Must be Security Cleared - Hybrid Bristol - £550 outside IR35 - 3 months initially",
-   "type": "",
-   "query": "IT Business Analyst in the last week",
-   "key": "businessanalystmustbesecurityclearedbristol550outsideir35|exaltoconsulting",
-   "firstSeen": "2026-10-02T07:37:19+00:00",
-   "lastSeen": "2026-10-02T07:56:57+00:00",
-   "sources": [
-    "Google Jobs · LinkedIn"
-   ]
-  },
-  {
-   "title": "IT Business Analyst - Business Continuity & Operational Resilience",
-   "company": "Ocho",
-   "location": "Belfast",
-   "pay": "",
-   "url": "https://myirelandjobs.com/jobs/it-business-analyst-business-continuity-operational-resilience-belfast/2994125754-2/?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
-   "posted": "2026-10-01",
-   "source": "Google Jobs · My Ireland Jobs",
-   "sourceId": "N3HSxxokMYNLpESpAAAAAA==",
-   "snippet": "IT Business Analyst - Operational Resilience & Risk At a Glance Business Analyst, Business Continuity and Operational Resilience £55,000 to £65,000, permanent Hybrid, Belfast, three days onsite and two days remote each week Lead a critical national infrastructure provider's Business Continuity framework across every directorate Exclusive to Ocho People, you will not find this role advertised anywh ere else About the Company Our client is a large, regulated utility operating critical national infrastructure across Northern Ireland, providing essential services that homes and businesses rely on every day. As a business of major national significance, it runs a substantial ongoing programme of transformation and resilience work, giving analysts genuine influence over how the organisation prepares for and responds to disruption. It offers the stability of a regulated employer with the scope of a live, high-profile transformation agenda. The Role This is a rare opportunity to lead the design, facilitation and delivery of a comprehensive Business Continuity framework spanning every directorate of a critical infrastructure provider. Working closely with senior business leaders and subject matter experts, you will build Business Impact Assessments, map critical processes and dependencies, and translate that analysis into clear Business Continuity Plans aligned with existing crisis and incident management arrangements. You will also support wider process change initiatives and the dev",
-   "type": "",
-   "query": "IT Business Analyst in the last week",
-   "key": "itbusinessanalystbusinesscontinuityoperationalresilience|ocho",
-   "firstSeen": "2026-10-02T07:37:19+00:00",
-   "lastSeen": "2026-10-02T07:56:57+00:00",
-   "sources": [
-    "Google Jobs · My Ireland Jobs"
-   ]
-  },
-  {
-   "title": "Technical Business Analyst Fixed Income Notes Platform - Quanteam",
-   "company": "eFinancialCareers",
-   "location": "London",
-   "pay": "",
-   "url": "https://www.reed.co.uk/jobs/technical-business-analyst-fixed-income-notes-platform-quanteam/57408419?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
-   "posted": "2026-10-01",
-   "source": "Google Jobs · reed.co.uk",
-   "sourceId": "SJSZMvcpfsQU417RAAAAAA==",
-   "snippet": "Who We Are Looking For Quanteam UK are seeking a Technical Business Analyst to join a project team within the Fixed Income space, focused on the re-platforming of a Fixed Income notes stack. The scope of the programme spans the full trade flow, covering pre-trade, post-trade, risk management and lifecycle management. The successful candidate will combine business analysis with hands-on Python exp erience, acting as a link between business stakeholders and technology teams throughout the re-platforming effort. Key responsibilities: • Supporting the re-platforming of the Fixed Income notes stack across pre-trade, post-trade, risk management and lifecycle functions. • Gathering, analysing and documenting business and technical requirements for the notes platform. • Analysing existing processes and data flows across the notes stack to inform the design of the target platform. • Using Python to support analysis, data investigation and validation activities throughout the project. • Working closely with business users and technology teams to ensure delivered functionality meets requirements. Technical Competence • Experience as a Technical Business Analyst within the Fixed Income space. • Knowledge of Fixed Income notes and their pre-trade, post-trade, risk management and lifecycle processes. • Hands-on Python experience applied to analysis and data-related tasks. • Experience of working on platform migration or re-platforming projects. • Ability to produce clear requirements docum",
-   "type": "",
-   "query": "IT Business Analyst in the last week",
-   "key": "technicalbusinessanalystfixedincomenotesplatformquanteam|efinancialcareers",
-   "firstSeen": "2026-10-02T07:37:19+00:00",
-   "lastSeen": "2026-10-02T07:56:57+00:00",
-   "sources": [
-    "Google Jobs · reed.co.uk"
-   ]
-  },
-  {
-   "title": "BI BA – Business Analyst with Business Intelligence (IT) / Contractor",
-   "company": "Free-Work UK",
-   "location": "Moor Row",
-   "pay": "£300-£450 per day",
-   "url": "https://uk.linkedin.com/jobs/view/bi-ba-%E2%80%93-business-analyst-with-business-intelligence-it-contractor-at-free-work-uk-4474512473?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
-   "posted": "2026-10-01",
-   "source": "Google Jobs · LinkedIn",
-   "sourceId": "9SIq6r9_Y1FzM0xBAAAAAA==",
-   "snippet": "BI BA – Business Analyst with Business Intelligence Our Client is a leader in the pharmaceutical world globally. They are looking to recruit a BI Business Analyst with at least 5 to 10 years proven expertise. This role will be working very closely with the finance division and therefore requires you to have very good understanding of the processes within the finance division particularly in man ufacturing. You will be responsible for producing financial reports as a BI Business Analyst. Power BI dashboards, SSRS reports, datasets for Excel and Access and SQL Server This is a 6 months assignment. The Client is based in Southampton – and although you can work remotely for the foreseeable future, there will be a need to attend meetings at the office on a regular basis. Please send your CV to us in Word format along with your daily rate and availability.",
-   "type": "",
-   "query": "IT Business Analyst in the last week",
-   "key": "bibabusinessanalystwithbusinessintelligenceitcontractor|freework",
-   "firstSeen": "2026-10-02T07:37:19+00:00",
-   "lastSeen": "2026-10-02T07:56:57+00:00",
-   "sources": [
-    "Google Jobs · LinkedIn"
-   ]
-  },
-  {
-   "title": "Business Analyst - SAP Upgrade Programme",
-   "company": "University of Sheffield",
-   "location": "Anywhere",
-   "pay": "£38,784-£47,389 per year",
-   "url": "https://www.jobs.ac.uk/job/DTD100/business-analyst-sap-upgrade-programme?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
-   "posted": "2026-10-01",
-   "source": "Google Jobs · Jobs.ac.uk",
-   "sourceId": "kOWqFdsDRKaDlOYdAAAAAA==",
-   "snippet": "Job description: You will provide dedicated Business Analysis capability across the SAP Upgrade Programme, developing and consolidating the broader set of requirements needed to define programme scope, inform procurement and give Systems Integrators (SIs) and delivery teams a coherent basis for subsequent design and delivery. The role will complement the existing SAP functional consultants. Its focus is not to duplicate functional requirements activity, but to work across functional, data and technical areas where requirements are currently distributed across multiple people, workstreams and sources of information. This role is best suited to an experienced BA who is comfortable operating across business, data and technology boundaries. Deep SAP functional expertise is not essential; the priority is strong BA capability combined with sufficient data experience to understand and develop migration, reporting, data quality, retention and related requirements, while working effectively with the programme specialists who own the detailed subject matter. The University of Sheffield is a remarkable place to work. Our people are at the heart of everything we do. Their diverse backgrounds, abilities and beliefs make Sheffield a world-class university. We offer a fantastic range of benefits including a highly competitive annual leave entitlement (with the ability to purchase more), a generous pensions scheme, flexible working opportunities,a commitment to your development and wellbeing",
-   "type": "",
-   "query": "SAP Business Analyst in the last week",
-   "key": "businessanalystsapupgradeprogramme|universityofsheffield",
-   "firstSeen": "2026-10-02T07:37:19+00:00",
-   "lastSeen": "2026-10-02T11:13:26+00:00",
-   "sources": [
-    "Google Jobs · Jobs.ac.uk",
-    "Google Jobs · Sheffield Jobs"
-   ]
-  },
-  {
-   "title": "SAP Funds & Grants Business Analyst",
-   "company": "Sanderson",
-   "location": "Anywhere",
-   "pay": "",
-   "url": "https://it.jobserve.com/job-in-London-GBR/SAP-FUNDS-GRANTS-BUSINESS-ANALYST-0254f1a8fd7fb55897/?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
-   "posted": "2026-10-01",
-   "source": "Google Jobs · IT JobServe",
-   "sourceId": "tzM6FCLzgWiX4QrrAAAAAA==",
-   "snippet": "We're supporting a major finance transformation programme and are looking for an experienced SAP Funds & Grants specialist Business Analyst to play a key role in the design and delivery of future SAP solutions. Location: London. Hybrid working. Contract: 5 Month Initial Contract Rate: Competitive Day Rate This opportunity is ideal for someone with deep SAP Funds Management and Grants Management expertise who can bridge the gap between business and technology teams, driving requirements, solution design and best practice across complex finance environments. Key Responsibilities • Act as the SME for SAP Funds Management and Grants Management. • Lead business and functional requirements gathering workshops. • Analyse current processes and identify opportunities for improvement. • Support fit gap analysis and future state solution design. • Work closely with finance, technology and architecture teams. • Provide input into SAP S/4HANA transformation activities. • Ensure solutions align with business, reporting and compliance requirements. Essential Skills & Experience • Deep hands on SAP Funds Management experience. • Deep hands on SAP Grants Management experience. • Strong understanding of budgetary control, fund accounting and grant lifecycle management. • Proven background delivering SAP Finance transformation programmes. • Strong Business Analysis and stakeholder management skills. • Experience producing business, functional and technical requirements. • Ability to translate b",
-   "type": "",
-   "query": "SAP Business Analyst in the last week",
-   "key": "sapfundsgrantsbusinessanalyst|sanderson",
-   "firstSeen": "2026-10-02T07:37:19+00:00",
-   "lastSeen": "2026-10-02T11:13:26+00:00",
-   "sources": [
-    "Google Jobs · IT JobServe"
-   ]
-  },
-  {
-   "title": "Principal Business Systems Analyst - SAP OTC",
-   "company": "MKS Instruments",
-   "location": "Andover",
-   "pay": "",
-   "url": "https://uk.jobrapido.com/jobpreview/1738499817497165824?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
-   "posted": "2026-10-01",
-   "source": "Google Jobs · Jobrapido",
-   "sourceId": "KFA6_Y6CpaDId3exAAAAAA==",
-   "snippet": "A Day in Your Life at MKS:We are looking for an experienced Principal Business Systems Analyst- SAP Order-to-Cash (OTC) to join our dynamic team. The ideal candidate will possess deep expertise in SAP OTC processes, strong functional and technical knowledge, and a proven track record in end-to-end implementations, rollouts, and support projects. Experience with SAP CS (Customer Service) is essenti al, as service management is a critical component of MKS sales.You Will Make an Impact By: Lead the design, configuration, and deployment of SAP OTC solutions for global and regional projects.Perform configuration and support activities across OTC components, including:Sales order processing, ATP, pricing, tax calculation, billing, shipping, serial number management, repair service sales, rebates, variant configuration, credit management, service (CS) and integration with MM, FICO, WM.Act as the primary point of contact for interfaces with satellite systems such as SAP C4C, Salesforce, E-Commerce, and middleware with business stakeholders and Business Technology Leaders to gather requirements and align SAP solutions with business objectives.Conduct gap analyses and recommend enhancements or new functionalities to improve efficiency.Serve as Level 3 support for SAP OTC enhancements and support teams, ensuring timely and high-quality delivery.Participate in SAP upgrades, migrations, and rollout projects in global environments.Provide technical expertise on SAP-related projects from in",
-   "type": "",
-   "query": "SAP Business Analyst in the last week",
-   "key": "principalbusinesssystemsanalystsapotc|mksinstruments",
-   "firstSeen": "2026-10-02T07:37:19+00:00",
-   "lastSeen": "2026-10-02T11:13:26+00:00",
-   "sources": [
-    "Google Jobs · Jobrapido"
-   ]
-  },
-  {
-   "title": "ERP Business Analyst",
-   "company": "MiQ",
-   "location": "Greater London",
-   "pay": "",
-   "url": "https://jobs.accaglobal.com/job/14172542/erp-business-analyst/?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
-   "posted": "2026-10-01",
-   "source": "Google Jobs · ACCA Careers - ACCA Global",
-   "sourceId": "QX0aOjDAQxZJ_dbuAAAAAA==",
-   "snippet": "Job Description Role: Business Analyst, Finance Support (contractor 3mths) Reporting to: ERP HCM Lead Location: London About the role We're bringing in a Business Analyst to map and document Finance's end-to-end processes. You'll identify process and control gaps, produce the SOPs and training material Finance is currently missing, and deliver a prioritised remediation plan that feeds into ne xt year's roadmap. What you'll do • Speak to every person in Finance to understand their day-to-day responsibilities and activities • Build frameworks documenting how processes are currently done, including dependencies and non-Workday activities across teams • Capture annual and quarterly activities (e.g. audit, transfer pricing) and ad hoc processes (e.g. new company or new bank account set-up) • Identify opportunities to improve processes and collaboration between teams and systems • Write SOPs and work with our Change Manager to create the training material • Give Finance a clear, prioritised view of the gaps and their full scale What you'll bring • Ability to enquire and dig deep to map out processes and issues (the most important quality) • Ability to spot opportunities to improve processes and collaboration between teams and systems • Comfortable interviewing everyone in Finance and turning those conversations into documented frameworks • Ideally, experience of finance processes, specifically R2R, P2P and O2C Plus points • Finance transformation experience (a big plus) • Workday F",
-   "type": "",
-   "query": "IT Business Analyst in the last week",
-   "key": "erpbusinessanalyst|miq",
-   "firstSeen": "2026-10-02T07:56:57+00:00",
-   "lastSeen": "2026-10-02T07:56:57+00:00",
-   "sources": [
-    "Google Jobs · ACCA Careers - ACCA Global"
    ]
   },
   {
@@ -1651,177 +1307,6 @@
    ]
   },
   {
-   "title": "Business Analyst",
-   "company": "Pearson Whiffin IT & Digital",
-   "location": "Maidstone",
-   "pay": "",
-   "url": "https://www.totaljobs.com/job/business-analyst/pearson-whiffin-it-digital-job108061796?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
-   "posted": "2026-09-30",
-   "source": "Google Jobs · Totaljobs",
-   "sourceId": "9pMmrtKyrr5vd3N8AAAAAA==",
-   "snippet": "Business Analyst – Must have a strong technical understanding Are you an experienced Business Analyst who can translate complex business and technology needs into clear, traceable requirements? We’re looking for a Business Analyst to join a Technology team of a purpose-driven financial services team. This is an excellent opportunity to use your technical analysis expertise to support business-cr itical technology change within a collaborative and values-led environment. Working closely with business stakeholders, delivery teams, architects, testers, operational colleagues and third-party suppliers, you’ll define, analyse and validate the business, technical and data requirements that support strategic and operational objectives. You’ll gather and document functional and non-functional requirements, maintain end-to-end traceability, develop process and data models, review solution designs and supplier artefacts, and establish measurable acceptance criteria and success measures. We’re looking for: • Experience as a Business Analyst within technology change or project delivery. You’ll bring strong requirements analysis skills alongside experience of non-functional requirements, integrations, data quality, migration, reconciliation and controls. • Strong communication and stakeholder management skills are essential, including the confidence to facilitate discussions and constructively challenge requirements and proposed solutions. • Experience within banking, financial services, ",
-   "type": "",
-   "query": "IT Business Analyst in the last week",
-   "key": "businessanalyst|pearsonwhiffinitdigital",
-   "firstSeen": "2026-10-02T07:37:19+00:00",
-   "lastSeen": "2026-10-02T07:37:19+00:00",
-   "sources": [
-    "Google Jobs · Totaljobs"
-   ]
-  },
-  {
-   "title": "Senior Technical Business Analyst (AI / Automation)",
-   "company": "London School of Economics and Political Science",
-   "location": "London",
-   "pay": "£53,949-£62,160 per year",
-   "url": "https://www.jobs.ac.uk/job/DTC496/?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
-   "posted": "2026-09-30",
-   "source": "Google Jobs · Jobs.ac.uk",
-   "sourceId": "mXcQsPWOzTHOkFdoAAAAAA==",
-   "snippet": "LSE is committed to building a diverse, equitable and truly inclusive university Salary from £53,949 to £62,160 pa inclusive with potential to progress to £69,073 pa inclusive of London allowance This is a fixed term appointment for 3 years. The London School of Economics is a cosmopolitan university situated in the vibrant centre of London that specialises in the study of social sciences. Our Data and Technology Services division provides services to over 14,000 staff and student users. Data and Technology Services (DTS) delivers technology enabled business change with a focus ranging from strategic and operational business outcomes to service improvements of incumbent services. The scope of DTS projects spans from infrastructure technologies and strategic systems to business processes within end user facing services. The postholder will report into the Lead Technical Business Analyst. This is a hands-on role. Key responsibilities include business and technical analysis with the AI/Automation team, with the postholder working directly with business and technical stakeholders to understand problems, elicit and challenge requirements, analyse processes and data flows, develop solution options, and translate business needs into clear requirements for technical delivery teams. The role requires the postholder to personally lead requirements elicitation activities, support testing and service transition, and contribute to business change required for LSE to maximise measurable bu",
-   "type": "",
-   "query": "IT Business Analyst in the last week",
-   "key": "seniortechnicalbusinessanalystaiautomation|londonschoolofeconomicsandpoliticalscience",
-   "firstSeen": "2026-10-02T07:37:19+00:00",
-   "lastSeen": "2026-10-02T07:56:57+00:00",
-   "sources": [
-    "Google Jobs · Jobs.ac.uk"
-   ]
-  },
-  {
-   "title": "Business Analyst - Information Management and Digital Transformation",
-   "company": "ASSYSTEM",
-   "location": "Bristol",
-   "pay": "",
-   "url": "https://jobs.accaglobal.com/job/14170112/business-analyst-information-management-and-digital-transformation/?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
-   "posted": "2026-09-30",
-   "source": "Google Jobs · ACCA Careers - ACCA Global",
-   "sourceId": "7Rw5H2_CinAtucJtAAAAAA==",
-   "snippet": "Company Description About Assystem At Assystem, our mission is to accelerate the energy transition worldwide. Our 8,000 Switchers blend historical engineering expertise with cutting-edge digital technologies to drive this change. Join us in revolutionizing the energy sector and making a significant global impact. Why Join the Community of Switchers? Be part of one of the top three largest inde pendent nuclear engineering companies globally. At Assystem, you'll contribute to groundbreaking projects that push the boundaries of innovation and engineering excellence. Join a community committed to driving forward the future of energy. Job Description The Job Mission: Business Analyst - Information Management & Digital Transition As a Business Analyst, you'll work at the intersection of business, engineering, information management and technology, driving the success of complex, large-scale digital transformation projects. Your expertise will ensure the seamless flow of information, alignment of business processes with enterprise digital solutions, and successful adoption of new ways of working. This is an exciting opportunity to guide stakeholders through digital transition initiatives, helping shape and implement solutions involving Product Lifecycle Management (PLM), Application Lifecycle Management (ALM), Information Management and enterprise platforms such as Dassault Systèmes 3DEXPERIENCE (3DX), Asset Suite 9 and similar enterprise solutions. Working closely with business lea",
-   "type": "",
-   "query": "IT Business Analyst in the last week",
-   "key": "businessanalystinformationmanagementanddigitaltransformation|assystem",
-   "firstSeen": "2026-10-02T07:37:19+00:00",
-   "lastSeen": "2026-10-02T07:37:19+00:00",
-   "sources": [
-    "Google Jobs · ACCA Careers - ACCA Global"
-   ]
-  },
-  {
-   "title": "SAP Data Quality Business Analyst - Oct Start - £Market Rate/day Inside IR35 - 9 months - Hybrid/UK",
-   "company": "bluewaveSELECT",
-   "location": "United Kingdom",
-   "pay": "",
-   "url": "https://www.computerjobs.com/us/en/find-jobs-in-United-Kingdom/SAP-DATA-QUALITY-BUSINESS-ANALYST-OCT-START-MARKET-RATE-DAY-INSIDE-IR35-9-MONTHS-HYBRID-UK-1E11529FAAE8A30113/?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
-   "posted": "2026-09-30",
-   "source": "Google Jobs · ComputerJobs",
-   "sourceId": "fDFeA9Amlhxy72BPAAAAAA==",
-   "snippet": "SAP Data Quality Business Analyst - Oct Start - £Market Rate/day Inside IR35 paid to the umbrella - 9 months initially - Hybrid/UK Key Requirements • 5+ years' Business Analysis experience, including hands-on experience within a manufacturing or similarly complex operational environment. • S/4HANA experience • Strong Data Quality and Master Data Management (MDM) experience, including requirements capture, data profiling, governance, KPIs, SLAs and data quality improvement. • Experience across key master data domains, including Material, Customer, Vendor and Finance, with understanding of BOMs and product/manufacturing data. • Strong SAP/ERP and PLM understanding, • Strong analytical and stakeholder skills, including data extraction/profiling, advanced skills in tools such as Excel, Power BI, Tableau etc. with the ability to translate complex data issues into clear business requirements. Key Responsibilities • Gather and translate complex business and manufacturing requirements into measurable data quality rules, standards and validation criteria. • Define and implement Data Quality KPIs and SLAs, covering accuracy, completeness, consistency, timeliness, validity, duplication and issue resolution. • Perform data profiling, mapping and root-cause analysis, identifying process/system issues and recommending controls to prevent poor-quality data at source. • Define requirements for automated data quality dashboards and reporting, working with analytics teams to provide operationa",
-   "type": "",
-   "query": "SAP Business Analyst in the last week",
-   "key": "sapdataqualitybusinessanalystoctstartmarketratedayinsideir359monthshybrid|bluewaveselect",
-   "firstSeen": "2026-10-02T07:37:19+00:00",
-   "lastSeen": "2026-10-02T11:13:26+00:00",
-   "sources": [
-    "Google Jobs · ComputerJobs"
-   ]
-  },
-  {
-   "title": "Strategic Lead Business Analyst - SAP & Process Transformation",
-   "company": "CMS Distribution",
-   "location": "Castleford",
-   "pay": "£70,000-£95,000 per year",
-   "url": "https://www.jobleads.com/gb/job/strategic-lead-business-analyst-sap-process-transformation--castleford--eb86db778a3249e8a450f5afb4e7bbda5?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
-   "posted": "2026-09-30",
-   "source": "Google Jobs · JobLeads",
-   "sourceId": "VaER82Blpe0T83sbAAAAAA==",
-   "snippet": "CMS Distribution is seeking an experienced Lead Business Analyst to guide a team of analysts in delivering cross‑group business transformation and process improvement initiatives. You will work with stakeholders, technology teams and programme leaders to identify opportunities, map requirements and implement SAP‑driven changes that deliver measurable business value. The role combines people leade rship with deep process expertise, ERP enhancements, acquisitions and system integrations to shape",
-   "type": "",
-   "query": "SAP Business Analyst in the last week",
-   "key": "strategicleadbusinessanalystsapprocesstransformation|cmsdistribution",
-   "firstSeen": "2026-10-02T07:37:19+00:00",
-   "lastSeen": "2026-10-02T11:13:26+00:00",
-   "sources": [
-    "Google Jobs · JobLeads"
-   ]
-  },
-  {
-   "title": "IT Business Analyst",
-   "company": "Divos At The Black Horse",
-   "location": "Eastcote",
-   "pay": "£45,000 per year",
-   "url": "https://www.glassdoor.co.uk/job-listing/it-business-analyst-divos-at-the-black-horse-JV_IC3283578_KO0,19_KE20,44.htm?jl=1010277900616&utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
-   "posted": "2026-09-29",
-   "source": "Google Jobs · Glassdoor",
-   "sourceId": "ZsxoqhCldlbpm_XfAAAAAA==",
-   "snippet": "Job Summary We are looking for a proactive and detail-oriented IT Business Analyst to join our team. In this role, you will serve as a bridge between business stakeholders and technical teams, translating business needs into technical solutions that drive efficiency and innovation. The ideal candidate is passionate about data, technology, and problem-solving, with a knack for analysing complex sy stems and processes to deliver actionable insights. This position offers an exciting opportunity to contribute to impactful projects and help shape the future of our organisation’s technology landscape. Responsibility and Skills • 1. Liaise with the Directors and management to analyse existing business procedures and clarify requirements for the EPOS, online ordering, delivery, inventory, CRM and reporting systems. • 2. Undertake feasibility studies for proposed IT developments and system upgrades, incorporating costs and benefits, and present recommendations to the Directors. • 3. Communicate the impact of emerging hospitality technologies (e.g. new EPOS features, delivery platform integrations, CRM tools) and advise the business on their potential introduction. • 4. Provide advice and assistance in the procurement, installation, maintenance and use of the EPOS system, online ordering platform, delivery integrations and supporting hardware and network infrastructure. • 5. Examine existing business processes and data flows across sales, stock and customer data, and design functional ",
-   "type": "",
-   "query": "IT Business Analyst in the last week",
-   "key": "itbusinessanalyst|divosattheblackhorse",
-   "firstSeen": "2026-10-02T07:37:19+00:00",
-   "lastSeen": "2026-10-02T07:56:57+00:00",
-   "sources": [
-    "Google Jobs · Glassdoor"
-   ]
-  },
-  {
-   "title": "Contract IT Functional Business Systems Analyst – immediate start.",
-   "company": "Comley Jones",
-   "location": "Chippenham",
-   "pay": "",
-   "url": "https://uk.linkedin.com/jobs/view/contract-it-functional-business-systems-analyst-%E2%80%93-immediate-start-at-comley-jones-4473292026?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
-   "posted": "2026-09-29",
-   "source": "Google Jobs · LinkedIn",
-   "sourceId": "rJFwBglohrWd4pQSAAAAAA==",
-   "snippet": "CONTRACT IT FUNCTIONAL BUSINESS SYSTEMS ANALYST – IMMEDIATE START Chippenham – 3 days on-site / 2 days remote £450 per day Immediate start I’m currently working with a leading organisation looking for an experienced IT Functional Business Systems Analyst to join their team on a contract basis. This is an excellent opportunity for a Business Systems Analyst who enjoys working closely with busi ness stakeholders and IT teams to understand requirements, improve processes and deliver effective technology solutions. The Role You will act as the key link between business functions and IT, translating business needs into clear functional requirements and supporting the delivery of technology-led change. Responsibilities will include: • Working closely with business stakeholders to understand requirements and identify opportunities for improvement • Gathering, documenting and analysing business and functional requirements • Translating business requirements into clear functional specifications • Working with IT and technical teams to ensure solutions meet business needs • Supporting systems implementation, enhancements and continuous improvement • Mapping and reviewing business processes • Identifying opportunities to improve efficiency and system functionality • Supporting testing, UAT and implementation activities • Managing stakeholder relationships across business and IT functions • Providing analysis and documentation throughout the project lifecycle About You We’re looking for ",
-   "type": "",
-   "query": "IT Business Analyst in the last week",
-   "key": "contractitfunctionalbusinesssystemsanalystimmediatestart|comleyjones",
-   "firstSeen": "2026-10-02T07:37:19+00:00",
-   "lastSeen": "2026-10-02T07:37:19+00:00",
-   "sources": [
-    "Google Jobs · LinkedIn"
-   ]
-  },
-  {
-   "title": "Senior SAP ECC BA – Oil & Gas Transformation",
-   "company": "Experis UK",
-   "location": "London",
-   "pay": "£182,000-£186,000 per year",
-   "url": "https://www.jobleads.com/gb/job/senior-sap-ecc-ba-oil-gas-transformation--city-of-london--e4d71abd3fe8282a98c7e694ba9b9db10?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
-   "posted": "2026-09-29",
-   "source": "Google Jobs · JobLeads",
-   "sourceId": "kw9gAnKw6Nbj9IHmAAAAAA==",
-   "snippet": "Experis UK is seeking a Senior Business Analyst with strong SAP ECC expertise to support a major European transformation programme in London. The role focuses on business design, requirements gathering, and workshops, acting as the bridge between business stakeholders and technology delivery teams. The technology landscape centers on SAP ECC with integrations to trading, shipping and bespoke appl ications. You will lead workshops, map processes, perform gap analyses and translate requirements",
-   "type": "",
-   "query": "SAP Business Analyst in the last week",
-   "key": "seniorsapeccbaoilgastransformation|experis",
-   "firstSeen": "2026-10-02T07:37:19+00:00",
-   "lastSeen": "2026-10-02T07:37:19+00:00",
-   "sources": [
-    "Google Jobs · JobLeads"
-   ]
-  },
-  {
-   "title": "IT Business Analyst, Professional Services - City of London / Part Remote -£75-85k - Ref: 1677",
-   "company": "Carrington Recruitment Solutions Limited",
-   "location": "Anywhere",
-   "pay": "",
-   "url": "https://uk.talent.com/view?id=639522265219474520&utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
-   "posted": "2026-09-29",
-   "source": "Google Jobs · Talent.com",
-   "sourceId": "8dlOfrYAyhy4OngmAAAAAA==",
-   "snippet": "IT Business Analyst, Change Management, Legal IT, Professional Services, Please Read in FULL, Part Remote IT Business Analyst required to work for a Law Firm based in the City of London. This will be 2 days remote / 3 days office based per week...but in a lovely new office! Please read carefully before applying - we need a seasoned / experienced Business Analyst who has worked within a Law Firm or Professional Services / Partnership experience. If you have not worked within any of these sectors, we cannot consider your application. The ideal candidate will have strong business analysis skills, including requirements gathering, process mapping, stakeholder engagement, options analysis and benefits realisation. You should be confident working with senior stakeholders, technologists and business users, translating business needs into clear requirements and practical solutions. Our client is particularly interested in candidates who are methodical, commercially aware, collaborative and comfortable working in a complex, global organisation. You will have strong communication skills, attention to detail, and experience using tools such as Visio, Skore or similar for Process Modelling would also be valuable. Despite the specific stakeholder management skills required, it is mainly Technology & Change focused but with huge business impact on the projects / programmes you will be working on. Read on for more details... Key Skills & Experience Required • Law Firm / Legal IT or Professi",
-   "type": "",
-   "query": "IT Business Analyst in the last week",
-   "key": "itbusinessanalystprofessionalservicescityoflondonpartremote7585kref1677|carringtonrecruitmentsolutions",
-   "firstSeen": "2026-10-02T07:56:57+00:00",
-   "lastSeen": "2026-10-02T07:56:57+00:00",
-   "sources": [
-    "Google Jobs · Talent.com"
-   ]
-  },
-  {
    "title": "P2P Delivery Officer (SAP Ariba)",
    "company": "Harvey Nash UK",
    "location": "West Yorkshire",
@@ -1838,44 +1323,6 @@
    "lastSeen": "2026-10-03T10:23:37+00:00",
    "sources": [
     "Google Jobs · Harvey Nash UK"
-   ]
-  },
-  {
-   "title": "ERP Specialist / Business Systems Analyst",
-   "company": "Big Red Recruitment",
-   "location": "United Kingdom",
-   "pay": "£40,000-£60,000 per year",
-   "url": "https://uk.linkedin.com/jobs/view/erp-specialist-business-systems-analyst-at-big-red-recruitment-4470889086?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
-   "posted": "2026-09-28",
-   "source": "Google Jobs · LinkedIn",
-   "sourceId": "pjjdEycwigyhahBzAAAAAA==",
-   "snippet": "Own the ERP and every business system connected to it, in a manufacturer that is investing in how it works. An established manufacturer in Dudley, now part of a European group, needs a Business Systems Specialist to be the go-to person for SAP and the applications that integrate with it. What you will do: • Oversee SAP and how it integrates with the warehouse, ecommerce, route planning and CRM systems • Be the first point of contact and escalation for users, working with third-party SAP consultants, an IT managed service provider and the group systems team • Understand the SAP reporting and help fix and improve reports with the group team and consultants • Lead hands-on projects: warehouse system improvements, stock take and barcode scanning What you will bring: • Hands-on SAP experience in a manufacturing business • Experience of an ERP integrated with other business systems • Experience of troubleshooting or improving ERP reports • The drive to lead improvements rather than wait to be told what to fix The package: £40,000 to £60,000 + fully electric company car + benefits Full time on site in Dudley, hybrid after probation Interested? Apply here or message me and I will call you with the full details, including who the client is.",
-   "type": "",
-   "query": "SAP Business Analyst in the last week",
-   "key": "erpspecialistbusinesssystemsanalyst|bigredrecruitment",
-   "firstSeen": "2026-10-02T07:37:19+00:00",
-   "lastSeen": "2026-10-02T07:37:19+00:00",
-   "sources": [
-    "Google Jobs · LinkedIn"
-   ]
-  },
-  {
-   "title": "Hybrid Finance Transformation BA for SAP S/4HANA",
-   "company": "Greater London Authority",
-   "location": "London",
-   "pay": "£55,000-£75,000 per year",
-   "url": "https://www.jobleads.com/gb/job/hybrid-finance-transformation-ba-for-sap-s-4hana--greater-london--e10bc796182000005beb085dec3bd3dc6?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
-   "posted": "2026-09-28",
-   "source": "Google Jobs · JobLeads",
-   "sourceId": "qm3sEe63MFO9Om5iAAAAAA==",
-   "snippet": "Greater London Authority is seeking a Finance Transformation Business Analyst to drive a SAP S/4HANA finance ERP transformation. You will document, map, and streamline end-to-end finance processes, working with stakeholders across Finance, operations and service teams. You should bring a strong finance background with Business Analysis and transformation experience, and be adept at producing clea r process maps, SOPs and UAT scripts to support the future-state finance platform.",
-   "type": "",
-   "query": "SAP Business Analyst in the last week",
-   "key": "hybridfinancetransformationbaforsaps4hana|greaterlondonauthority",
-   "firstSeen": "2026-10-02T07:37:19+00:00",
-   "lastSeen": "2026-10-02T11:13:26+00:00",
-   "sources": [
-    "Google Jobs · JobLeads"
    ]
   },
   {
@@ -1933,44 +1380,6 @@
    "lastSeen": "2026-10-09T11:52:35+00:00",
    "sources": [
     "Jooble"
-   ]
-  },
-  {
-   "title": "Hybrid ERP Systems Analyst (SAP B1 | SQL Reports)",
-   "company": "Centric Talent",
-   "location": "Blackburn",
-   "pay": "",
-   "url": "https://www.jobijoba.co.uk/detail/92/0928714529c1f454e018e23287846a19?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
-   "posted": "2026-09-27",
-   "source": "Google Jobs · Jobijoba UK",
-   "sourceId": "UQOkgHV5ny_oeBksAAAAAA==",
-   "snippet": "Centric Talent seeks an ERP System Analyst to ensure SAP Business One runs reliably. You will troubleshoot ERP issues, gather requirements, and coordinate upgrades with third party support. You will produce SQL reports and support audits with data controls. The role requires at least 3 years in ERP systems, strong SQL, and stakeholder collaboration. Some projects may require presence at the Black burn head office within commuting distance. #J-18808-Ljbffr",
-   "type": "",
-   "query": "SAP Business Analyst in the last week",
-   "key": "hybriderpsystemsanalystsapb1sqlreports|centrictalent",
-   "firstSeen": "2026-10-02T07:37:19+00:00",
-   "lastSeen": "2026-10-02T11:13:26+00:00",
-   "sources": [
-    "Google Jobs · Jobijoba UK"
-   ]
-  },
-  {
-   "title": "Senior Business Analyst: SAP & Change Governance",
-   "company": "ScottishPower",
-   "location": "Glasgow",
-   "pay": "£36,000-£44,000 per year",
-   "url": "https://www.jobleads.com/gb/job/senior-business-analyst-sap-change-governance--glasgow--e149b9d1be85da420dfd7e841931e2fe1?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
-   "posted": "2026-09-26",
-   "source": "Google Jobs · JobLeads",
-   "sourceId": "Hl6kauw0aBoLps_oAAAAAA==",
-   "snippet": "ScottishPower HQ, Glasgow (Hybrid) is seeking a Senior Business Analyst to strengthen operational governance, improve collaboration and ensure our business-critical systems and services are delivered effectively and efficiently. You'll work across business, technology and supplier teams, supporting operational readiness, service improvements and the introduction of emerging technologies including AI-enabled solutions.",
-   "type": "",
-   "query": "SAP Business Analyst in the last week",
-   "key": "seniorbusinessanalystsapchangegovernance|scottishpower",
-   "firstSeen": "2026-10-02T11:13:26+00:00",
-   "lastSeen": "2026-10-02T11:13:26+00:00",
-   "sources": [
-    "Google Jobs · JobLeads"
    ]
   },
   {

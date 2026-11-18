@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-17T14:20:10+00:00",
+ "updated": "2026-11-18T13:54:27+00:00",
  "sources": [
   "Jooble",
   "Google Jobs"
@@ -9,8 +9,8 @@
  "usage": {
   "apify_month": "2026-10",
   "apify_results": 144,
-  "apify_spent_usd": 0.17,
-  "jooble_requests": 49
+  "apify_spent_usd": 0.18,
+  "jooble_requests": 50
  },
  "jobs": [
   {
@@ -616,7 +616,7 @@
    "query": "SAP Business Analyst",
    "key": "sapgebutransformationcelead24monthsftc|ernstyoung",
    "firstSeen": "2026-10-30T11:22:37+00:00",
-   "lastSeen": "2026-11-17T14:20:10+00:00",
+   "lastSeen": "2026-11-18T13:54:27+00:00",
    "sources": [
     "Jooble"
    ]
@@ -692,7 +692,7 @@
    "query": "SAP Business Analyst",
    "key": "solarbessservicetechnicianaporsap|tesla",
    "firstSeen": "2026-10-22T10:08:24+00:00",
-   "lastSeen": "2026-11-17T14:20:10+00:00",
+   "lastSeen": "2026-11-18T13:54:27+00:00",
    "sources": [
     "Jooble"
    ]
@@ -939,7 +939,7 @@
    "query": "IT Business Analyst",
    "key": "businessanalystexpert|ethos",
    "firstSeen": "2026-10-21T10:05:43+00:00",
-   "lastSeen": "2026-11-17T14:20:10+00:00",
+   "lastSeen": "2026-11-18T13:54:27+00:00",
    "sources": [
     "Jooble"
    ]
@@ -1021,44 +1021,6 @@
    ]
   },
   {
-   "title": "Coupa P2P & SAP Finance Transformation Lead",
-   "company": "MRP Group",
-   "location": "United Kingdom",
-   "pay": "£60,000-£80,000 per year",
-   "url": "https://talents.studysmarter.co.uk/companies/mrp-group/coupa-p2p-sap-finance-transformation-lead-35548259/?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
-   "posted": "",
-   "source": "Google Jobs · Talents By StudySmarter",
-   "sourceId": "omZM3-l9z0a8dylCAAAAAA==",
-   "snippet": "A UK based organization is seeking a Coupa P2P Consultant to lead the harmonization of Purchase-to-Pay processes across multiple UK entities, integrating with SAP Finance. The ideal candidate will have strong knowledge of procurement and accounts payable processes, and possess change management skills to guide finance teams. This contract position is tailored for mid-senior level professionals in\nInformation Technology. #J-18808-Ljbffr",
-   "type": "",
-   "query": "SAP P2P in the last week",
-   "key": "coupap2psapfinancetransformationlead|mrp",
-   "firstSeen": "2026-10-04T11:05:33+00:00",
-   "lastSeen": "2026-10-04T11:05:33+00:00",
-   "sources": [
-    "Google Jobs · Talents By StudySmarter"
-   ]
-  },
-  {
-   "title": "SAP P2P Consultant",
-   "company": "Whitehall Resources Ltd",
-   "location": "London",
-   "pay": "£72,000-£108,000 per year",
-   "url": "https://talents.studysmarter.co.uk/companies/whitehall-resources-ltd/sap-p2p-consultant-4116324/?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
-   "posted": "",
-   "source": "Google Jobs · Talents By StudySmarter",
-   "sourceId": "OfmRYzq4fVkyRHQZAAAAAA==",
-   "snippet": "SAP P2P Consultant Whitehall Resources require a SAP P2P Consultant to work with a key client on a 5 month initial contract. *Inside IR35. *This role will involve one-week onsite work in London per month. Experience: Over 15 years of experience Minimum 10 years in SAP procurement space Expertise in SAP Procure to Pay (Indirect procurement) Knowledge in PTP integration to project systems and Accoun\nt Payable financial process Experience with Ariba or equivalent, SRM, or bespoke applications integrating to ECC or S/4 Functional SME capacity with SAP development lifecycle (large enhancements or bespoke solutions and functional understanding of APIs) Experience with data migration for procurement objects (e.g., Purchase Orders) Skills: Excellent oral and written communication Strong problem-solving skills Ability to interpret business writing functional specs, identify gaps, and assist with testing Active and self-driven attitude All of our opportunities require that applicants are eligible to work in the specified country/location, unless otherwise stated in the job description. Whitehall Resources are an equal opportunities employer who value a diverse and inclusive working environment. All qualified applicants will receive consideration for employment without regard to race, religion, gender identity or expression, sexual orientation, national origin, pregnancy, disability, age, veteran status, or other characteristics. #J-18808-Ljbffr\nExperience: 5 years required",
-   "type": "",
-   "query": "SAP P2P in the last week",
-   "key": "sapp2pconsultant|whitehallresources",
-   "firstSeen": "2026-10-04T11:05:33+00:00",
-   "lastSeen": "2026-10-04T11:05:33+00:00",
-   "sources": [
-    "Google Jobs · Talents By StudySmarter"
-   ]
-  },
-  {
    "title": "IT&D SAP Business Process Owner, P2P - 12 month FTC (Slough, Berkshire, GB, SL1 1DT)",
    "company": "Reckitt",
    "location": "Henley-on-Thames",
@@ -1073,44 +1035,6 @@
    "key": "itdsapbusinessprocessownerp2p12monthftcsloughberkshiregbsl11dt|reckitt",
    "firstSeen": "2026-10-04T11:05:33+00:00",
    "lastSeen": "2026-10-28T11:18:34+00:00",
-   "sources": [
-    "Google Jobs · Talents By StudySmarter"
-   ]
-  },
-  {
-   "title": "SAP P2P Consultant - S/4 HANA",
-   "company": "Next Ventures",
-   "location": "London",
-   "pay": "£48,000-£72,000 per year",
-   "url": "https://talents.studysmarter.co.uk/companies/next-ventures/sap-p2p-consultant-s-4-hana-3547120/?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
-   "posted": "",
-   "source": "Google Jobs · Talents By StudySmarter",
-   "sourceId": "AA1wOHzLKVdXC84pAAAAAA==",
-   "snippet": "Our client, based in London, is looking for an SAP P2P consultant for a 6 month rolling assignment with likely extensions.\n• P2P experience with hands-on configuration knowledge in S/HANA\n• 2 days per week onsite for the first month of the assignment\n• For workshops only thereafter / on a needs must basis\n• Experience having worked in a business-facing role\nThis represents a fantastic opportunity\nto join an exciting project for long-term prospects.\nFor more information please call +44 203 803 1003.\n#J-18808-Ljbffr\nExperience: 3 years required",
-   "type": "",
-   "query": "SAP P2P in the last week",
-   "key": "sapp2pconsultants4hana|nextventures",
-   "firstSeen": "2026-10-04T11:05:33+00:00",
-   "lastSeen": "2026-10-04T11:05:33+00:00",
-   "sources": [
-    "Google Jobs · Talents By StudySmarter"
-   ]
-  },
-  {
-   "title": "SAP P2P Lead",
-   "company": "CBSbutler Holdings Limited trading as CBSbutler",
-   "location": "Frimley",
-   "pay": "£50,000-£70,000 per year",
-   "url": "https://talents.studysmarter.co.uk/companies/cbsbutler-holdings-limited-trading-as-cbsbutler/sap-p2p-lead-11979990/?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
-   "posted": "",
-   "source": "Google Jobs · Talents By StudySmarter",
-   "sourceId": "TSPuMqeLw5N47mtEAAAAAA==",
-   "snippet": "SAP P2P Lead Rate: £559 a day MAX (Inside IR35) Duration: 6 Months Location: Hybrid - 2 days a week on site at Frimley Clearance required: SC A global IT Consultancy is looking for a SAP P2P Lead to join them as they deliver digital transformation to a public sector body. Job Description: Has had a consulting role across multiple full cycle projects in SAP S4/HANA or ECC working in MM/PtP of 8+ ye\nars Experience in managing a team in client facing projects. Responsible for the deliverables within client facing projects and delivering results. Advocate of best practice design principles along with an advisory focus and demonstrate being able to provide solutions for business requirements. Be proficient and have vast hands-on config experience in MM capabilities to lead your area and provide solutions for clients dealing with the likes of: Purchase requisition creation and the integration with planning functionality. Purchase Order processing. Goods receipt processing. Subcontracting. Returns processing. Experience in using SAP Fiori and flexible workflow is advantageous. Have experience in multiple end-to-end design and implementation programmes within S4/HANA or ECC working across MM/PtP. Strong understanding of Procure to Pay processes, inventory functions and Supplier Relationship Management. Solid understanding of modules that integrate with MM (e.g. Planning, EWM). Understand the key capabilities of MM and how they integrate with other SAP modules and applications. Industry and business process knowledge in one or more of the following sectors is an advantage: Aerospace and Defence, Consumer Products, Pharma or Discrete Manufacturing Can demonstrate knowledge of the strategic direction of SAP and related products. Have experience in designing and defining the MM org structure within PtP to offer a fit for purpose design. SAP Sourcing and Procurement certification is beneficial\nExperience: 5 years required",
-   "type": "",
-   "query": "SAP P2P in the last week",
-   "key": "sapp2plead|cbsbutlerholdingstradingascbsbutler",
-   "firstSeen": "2026-10-04T11:05:33+00:00",
-   "lastSeen": "2026-10-04T11:05:33+00:00",
    "sources": [
     "Google Jobs · Talents By StudySmarter"
    ]
@@ -1152,25 +1076,6 @@
    "sources": [
     "Google Jobs · LinkedIn",
     "Google Jobs · Jobs | Siemens Healthineers"
-   ]
-  },
-  {
-   "title": "Senior Consultant SAP Ariba P2P",
-   "company": "apsolut",
-   "location": "Metropolitan Borough of Kirklees (+2 others)",
-   "pay": "",
-   "url": "https://uk.jobrapido.com/jobpreview/783987385145753600?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
-   "posted": "2026-10-01",
-   "source": "Google Jobs · Jobrapido",
-   "sourceId": "7pMh0uPnK9x5ngunAAAAAA==",
-   "snippet": "Salary: £49,000 - 89,000 per year Requirements: • We require excellent Procurement / P2P / Ariba process and configuration experience, with at least 6 years of experience. • We require a high level of knowledge of SAP P2P or MM processes related to S2P Procurement, strategic sourcing, catalogue content management, and workflows from both a process and configuration perspective. • We require stron g client-facing and communication skills at management level. • We require experience managing complex IT projects with multicultural teams. • We require very good written and spoken English. • We require willingness to travel nationally and internationally. Responsibilities: • We guide customers through the lifecycle of an SAP Ariba implementation and take on the role of project manager. • We support the blueprinting process, gather customer requirements, and lead design workshops leveraging best practices. • We may assist in developing processes and procedures that leverage SAP Ariba solutions within the customer organization. • We lead the final configuration of the solution and provide guidance on user acceptance testing, including support in resolving issues and defects. Technologies: • Support • Network • Project Manager • SAP More: We are passionate about Intelligent Spend Management, Business Network, Procurement, Supply Chain, External Workforce Management, and Business Transformation. In procurement with SAP, we are leaders and pioneers, and our expertise has made us an SAP",
-   "type": "",
-   "query": "SAP Ariba in the last week",
-   "key": "seniorconsultantsaparibap2p|apsolut",
-   "firstSeen": "2026-10-03T10:23:37+00:00",
-   "lastSeen": "2026-10-04T11:05:33+00:00",
-   "sources": [
-    "Google Jobs · Jobrapido"
    ]
   },
   {
@@ -1250,25 +1155,6 @@
    ]
   },
   {
-   "title": "SAP MM / Procure-to-Pay Functional Consultant",
-   "company": "Ampstek",
-   "location": "Cardiff",
-   "pay": "",
-   "url": "https://uk.linkedin.com/jobs/view/sap-mm-procure-to-pay-functional-consultant-at-ampstek-4468701916?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
-   "posted": "2026-09-21",
-   "source": "Google Jobs · LinkedIn",
-   "sourceId": "QIfQSQURMxMdWXQOAAAAAA==",
-   "snippet": "We are looking for an experienced SAP MM / Procure-to-Pay Functional\nConsultant to join a major aerospace MRO transformation programme\nbased in Cardiff (Nantgarw), Wales.\nThis is a 6-month contract (Inside IR35) or Fixed Term engagement\nwith an immediate start.\nTHE ROLE\nYou will be embedded within a fast-paced S/4HANA transformation\nprogramme at one of the UK's leading aviation MRO faciliti\nes. You\nwill be responsible for both functional delivery and ongoing AMS\nsupport across the Procure-to-Pay landscape.\nKEY RESPONSIBILITIES\n- Configure and support SAP MM / Procure-to-Pay processes including\nPurchase Requisitions, Purchase Orders, Goods Receipt, Invoice\nVerification and Inventory Management\n- Participate in Fit-to-Standard workshops and translate business\nrequirements into SAP solutions\n- Deliver functional specifications, integration testing (SIT/UAT)\nand hypercare support\n- Provide AMS support and resolve incidents across the MM/P2P\nlandscape\n- Work closely with stakeholders across procurement, finance and\noperations\n- Collaborate with the SAP S/4HANA Solution Architect and other\nfunctional streams (PM, FICO)\nMANDATORY REQUIREMENTS\n- Proven hands-on experience in SAP MM functional configuration\n(not end-user only)\n- Strong end-to-end Procure-to-Pay (P2P) process knowledge —\nPR through to Invoice Verification\n- Aerospace and/or Aviation MRO industry background — MANDATORY,\nnon-negotiable\n- Experience in both SAP implementation and AMS/support delivery\n- SAP S/4HANA experience (ECC candidates with S/4 migration\nexperience considered)\n- Strong stakeholder engagement and communication skills\n- Right to work in the UK without sponsorship (British citizen,\nILR, or EU Settled Status)\nHIGHLY DESIRABLE\n- SAP PM (Plant Maintenance) knowledge alongside MM\n- Experience with rotable parts, repair orders or MRO-specific\nprocurement flows\n- Knowledge of AS9100 or aviation quality standards\n- Previous experience at GE Aerospace, Rolls-Royce, Airbus,\nBAE Systems, Collins Aerospace or similar\n- SAP Activate methodology experience\nLOCATION & CONTRACT DETAILS\n- Location: Cardiff (Nantgarw), Wales — Hybrid working\n- Duration: 6 months (Inside IR35) or 6-month Fixed Term\n- Start: Immediate / ASAP\n- Rate: Competitive — based on experience\nTo apply, please send your CV to the email below or apply directly\nvia LinkedIn. Please note only candidates with confirmed aerospace\nor MRO backgrounds will be considered. Email -dhinakaran.b@ampstek.com",
-   "type": "",
-   "query": "SAP P2P in the last week",
-   "key": "sapmmprocuretopayfunctionalconsultant|ampstek",
-   "firstSeen": "2026-10-04T11:05:33+00:00",
-   "lastSeen": "2026-10-04T11:05:33+00:00",
-   "sources": [
-    "Google Jobs · LinkedIn"
-   ]
-  },
-  {
    "title": "Hybrid Solutions Architect – Source-to-Pay (Procurement)",
    "company": "PRINCES",
    "location": "Liverpool",
@@ -1307,25 +1193,6 @@
    ]
   },
   {
-   "title": "SAP S/4HANA Migration Lead – MM/P2P (Hybrid)",
-   "company": "MBDA UK Ltd",
-   "location": "Stevenage",
-   "pay": "",
-   "url": "https://bebee.com/gb/jobs/sap-s-4hana-migration-lead-mm-p2p-hybrid-mbda-uk-ltd-stevenage-england-united-kingdom--jobgoal-22539_b1c1794d5d97c674ea897b4aa5982c38?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
-   "posted": "2026-09-14",
-   "source": "Google Jobs · BeBee",
-   "sourceId": "wS5kTJuaQg9HMlKDAAAAAA==",
-   "snippet": "MBDA UK is hiring an SAP MM Specialist to lead the Procure-to-Pay configuration and design across the MM module in a S/4HANA migration program. You will work with Procurement, Finance and Manufacturing colleagues, challenge non-standard requests to prefer SAP standard functionality, and help deliver the UK portion of a multinational rollout.\nThe role requires experience with ECC and S/4HANA, stro\nng integration knowledge with FI, EWM, TM and GTS, and the ability to manage end-to-end changes in a",
-   "type": "",
-   "query": "SAP P2P in the last week",
-   "key": "saps4hanamigrationleadmmp2phybrid|mbda",
-   "firstSeen": "2026-10-04T11:05:33+00:00",
-   "lastSeen": "2026-10-04T11:05:33+00:00",
-   "sources": [
-    "Google Jobs · BeBee"
-   ]
-  },
-  {
    "title": "SAP MM Procurement Data Senior Consultant",
    "company": "Computer Futures",
    "location": "Anywhere",
@@ -1361,25 +1228,6 @@
    "lastSeen": "2026-10-05T12:14:37+00:00",
    "sources": [
     "Google Jobs · LinkedIn"
-   ]
-  },
-  {
-   "title": "SAP MM Consultant – ECC | P2P | Production Support",
-   "company": "Focus on SAP",
-   "location": "London",
-   "pay": "",
-   "url": "https://bebee.com/gb/jobs/sap-mm-consultant-ecc-p2p-production-support-focus-on-sap-london--joblooku-167811549?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic",
-   "posted": "2026-09-07",
-   "source": "Google Jobs · BeBee",
-   "sourceId": "LL3EBDe__mu5-0nEAAAAAA==",
-   "snippet": "Position: SAP MM Consultant – ECC | P2P | Production Support\nReady to make your application Please do read through the description at least once before clicking on Apply.\nEmployment Type: Contract\nStart: ASAP (August/September 2026)\nDuration: 6-12 Months\nLocation: London, UK (Hybrid - 3 days per week office)\nLanguage(s): English\nFocus on SAP is a specialist SAP and ERP Recruitment organisat\nion offering both permanent and contract staffing solutions on a global scale.\nClient – Partnered with a global leader in digital transformation and IT services, working with some of the world’s biggest brands. Their mission is not only to deliver cutting-edge technology but also to empower organisations to create meaningful impact for the people and communities they serve. For you, this means working on challenging projects that demand innovation, collaboration, and thought leadership.\nRole – A leading global organisation is seeking an experienced SAP MM Consultant with strong hands-on SAP ECC Materials Management expertise to join a major SAP transformation programme.\nThe role sits within a SAP Brownfield Implementation and Enhancement Programme, supporting the organisation's longer-term transition towards a modern SAP S/4HANA landscape. The programme has a strong focus on clean-core principles, standard SAP functionality, reducing technical debt and improving operational agility.\nThe successful consultant will be responsible for supporting and enhancing SAP MM processes within the existing SAP ECC environment, with particular emphasis on Procure-to-Pay (P2P), Purchasing, Procurement, Inventory Management, Master Data and FI integration.\nKey Responsibilities\n• Configure, maintain and support SAP MM within an ECC environment.\n• Support end-to-end Procure-to-Pay (P2P) processes.\n• Configure and support:\n• Purchase Requisitions (PR)\n• Purchase Orders (PO)\n• Contracts\n• Scheduling Agreements\n• Goods Receipt (GR)\n• Invoice Verification\n• Support Inventory Management including stock movements and valuation.\n• Maintain Material Master and Vendor Master data.\n• Support integration between SAP MM and FI, including Invoice Verification, GR/IR and payment-related processes.\n• Work across integrations with SAP FI, SD and WM.\n• Provide production support within a live SAP ECC environment.\n• Investigate and resolve incidents and user issues.\n• Perform Root Cause Analysis (RCA) for production issues.\n• Deliver configuration changes, minor enhancements and process improvements.\n• Support pricing procedures, release strategies and account determination.\n• Work closely with procurement, supply chain and business stakeholders.\n• Contribute to operational efficiency and continuous process improvement.\nKey Skills\n• Strong hands-on experience in SAP MM (Materials Management) within SAP ECC, including configuration and production support.\n• Strong end-to-end understanding of Procure-to-Pay (P2P) processes, covering Purchase Requisition, Purchase Order, Goods Receipt and Invoice Verification.\n• Hands-on expertise across Purchasing, including Purchase Requisitions, Purchase Orders, Contracts and Scheduling Agreements.\n• Strong Inventory Management experience, including stock movements and valuation.\n• Experience managing Material Master and Vendor Master data.\n• Strong knowledge of SAP MM integration with FI, particularly Invoice Verification, GR/IR and payment processes.\n• Proven experience working within live / production SAP ECC environments.\n• Experience providing production support, including incident handling, troubleshooting and Root Cause Analysis (RCA).\n• Ability to deliver SAP MM configuration changes, enhancements and user issue resolution.\n• Good knowledge of pricing procedures, release strategies and account determination.\n• Strong understanding of end-to-end Procurement and Supply Chain business processes.\n• Experience working across integrated SAP environments and collaborating with FI, SD and WM functional teams.\nIf you are interested or would like to know more, please email with your CV and availability to speak. xpwpeyx\nApplicants must be a UK resident and holds a valid right to work status.",
-   "type": "",
-   "query": "SAP P2P in the last week",
-   "key": "sapmmconsultanteccp2pproductionsupport|focusonsap",
-   "firstSeen": "2026-10-04T11:05:33+00:00",
-   "lastSeen": "2026-10-04T11:05:33+00:00",
-   "sources": [
-    "Google Jobs · BeBee"
    ]
   },
   {

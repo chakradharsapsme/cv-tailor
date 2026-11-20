@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-19T14:23:15+00:00",
+ "updated": "2026-11-20T13:58:30+00:00",
  "sources": [
   "Jooble",
   "Google Jobs"
@@ -9,8 +9,8 @@
  "usage": {
   "apify_month": "2026-10",
   "apify_results": 144,
-  "apify_spent_usd": 0.19,
-  "jooble_requests": 51
+  "apify_spent_usd": 0.0,
+  "jooble_requests": 52
  },
  "jobs": [
   {
@@ -616,7 +616,7 @@
    "query": "SAP Business Analyst",
    "key": "sapgebutransformationcelead24monthsftc|ernstyoung",
    "firstSeen": "2026-10-30T11:22:37+00:00",
-   "lastSeen": "2026-11-18T13:54:27+00:00",
+   "lastSeen": "2026-11-20T13:58:30+00:00",
    "sources": [
     "Jooble"
    ]

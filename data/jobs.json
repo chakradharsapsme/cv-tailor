@@ -1,18 +1,37 @@
 {
- "updated": "2026-11-24T15:49:32+00:00",
+ "updated": "2026-11-25T15:33:03+00:00",
  "sources": [
   "Jooble",
   "Google Jobs"
  ],
- "added": 0,
+ "added": 1,
  "errors": [],
  "usage": {
   "apify_month": "2026-10",
   "apify_results": 144,
-  "apify_spent_usd": 0.04,
-  "jooble_requests": 56
+  "apify_spent_usd": 0.05,
+  "jooble_requests": 57
  },
  "jobs": [
+  {
+   "title": "Solution Engineer - FSI Emerging Enterprise",
+   "company": "Snowflake",
+   "location": "United Kingdom",
+   "pay": "",
+   "url": "https://jooble.org/desc/1488085627022608745?ckey=SAP+S2P&rgn=55127&pos=12&groupId=40910&elckey=240547068088732656&p=1&aq=-5112742569180086130&cid=20595&jobAge=153&brelb=100&bscr=15.222879&scr=15.222879",
+   "posted": "2026-11-19",
+   "source": "Jooble",
+   "sourceId": "1488085627022608745",
+   "snippet": "At Snowflake, we are powering the era of the agentic enterprise. To usher in this new era, we seek AI-native thinkers across every function who are energized by the opportunity to reinvent how they work. You don’t just use tools; you possess an innate curiosity, treating...",
+   "type": "Full-time",
+   "query": "SAP S2P",
+   "key": "solutionengineerfsiemergingenterprise|snowflake",
+   "firstSeen": "2026-11-25T15:33:03+00:00",
+   "lastSeen": "2026-11-25T15:33:03+00:00",
+   "sources": [
+    "Jooble"
+   ]
+  },
   {
    "title": "Senior Technical Business Analyst - Equities / Trade Processing",
    "company": "Pontoon",
@@ -160,7 +179,7 @@
    "query": "SAP Ariba",
    "key": "snrdirectorenterprisesales|netapp",
    "firstSeen": "2026-11-08T11:54:21+00:00",
-   "lastSeen": "2026-11-11T12:41:45+00:00",
+   "lastSeen": "2026-11-25T15:33:03+00:00",
    "sources": [
     "Jooble"
    ]
@@ -255,7 +274,7 @@
    "query": "SAP Ariba",
    "key": "salesdirectorenterprise|netapp",
    "firstSeen": "2026-11-08T11:54:21+00:00",
-   "lastSeen": "2026-11-11T12:41:45+00:00",
+   "lastSeen": "2026-11-25T15:33:03+00:00",
    "sources": [
     "Jooble"
    ]
@@ -616,7 +635,7 @@
    "query": "SAP Business Analyst",
    "key": "sapgebutransformationcelead24monthsftc|ernstyoung",
    "firstSeen": "2026-10-30T11:22:37+00:00",
-   "lastSeen": "2026-11-24T15:49:32+00:00",
+   "lastSeen": "2026-11-25T15:33:03+00:00",
    "sources": [
     "Jooble"
    ]
@@ -692,7 +711,7 @@
    "query": "SAP Business Analyst",
    "key": "solarbessservicetechnicianaporsap|tesla",
    "firstSeen": "2026-10-22T10:08:24+00:00",
-   "lastSeen": "2026-11-24T15:49:32+00:00",
+   "lastSeen": "2026-11-25T15:33:03+00:00",
    "sources": [
     "Jooble"
    ]

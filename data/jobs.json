@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-26T15:08:00+00:00",
+ "updated": "2026-11-27T15:00:09+00:00",
  "sources": [
   "Jooble",
   "Google Jobs"
@@ -9,8 +9,8 @@
  "usage": {
   "apify_month": "2026-10",
   "apify_results": 144,
-  "apify_spent_usd": 0.06,
-  "jooble_requests": 58
+  "apify_spent_usd": 0.07,
+  "jooble_requests": 59
  },
  "jobs": [
   {
